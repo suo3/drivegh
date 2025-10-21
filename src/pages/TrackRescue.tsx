@@ -4,24 +4,90 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Clock, User, Phone } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 const TrackRescue = () => {
-  const [trackingId, setTrackingId] = useState('');
-  const [trackingResult, setTrackingResult] = useState<any>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock tracking result for demo
-    setTrackingResult({
-      id: trackingId,
-      status: 'en_route',
-      provider: 'Kwame Auto Services',
-      providerPhone: '+233 24 555 1234',
-      estimatedArrival: '15 minutes',
-      location: 'Accra-Tema Motorway, near Airport Junction',
-    });
+    setLoading(true);
+    setSearched(false);
+
+    try {
+      // First, find the user by phone number
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone_number', phoneNumber)
+        .limit(1);
+
+      if (profileError) throw profileError;
+
+      if (!profiles || profiles.length === 0) {
+        toast.error('No service requests found for this phone number');
+        setServiceRequests([]);
+        setSearched(true);
+        setLoading(false);
+        return;
+      }
+
+      const userId = profiles[0].id;
+
+      // Fetch service requests for this user
+      const { data: requests, error: requestsError } = await supabase
+        .from('service_requests')
+        .select(`
+          *,
+          profiles!service_requests_provider_id_fkey(full_name, phone_number)
+        `)
+        .eq('customer_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (requestsError) throw requestsError;
+
+      setServiceRequests(requests || []);
+      setSearched(true);
+
+      if (!requests || requests.length === 0) {
+        toast.info('No service requests found');
+      } else {
+        toast.success(`Found ${requests.length} service request(s)`);
+      }
+    } catch (error: any) {
+      console.error('Error tracking rescue:', error);
+      toast.error('Failed to track rescue. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-yellow-500',
+      assigned: 'bg-blue-500',
+      en_route: 'bg-purple-500',
+      completed: 'bg-green-600',
+      cancelled: 'bg-gray-500',
+    };
+    return colors[status] || 'bg-gray-500';
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status.replace('_', ' ').toUpperCase();
+  };
+
+  const getStatusIcon = (status: string) => {
+    if (status === 'completed') return <CheckCircle2 className="h-6 w-6" />;
+    if (status === 'cancelled') return <AlertCircle className="h-6 w-6" />;
+    return <Clock className="h-6 w-6" />;
   };
 
   return (
@@ -32,7 +98,7 @@ const TrackRescue = () => {
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4">Track Your Rescue</h1>
           <p className="text-xl text-gray-200 max-w-3xl">
-            Monitor your rescue team in real-time and know exactly when help will arrive
+            Enter your phone number to view all your service requests and track their status
           </p>
         </div>
       </section>
@@ -43,72 +109,155 @@ const TrackRescue = () => {
             <Card className="p-8 mb-8">
               <form onSubmit={handleTrack} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="trackingId">Enter Your Tracking ID</Label>
+                  <Label htmlFor="phoneNumber">Enter Your Phone Number</Label>
                   <Input
-                    id="trackingId"
-                    placeholder="e.g., DGH-2025-001234"
-                    value={trackingId}
-                    onChange={(e) => setTrackingId(e.target.value)}
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="e.g., +233 24 123 4567"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     required
+                    disabled={loading}
                   />
                   <p className="text-sm text-muted-foreground">
-                    You received this ID when you requested assistance
+                    Enter the phone number you used when requesting assistance
                   </p>
                 </div>
-                <Button type="submit" className="w-full" size="lg">
-                  Track Rescue
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    'Track My Requests'
+                  )}
                 </Button>
               </form>
             </Card>
 
-            {trackingResult && (
-              <div className="space-y-4">
-                <Card className="p-6 bg-accent/10 border-accent">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-accent rounded-full p-3">
-                      <Clock className="h-6 w-6 text-accent-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Rescue Team En Route</h3>
-                      <p className="text-sm text-muted-foreground">Estimated arrival: {trackingResult.estimatedArrival}</p>
-                    </div>
-                  </div>
-                </Card>
+            {searched && serviceRequests.length === 0 && (
+              <Card className="p-8 text-center">
+                <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">No Service Requests Found</h3>
+                <p className="text-muted-foreground mb-4">
+                  We couldn't find any service requests for this phone number.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Make sure you're using the same phone number you provided when requesting assistance.
+                </p>
+              </Card>
+            )}
 
-                <Card className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Rescue Details</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Your Location</p>
-                        <p className="text-sm text-muted-foreground">{trackingResult.location}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <User className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Service Provider</p>
-                        <p className="text-sm text-muted-foreground">{trackingResult.provider}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Contact Number</p>
-                        <p className="text-sm text-muted-foreground">{trackingResult.providerPhone}</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
-                    💡 <strong>Tip:</strong> Keep your phone nearby. The provider may call if they need to confirm your exact location.
-                  </p>
+            {serviceRequests.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Your Service Requests</h2>
+                  <Badge variant="outline" className="text-lg px-4 py-2">
+                    {serviceRequests.length} {serviceRequests.length === 1 ? 'Request' : 'Requests'}
+                  </Badge>
                 </div>
+
+                {serviceRequests.map((request) => (
+                  <Card key={request.id} className="overflow-hidden">
+                    {/* Status Banner */}
+                    <div className={`${getStatusColor(request.status)} text-white p-4`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(request.status)}
+                          <div>
+                            <h3 className="font-semibold text-lg">
+                              {getStatusLabel(request.status)}
+                            </h3>
+                            <p className="text-sm opacity-90 capitalize">
+                              {request.service_type.replace('_', ' ')} Service
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right text-sm opacity-90">
+                          {new Date(request.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Request Details */}
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium">Location</p>
+                          <p className="text-sm text-muted-foreground">{request.location}</p>
+                        </div>
+                      </div>
+
+                      {request.description && (
+                        <div className="pl-8">
+                          <p className="font-medium">Description</p>
+                          <p className="text-sm text-muted-foreground">{request.description}</p>
+                        </div>
+                      )}
+
+                      {request.profiles && (
+                        <>
+                          <div className="flex items-start gap-3">
+                            <User className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="font-medium">Service Provider</p>
+                              <p className="text-sm text-muted-foreground">{request.profiles.full_name}</p>
+                            </div>
+                          </div>
+
+                          {request.profiles.phone_number && (
+                            <div className="flex items-start gap-3">
+                              <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <p className="font-medium">Provider Contact</p>
+                                <a 
+                                  href={`tel:${request.profiles.phone_number}`}
+                                  className="text-sm text-primary hover:underline"
+                                >
+                                  {request.profiles.phone_number}
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {request.status === 'pending' && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-yellow-900">
+                            ⏳ Your request is pending. We're finding the best provider for you.
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'en_route' && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-blue-900">
+                            🚗 <strong>Provider is on the way!</strong> Keep your phone nearby for any updates.
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'completed' && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-green-900">
+                            ✅ Service completed. Thank you for using our service!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Timestamps */}
+                    <div className="px-6 pb-4 border-t pt-4 flex justify-between text-xs text-muted-foreground">
+                      <span>Requested: {new Date(request.created_at).toLocaleString()}</span>
+                      {request.completed_at && (
+                        <span>Completed: {new Date(request.completed_at).toLocaleString()}</span>
+                      )}
+                    </div>
+                  </Card>
+                ))}
               </div>
             )}
           </div>
