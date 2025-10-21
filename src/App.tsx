@@ -10,6 +10,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import RequestService from "./pages/RequestService";
+import GetHelp from "./pages/GetHelp";
 import AboutUs from "./pages/AboutUs";
 import Partnership from "./pages/Partnership";
 import TrackRescue from "./pages/TrackRescue";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/provider" element={<ProviderDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/request-service" element={<RequestService />} />
+            <Route path="/get-help" element={<GetHelp />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/partnership" element={<Partnership />} />
             <Route path="/track-rescue" element={<TrackRescue />} />

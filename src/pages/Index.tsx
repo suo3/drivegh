@@ -78,10 +78,10 @@ const Index = () => {
                 Help is just a click away. Get immediate assistance for vehicle breakdowns, flat tires, battery issues, and more.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button onClick={() => navigate('/auth')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
+                <Button onClick={() => navigate('/get-help')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
                   Request Help Now
                 </Button>
-                <Button onClick={() => navigate('/auth')} size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-semibold">
+                <Button onClick={() => navigate('/track-rescue')} size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-semibold">
                   Track Rescue
                 </Button>
               </div>
@@ -273,10 +273,10 @@ const Index = () => {
             Don't wait until you're stranded. Get the DRIVE Ghana app today and have peace of mind on the road.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button onClick={() => navigate('/auth')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
+            <Button onClick={() => navigate('/get-help')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
               Request Help Now
             </Button>
-            <Button onClick={() => navigate('/auth')} size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-semibold">
+            <Button onClick={() => navigate('/partnership')} size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-semibold">
               Become a Partner
             </Button>
           </div>

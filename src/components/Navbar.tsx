@@ -35,7 +35,7 @@ const Navbar = () => {
               Login
             </Button>
           )}
-          <Button onClick={() => navigate('/auth')} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button onClick={() => navigate('/get-help')} className="bg-accent text-accent-foreground hover:bg-accent/90">
             Get Help
           </Button>
         </div>
