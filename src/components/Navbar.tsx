@@ -1,32 +1,42 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Truck } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, loading, signOut } = useAuth();
 
-  const handleDashboardClick = () => {
+  const handleDashboardClick = async () => {
     console.log('Dashboard clicked. UserRole:', userRole, 'User:', user?.id);
-    
-    if (!userRole) {
-      console.error('No user role found');
-      return;
-    }
-
-    switch (userRole) {
-      case 'admin':
-        navigate('/admin');
-        break;
-      case 'provider':
-        navigate('/provider');
-        break;
-      case 'customer':
-        navigate('/customer');
-        break;
-      default:
-        console.error('Unknown role:', userRole);
+    try {
+      let role = userRole;
+      if (!role && user?.id) {
+        const { data: roleRow } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        role = roleRow?.role as typeof userRole;
+      }
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'provider':
+          navigate('/provider');
+          break;
+        case 'customer':
+          navigate('/customer');
+          break;
+        default:
+          console.error('No role found or unknown role:', role);
+          navigate('/');
+      }
+    } catch (e) {
+      console.error('Error resolving role for dashboard navigation', e);
+      navigate('/');
     }
   };
 
@@ -50,14 +60,23 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <Button 
-              onClick={handleDashboardClick} 
-              variant="outline" 
-              className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
-              disabled={loading || !userRole}
-            >
-              {loading ? 'Loading...' : 'Dashboard'}
-            </Button>
+            <>
+              <Button 
+                onClick={handleDashboardClick} 
+                variant="outline" 
+                className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Dashboard'}
+              </Button>
+              <Button 
+                onClick={async () => { await signOut(); navigate('/'); }} 
+                variant="outline" 
+                className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+              >
+                Logout
+              </Button>
+            </>
           ) : (
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
               Login
