@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [providers, setProviders] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignDialog, setAssignDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
@@ -36,7 +38,7 @@ const AdminDashboard = () => {
   }, [user]);
 
   const fetchData = async () => {
-    const [requestsData, providersData, transactionsData] = await Promise.all([
+    const [requestsData, providersData, transactionsData, applicationsData] = await Promise.all([
       supabase
         .from('service_requests')
         .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number), provider:profiles!service_requests_provider_id_fkey(full_name)')
@@ -49,11 +51,16 @@ const AdminDashboard = () => {
         .from('transactions')
         .select('*, service_requests(service_type, status, profiles!service_requests_customer_id_fkey(full_name))')
         .order('created_at', { ascending: false }),
+      supabase
+        .from('partnership_applications')
+        .select('*')
+        .order('created_at', { ascending: false }),
     ]);
 
     if (requestsData.data) setRequests(requestsData.data);
     if (providersData.data) setProviders(providersData.data);
     if (transactionsData.data) setTransactions(transactionsData.data);
+    if (applicationsData.data) setApplications(applicationsData.data);
     setLoading(false);
   };
 
@@ -117,6 +124,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateApplicationStatus = async (id: string, status: string) => {
+    const { error } = await supabase
+      .from('partnership_applications')
+      .update({ 
+        status, 
+        reviewed_by: user?.id, 
+        reviewed_at: new Date().toISOString() 
+      })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update application status');
+    } else {
+      toast.success(`Application ${status}`);
+      fetchData();
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -171,9 +196,17 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Service Requests</CardTitle>
+        <Tabs defaultValue="requests" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="requests">Service Requests</TabsTrigger>
+            <TabsTrigger value="applications">Partnership Applications</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="requests">
+            <Card>
+              <CardHeader>
+                <CardTitle>Service Requests</CardTitle>
             <CardDescription>Manage and assign service requests</CardDescription>
           </CardHeader>
           <CardContent>
@@ -232,32 +265,91 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>All payments and transactions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {transactions.map((transaction) => (
-                <div key={transaction.id} className="border rounded-lg p-4 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">GHS {transaction.amount}</p>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {transaction.transaction_type.replace('_', ' ')}
-                    </p>
-                    <p className="text-sm">Ref: {transaction.reference_number || 'N/A'}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(transaction.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <Badge>{transaction.confirmed_at ? 'Confirmed' : 'Pending'}</Badge>
+          <TabsContent value="applications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Partnership Applications</CardTitle>
+                <CardDescription>Review and manage partnership requests</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {applications.map((app) => (
+                    <div key={app.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-semibold">{app.business_name}</p>
+                          <p className="text-sm text-muted-foreground">{app.contact_person}</p>
+                          <p className="text-sm">{app.email} | {app.phone}</p>
+                          <p className="text-sm text-muted-foreground">Location: {app.city}</p>
+                        </div>
+                        <Badge variant={
+                          app.status === 'approved' ? 'default' : 
+                          app.status === 'rejected' ? 'destructive' : 
+                          'secondary'
+                        }>
+                          {app.status}
+                        </Badge>
+                      </div>
+                      {app.message && (
+                        <p className="text-sm mb-3 p-3 bg-muted rounded">{app.message}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Applied: {new Date(app.created_at).toLocaleString()}
+                      </p>
+                      {app.status === 'pending' && (
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => updateApplicationStatus(app.id, 'approved')}
+                          >
+                            Approve
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => updateApplicationStatus(app.id, 'rejected')}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction History</CardTitle>
+                <CardDescription>All payments and transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div key={transaction.id} className="border rounded-lg p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold">GHS {transaction.amount}</p>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {transaction.transaction_type.replace('_', ' ')}
+                        </p>
+                        <p className="text-sm">Ref: {transaction.reference_number || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <Badge>{transaction.confirmed_at ? 'Confirmed' : 'Pending'}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={assignDialog} onOpenChange={setAssignDialog}>

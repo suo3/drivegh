@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CustomerDashboard from "./pages/CustomerDashboard";
@@ -30,10 +31,26 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/customer" element={<CustomerDashboard />} />
-            <Route path="/provider" element={<ProviderDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/request-service" element={<RequestService />} />
+            <Route path="/customer" element={
+              <ProtectedRoute allowedRoles={['customer']}>
+                <CustomerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/provider" element={
+              <ProtectedRoute allowedRoles={['provider']}>
+                <ProviderDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/request-service" element={
+              <ProtectedRoute>
+                <RequestService />
+              </ProtectedRoute>
+            } />
             <Route path="/get-help" element={<GetHelp />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/partnership" element={<Partnership />} />

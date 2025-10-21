@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      partnership_applications: {
+        Row: {
+          business_name: string
+          city: string
+          contact_person: string
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          business_name: string
+          city: string
+          contact_person: string
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          business_name?: string
+          city?: string
+          contact_person?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

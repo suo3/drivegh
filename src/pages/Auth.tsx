@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,27 @@ const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [role, setRole] = useState('customer');
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user, userRole } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (user && userRole) {
+      switch (userRole) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'provider':
+          navigate('/provider');
+          break;
+        case 'customer':
+          navigate('/customer');
+          break;
+        default:
+          navigate('/');
+      }
+    }
+  }, [user, userRole, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +61,7 @@ const Auth = () => {
           }
         } else {
           toast.success('Logged in successfully');
-          navigate('/');
+          // Navigation will be handled by useEffect based on role
         }
       } else {
         const validation = authSchema.safeParse({ email, password, fullName, phoneNumber });

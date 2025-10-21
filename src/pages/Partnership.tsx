@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DollarSign, Users, TrendingUp, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Partnership = () => {
   const [formData, setFormData] = useState({
@@ -26,17 +27,34 @@ const Partnership = () => {
     { icon: Clock, title: 'Flexible Schedule', desc: 'Accept jobs when you\'re available' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Thank you! We\'ll review your application and get back to you soon.');
-    setFormData({
-      businessName: '',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      city: '',
-      message: '',
-    });
+    
+    const { error } = await supabase
+      .from('partnership_applications')
+      .insert([{
+        business_name: formData.businessName,
+        contact_person: formData.contactPerson,
+        email: formData.email,
+        phone: formData.phone,
+        city: formData.city,
+        message: formData.message,
+      }]);
+
+    if (error) {
+      toast.error('Failed to submit application. Please try again.');
+      console.error('Error submitting application:', error);
+    } else {
+      toast.success('Thank you! We\'ll review your application and get back to you soon.');
+      setFormData({
+        businessName: '',
+        contactPerson: '',
+        email: '',
+        phone: '',
+        city: '',
+        message: '',
+      });
+    }
   };
 
   return (
