@@ -5,18 +5,28 @@ import { Truck } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, userRole } = useAuth();
+  const { user, userRole, loading } = useAuth();
 
-  const getDashboardRoute = () => {
+  const handleDashboardClick = () => {
+    console.log('Dashboard clicked. UserRole:', userRole, 'User:', user?.id);
+    
+    if (!userRole) {
+      console.error('No user role found');
+      return;
+    }
+
     switch (userRole) {
       case 'admin':
-        return '/admin';
+        navigate('/admin');
+        break;
       case 'provider':
-        return '/provider';
+        navigate('/provider');
+        break;
       case 'customer':
-        return '/customer';
+        navigate('/customer');
+        break;
       default:
-        return '/';
+        console.error('Unknown role:', userRole);
     }
   };
 
@@ -40,8 +50,13 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <Button onClick={() => navigate(getDashboardRoute())} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
-              Dashboard
+            <Button 
+              onClick={handleDashboardClick} 
+              variant="outline" 
+              className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+              disabled={loading || !userRole}
+            >
+              {loading ? 'Loading...' : 'Dashboard'}
             </Button>
           ) : (
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
