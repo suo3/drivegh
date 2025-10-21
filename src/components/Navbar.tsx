@@ -5,7 +5,20 @@ import { Truck } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
+
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'admin':
+        return '/admin';
+      case 'provider':
+        return '/provider';
+      case 'customer':
+        return '/customer';
+      default:
+        return '/';
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-white/10">
@@ -27,7 +40,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <Button onClick={() => navigate('/')} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
+            <Button onClick={() => navigate(getDashboardRoute())} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
               Dashboard
             </Button>
           ) : (
