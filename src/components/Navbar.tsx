@@ -2,7 +2,14 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Truck } from 'lucide-react';
+import { Truck, User, LogOut, LayoutDashboard } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -60,23 +67,34 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <>
-              <Button 
-                onClick={handleDashboardClick} 
-                variant="outline" 
-                className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
-                disabled={loading}
-              >
-                {loading ? 'Loading...' : 'Dashboard'}
-              </Button>
-              <Button 
-                onClick={async () => { await signOut(); navigate('/'); }} 
-                variant="outline" 
-                className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
-              >
-                Logout
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                  disabled={loading}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  {loading ? 'Loading...' : 'My Account'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleDashboardClick}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={async () => { 
+                    await signOut(); 
+                    navigate('/'); 
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
               Login
