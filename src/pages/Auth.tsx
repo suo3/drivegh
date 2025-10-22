@@ -69,6 +69,8 @@ const Auth = () => {
           }
         } else {
           toast.success('Account created successfully! Please check your email to verify.');
+          // Switch to login mode after successful signup
+          setIsLogin(true);
         }
       }
     } catch (error: any) {
