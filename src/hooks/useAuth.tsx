@@ -53,20 +53,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const fetchUserRole = async (userId: string) => {
+    console.log('fetchUserRole called for userId:', userId);
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .maybeSingle();
 
+    console.log('fetchUserRole result:', { data, error });
+    
+    if (error) {
+      console.error('Error fetching user role:', error);
+    }
+    
     if (data) {
+      console.log('Setting userRole to:', data.role);
       setUserRole(data.role);
+    } else {
+      console.log('No role data found for user');
     }
     setLoading(false);
   };
 
   const signUp = async (email: string, password: string, fullName: string, phoneNumber: string, role: string) => {
     const redirectUrl = `${window.location.origin}/`;
+    
+    console.log('signUp called with role:', role);
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -80,11 +92,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
+    console.log('signUp auth result:', { userId: data.user?.id, error });
+
     if (!error && data.user) {
-      await supabase.from('user_roles').insert([{
+      console.log('Inserting user role:', { user_id: data.user.id, role });
+      const { error: roleError } = await supabase.from('user_roles').insert([{
         user_id: data.user.id,
         role: role as 'customer' | 'provider' | 'admin',
       }]);
+      
+      if (roleError) {
+        console.error('Error inserting user role:', roleError);
+      } else {
+        console.log('User role inserted successfully');
+      }
     }
 
     return { error };
