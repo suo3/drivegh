@@ -713,6 +713,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>All Service Requests</CardTitle>
+                <CardDescription>Manage all service requests across the platform</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -720,6 +721,7 @@ const Dashboard = () => {
                     <TableRow>
                       <TableHead>Service</TableHead>
                       <TableHead>Customer</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Provider</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
@@ -727,70 +729,151 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allRequests.map((request) => (
-                      <TableRow key={request.id}>
-                        <TableCell>{request.service_type}</TableCell>
-                        <TableCell>{request.profiles?.full_name}</TableCell>
-                        <TableCell>{request.provider_id ? 'Assigned' : 'Unassigned'}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                        </TableCell>
-                        <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          {request.status === 'pending' && (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm">Assign Provider</Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Assign Provider</DialogTitle>
-                                </DialogHeader>
-                                <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select provider" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {providers.map((provider) => (
-                                      <SelectItem key={provider.id} value={provider.id}>
-                                        {provider.full_name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                          {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">Record Payment</Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Record Mobile Money Payment</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={(e) => {
-                                  e.preventDefault();
-                                  const formData = new FormData(e.currentTarget);
-                                  handleCompletePayment(request.id, Number(formData.get('amount')));
-                                }}>
+                    {allRequests.map((request) => {
+                      const provider = providers.find(p => p.id === request.provider_id);
+                      
+                      return (
+                        <TableRow key={request.id}>
+                          <TableCell className="font-medium">{request.service_type}</TableCell>
+                          <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
+                          <TableCell className="max-w-xs truncate">{request.location}</TableCell>
+                          <TableCell>
+                            {provider ? (
+                              <div>
+                                <p className="font-medium">{provider.full_name}</p>
+                                <p className="text-xs text-muted-foreground">{provider.phone_number}</p>
+                              </div>
+                            ) : (
+                              <Badge variant="secondary">Unassigned</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm">{new Date(request.created_at).toLocaleDateString()}</p>
+                              <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">Details</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Request Details</DialogTitle>
+                                    <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                  </DialogHeader>
                                   <div className="space-y-4">
-                                    <div>
-                                      <Label>Amount Received</Label>
-                                      <Input name="amount" type="number" step="0.01" required />
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="text-muted-foreground">Service Type</Label>
+                                        <p className="font-medium">{request.service_type}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Status</Label>
+                                        <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Customer</Label>
+                                        <p className="font-medium">{request.profiles?.full_name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Provider</Label>
+                                        <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
+                                      </div>
+                                      <div className="col-span-2">
+                                        <Label className="text-muted-foreground">Location</Label>
+                                        <p className="font-medium">{request.location}</p>
+                                      </div>
+                                      {request.description && (
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Description</Label>
+                                          <p className="font-medium">{request.description}</p>
+                                        </div>
+                                      )}
+                                      <div>
+                                        <Label className="text-muted-foreground">Created</Label>
+                                        <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
+                                      </div>
+                                      {request.completed_at && (
+                                        <div>
+                                          <Label className="text-muted-foreground">Completed</Label>
+                                          <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
+                                        </div>
+                                      )}
                                     </div>
-                                    <Button type="submit" className="w-full">Confirm Payment</Button>
                                   </div>
-                                </form>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                                </DialogContent>
+                              </Dialog>
+                              
+                              {request.status === 'pending' && (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm">Assign</Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Assign Provider</DialogTitle>
+                                      <DialogDescription>Select a provider for this service request</DialogDescription>
+                                    </DialogHeader>
+                                    <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select provider" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {providers.map((provider) => (
+                                          <SelectItem key={provider.id} value={provider.id}>
+                                            {provider.full_name} - {provider.phone_number}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </DialogContent>
+                                </Dialog>
+                              )}
+                              
+                              {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">Payment</Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Record Payment</DialogTitle>
+                                      <DialogDescription>Record mobile money payment for this service</DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={(e) => {
+                                      e.preventDefault();
+                                      const formData = new FormData(e.currentTarget);
+                                      handleCompletePayment(request.id, Number(formData.get('amount')));
+                                    }}>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <Label>Amount Received (GHS)</Label>
+                                          <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                        </div>
+                                        <Button type="submit" className="w-full">Confirm Payment</Button>
+                                      </div>
+                                    </form>
+                                  </DialogContent>
+                                </Dialog>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
+                {allRequests.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No service requests yet
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -799,30 +882,131 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Provider Management</CardTitle>
+                <CardDescription>Manage service providers and their details</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead>Jobs Completed</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {providers.map((provider) => (
-                      <TableRow key={provider.id}>
-                        <TableCell>{provider.full_name}</TableCell>
-                        <TableCell>{provider.phone_number}</TableCell>
-                        <TableCell>{provider.location}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="outline">Edit</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {providers.map((provider) => {
+                      const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
+                      const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
+                      
+                      return (
+                        <TableRow key={provider.id}>
+                          <TableCell className="font-medium">{provider.full_name}</TableCell>
+                          <TableCell>{provider.id}</TableCell>
+                          <TableCell>{provider.phone_number || 'N/A'}</TableCell>
+                          <TableCell>{provider.location || 'N/A'}</TableCell>
+                          <TableCell>{completedJobs}</TableCell>
+                          <TableCell>
+                            <Badge variant={activeJobs > 0 ? 'default' : 'secondary'}>
+                              {activeJobs > 0 ? `${activeJobs} Active` : 'Available'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">View Details</Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Provider Details</DialogTitle>
+                                  <DialogDescription>View and manage provider information</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-muted-foreground">Full Name</Label>
+                                      <p className="font-medium">{provider.full_name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Phone Number</Label>
+                                      <p className="font-medium">{provider.phone_number || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Location</Label>
+                                      <p className="font-medium">{provider.location || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Bio</Label>
+                                      <p className="font-medium">{provider.bio || 'N/A'}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="border-t pt-4">
+                                    <h4 className="font-semibold mb-2">Statistics</h4>
+                                    <div className="grid grid-cols-3 gap-4">
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">{completedJobs}</p>
+                                          <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                                        </CardContent>
+                                      </Card>
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">{activeJobs}</p>
+                                          <p className="text-sm text-muted-foreground">Active Jobs</p>
+                                        </CardContent>
+                                      </Card>
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">
+                                            ${allTransactions
+                                              .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                              .reduce((sum, t) => sum + Number(t.amount), 0)
+                                              .toFixed(2)}
+                                          </p>
+                                          <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+
+                                  <div className="border-t pt-4">
+                                    <h4 className="font-semibold mb-2">Recent Jobs</h4>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                      {allRequests
+                                        .filter(r => r.provider_id === provider.id)
+                                        .slice(0, 5)
+                                        .map((job) => (
+                                          <div key={job.id} className="flex justify-between items-center p-2 border rounded">
+                                            <div>
+                                              <p className="font-medium">{job.service_type}</p>
+                                              <p className="text-sm text-muted-foreground">{job.location}</p>
+                                            </div>
+                                            <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
+                                          </div>
+                                        ))}
+                                      {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
+                {providers.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No providers registered yet
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -831,30 +1015,133 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Customer Management</CardTitle>
+                <CardDescription>Manage customers and their service history</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead>Total Requests</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {customers.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell>{customer.full_name}</TableCell>
-                        <TableCell>{customer.phone_number}</TableCell>
-                        <TableCell>{customer.location}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="outline">Edit</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {customers.map((customer) => {
+                      const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
+                      const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
+                      const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
+                      
+                      return (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">{customer.full_name}</TableCell>
+                          <TableCell>{customer.id}</TableCell>
+                          <TableCell>{customer.phone_number || 'N/A'}</TableCell>
+                          <TableCell>{customer.location || 'N/A'}</TableCell>
+                          <TableCell>{totalRequests}</TableCell>
+                          <TableCell>
+                            <Badge variant={activeRequests > 0 ? 'default' : 'secondary'}>
+                              {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">View Details</Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Customer Details</DialogTitle>
+                                  <DialogDescription>View customer information and service history</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-muted-foreground">Full Name</Label>
+                                      <p className="font-medium">{customer.full_name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Phone Number</Label>
+                                      <p className="font-medium">{customer.phone_number || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Location</Label>
+                                      <p className="font-medium">{customer.location || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Bio</Label>
+                                      <p className="font-medium">{customer.bio || 'N/A'}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="border-t pt-4">
+                                    <h4 className="font-semibold mb-2">Statistics</h4>
+                                    <div className="grid grid-cols-3 gap-4">
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">{totalRequests}</p>
+                                          <p className="text-sm text-muted-foreground">Total Requests</p>
+                                        </CardContent>
+                                      </Card>
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">{completedRequests}</p>
+                                          <p className="text-sm text-muted-foreground">Completed</p>
+                                        </CardContent>
+                                      </Card>
+                                      <Card>
+                                        <CardContent className="pt-6">
+                                          <p className="text-2xl font-bold">
+                                            ${allTransactions
+                                              .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
+                                              .reduce((sum, t) => sum + Number(t.amount), 0)
+                                              .toFixed(2)}
+                                          </p>
+                                          <p className="text-sm text-muted-foreground">Total Spent</p>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+
+                                  <div className="border-t pt-4">
+                                    <h4 className="font-semibold mb-2">Service History</h4>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                      {allRequests
+                                        .filter(r => r.customer_id === customer.id)
+                                        .slice(0, 5)
+                                        .map((request) => (
+                                          <div key={request.id} className="flex justify-between items-center p-2 border rounded">
+                                            <div>
+                                              <p className="font-medium">{request.service_type}</p>
+                                              <p className="text-sm text-muted-foreground">{request.location}</p>
+                                              <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                          </div>
+                                        ))}
+                                      {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
+                {customers.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No customers registered yet
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -863,34 +1150,124 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Payment Transactions</CardTitle>
+                <CardDescription>View and manage all payment transactions</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Transaction ID</TableHead>
                       <TableHead>Amount</TableHead>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Customer</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Method</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allTransactions.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell>${Number(tx.amount).toFixed(2)}</TableCell>
-                        <TableCell>{tx.transaction_type}</TableCell>
-                        <TableCell>{tx.payment_method}</TableCell>
-                        <TableCell>
-                          <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
-                            {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(tx.created_at).toLocaleDateString()}</TableCell>
-                      </TableRow>
-                    ))}
+                    {allTransactions.map((tx) => {
+                      const request = allRequests.find(r => r.id === tx.service_request_id);
+                      const customer = customers.find(c => c.id === request?.customer_id);
+                      
+                      return (
+                        <TableRow key={tx.id}>
+                          <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}</TableCell>
+                          <TableCell className="font-bold">GHS {Number(tx.amount).toFixed(2)}</TableCell>
+                          <TableCell>{request?.service_type || 'N/A'}</TableCell>
+                          <TableCell>{customer?.full_name || 'Unknown'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{tx.transaction_type}</Badge>
+                          </TableCell>
+                          <TableCell className="capitalize">{tx.payment_method.replace('_', ' ')}</TableCell>
+                          <TableCell>
+                            <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
+                              {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</p>
+                              <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">Details</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Transaction Details</DialogTitle>
+                                  <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-muted-foreground">Amount</Label>
+                                      <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Status</Label>
+                                      <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
+                                        {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Transaction Type</Label>
+                                      <p className="font-medium">{tx.transaction_type}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Payment Method</Label>
+                                      <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                                    </div>
+                                    {tx.reference_number && (
+                                      <div className="col-span-2">
+                                        <Label className="text-muted-foreground">Reference Number</Label>
+                                        <p className="font-mono font-medium">{tx.reference_number}</p>
+                                      </div>
+                                    )}
+                                    <div className="col-span-2 border-t pt-4">
+                                      <Label className="text-muted-foreground">Service Details</Label>
+                                      <div className="mt-2 space-y-1">
+                                        <p><span className="font-medium">Type:</span> {request?.service_type}</p>
+                                        <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
+                                        <p><span className="font-medium">Location:</span> {request?.location}</p>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Created</Label>
+                                      <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
+                                    </div>
+                                    {tx.confirmed_at && (
+                                      <div>
+                                        <Label className="text-muted-foreground">Confirmed</Label>
+                                        <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
+                                      </div>
+                                    )}
+                                    {tx.notes && (
+                                      <div className="col-span-2">
+                                        <Label className="text-muted-foreground">Notes</Label>
+                                        <p className="text-sm">{tx.notes}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
+                {allTransactions.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No transactions recorded yet
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
