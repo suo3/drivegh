@@ -88,26 +88,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         data: {
           full_name: fullName,
           phone_number: phoneNumber,
+          role, // include role so the DB trigger can assign it automatically
         },
       },
     });
 
     console.log('signUp auth result:', { userId: data.user?.id, error });
 
-    if (!error && data.user) {
-      console.log('Inserting user role:', { user_id: data.user.id, role });
-      const { error: roleError } = await supabase.from('user_roles').insert([{
-        user_id: data.user.id,
-        role: role as 'customer' | 'provider' | 'admin',
-      }]);
-      
-      if (roleError) {
-        console.error('Error inserting user role:', roleError);
-      } else {
-        console.log('User role inserted successfully');
-      }
-    }
-
+    // Rely on DB trigger to create profile and assign role
     return { error };
   };
 
