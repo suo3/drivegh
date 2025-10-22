@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, fullName: string, phoneNumber: string, role: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    console.log('signUp called with role:', role);
+    console.log('signUp called with:', { fullName, phoneNumber, role });
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -93,7 +93,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
-    console.log('signUp auth result:', { userId: data.user?.id, error });
+    console.log('signUp auth result:', { 
+      userId: data.user?.id, 
+      metadata: data.user?.user_metadata,
+      error 
+    });
 
     // Rely on DB trigger to create profile and assign role
     return { error };
