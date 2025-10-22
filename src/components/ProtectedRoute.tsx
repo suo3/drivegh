@@ -13,27 +13,10 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate('/auth');
-      } else if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-        // Redirect to appropriate dashboard based on role
-        switch (userRole) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'provider':
-            navigate('/provider');
-            break;
-          case 'customer':
-            navigate('/customer');
-            break;
-          default:
-            navigate('/');
-        }
-      }
+    if (!loading && !user) {
+      navigate('/auth');
     }
-  }, [user, userRole, loading, allowedRoles, navigate]);
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -44,10 +27,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    return null;
-  }
-
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
     return null;
   }
 

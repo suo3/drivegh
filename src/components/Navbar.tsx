@@ -15,36 +15,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, userRole, loading, signOut } = useAuth();
 
-  const handleDashboardClick = async () => {
-    console.log('Dashboard clicked. UserRole:', userRole, 'User:', user?.id);
-    try {
-      let role = userRole;
-      if (!role && user?.id) {
-        const { data: roleRow } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        role = roleRow?.role as typeof userRole;
-      }
-      switch (role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'provider':
-          navigate('/provider');
-          break;
-        case 'customer':
-          navigate('/customer');
-          break;
-        default:
-          console.error('No role found or unknown role:', role);
-          navigate('/');
-      }
-    } catch (e) {
-      console.error('Error resolving role for dashboard navigation', e);
-      navigate('/');
-    }
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
   };
 
   return (
