@@ -120,12 +120,34 @@ const Dashboard = () => {
   };
 
   const fetchAdminData = async () => {
-    const [requestsRes, providersRes, customersRes, transactionsRes, appsRes] = await Promise.all([
-      supabase.from('service_requests').select('*, profiles!service_requests_customer_id_fkey(full_name)').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('*, user_roles!inner(role)').eq('user_roles.role', 'provider'),
-      supabase.from('profiles').select('*, user_roles!inner(role)').eq('user_roles.role', 'customer'),
+    // Fetch IDs by role first to avoid relying on PostgREST relationship inference
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes] = await Promise.all([
+      supabase
+        .from('service_requests')
+        .select('*, profiles!service_requests_customer_id_fkey(full_name)')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'provider'),
+      supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'customer'),
       supabase.from('transactions').select('*').order('created_at', { ascending: false }),
-      supabase.from('partnership_applications').select('*').order('created_at', { ascending: false })
+      supabase.from('partnership_applications').select('*').order('created_at', { ascending: false }),
+    ]);
+
+    const providerIds = providerIdsRes.data?.map((r: any) => r.user_id) || [];
+    const customerIds = customerIdsRes.data?.map((r: any) => r.user_id) || [];
+
+    const [providersRes, customersRes] = await Promise.all([
+      providerIds.length
+        ? supabase.from('profiles').select('*').in('id', providerIds)
+        : Promise.resolve({ data: [], error: null }),
+      customerIds.length
+        ? supabase.from('profiles').select('*').in('id', customerIds)
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
     if (requestsRes.data) setAllRequests(requestsRes.data);
