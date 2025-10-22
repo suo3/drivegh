@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -252,7 +253,9 @@ const Dashboard = () => {
   // Customer Dashboard
   if (userRole === 'customer') {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <>
+        <Navbar />
+        <div className="container mx-auto p-6 space-y-6 mt-20">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Customer Dashboard</h1>
           <Dialog>
@@ -489,13 +492,16 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      </>
     );
   }
 
   // Provider Dashboard
   if (userRole === 'provider') {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <>
+        <Navbar />
+        <div className="container mx-auto p-6 space-y-6 mt-20">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Provider Dashboard</h1>
           <div className="flex items-center gap-2">
@@ -648,13 +654,16 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      </>
     );
   }
 
   // Admin Dashboard
   if (userRole === 'admin') {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <>
+        <Navbar />
+        <div className="container mx-auto p-6 space-y-6 mt-20">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -887,6 +896,7 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      </>
     );
   }
 
