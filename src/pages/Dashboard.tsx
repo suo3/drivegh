@@ -40,25 +40,47 @@ const Dashboard = () => {
   const [applications, setApplications] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!authLoading && user && userRole) {
-      fetchData();
+    console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
+    
+    if (authLoading) {
+      return;
     }
-  }, [user, userRole, authLoading]);
+    
+    if (!user) {
+      console.log('No user found, redirecting to auth');
+      navigate('/auth');
+      return;
+    }
+    
+    if (userRole) {
+      console.log('User role found, fetching data');
+      fetchData();
+    } else {
+      console.log('No user role yet, setting loading to false');
+      // If userRole is not available after auth is done, stop loading
+      setLoading(false);
+    }
+  }, [user, userRole, authLoading, navigate]);
 
   const fetchData = async () => {
+    console.log('fetchData called with userRole:', userRole);
     setLoading(true);
     try {
       if (userRole === 'customer') {
+        console.log('Fetching customer data');
         await fetchCustomerData();
       } else if (userRole === 'provider') {
+        console.log('Fetching provider data');
         await fetchProviderData();
       } else if (userRole === 'admin') {
+        console.log('Fetching admin data');
         await fetchAdminData();
       }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
+      console.log('fetchData complete, setting loading to false');
       setLoading(false);
     }
   };
@@ -209,9 +231,22 @@ const Dashboard = () => {
     );
   }
 
-  if (!user || !userRole) {
+  if (!user) {
     navigate('/auth');
     return null;
+  }
+
+  if (!userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>No Role Assigned</CardTitle>
+            <CardDescription>Your account doesn't have a role assigned yet. Please contact support.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
   }
 
   // Customer Dashboard
