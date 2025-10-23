@@ -89,7 +89,7 @@ const RequestService = () => {
         toast.error('Failed to create service request. Please try again.');
       } else {
         toast.success('Service request submitted successfully! Our team will assign a provider shortly.');
-        navigate('/customer');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -114,7 +114,7 @@ const RequestService = () => {
       
       <section className="bg-primary text-white pt-32 pb-16">
         <div className="container mx-auto px-4">
-          <Button variant="ghost" onClick={() => navigate('/customer')} className="mb-4 text-white hover:text-accent">
+          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 text-white hover:text-accent">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
