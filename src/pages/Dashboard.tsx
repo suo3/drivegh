@@ -827,6 +827,15 @@ const Dashboard = () => {
                                           <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
                                         </div>
                                       )}
+                                      {request.status === 'completed' && (() => {
+                                        const transaction = allTransactions.find(t => t.service_request_id === request.id);
+                                        return transaction ? (
+                                          <div>
+                                            <Label className="text-muted-foreground">Amount Paid</Label>
+                                            <p className="font-medium text-lg">${Number(transaction.amount).toFixed(2)}</p>
+                                          </div>
+                                        ) : null;
+                                      })()}
                                     </div>
                                   </div>
                                 </DialogContent>
