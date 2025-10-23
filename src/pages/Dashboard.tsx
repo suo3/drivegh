@@ -858,6 +858,16 @@ const Dashboard = () => {
                                 </Dialog>
                               )}
                               
+                              {request.status !== 'completed' && request.status !== 'cancelled' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleUpdateRequestStatus(request.id, 'completed')}
+                                >
+                                  Mark Complete
+                                </Button>
+                              )}
+                              
                               {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
                                 <Dialog>
                                   <DialogTrigger asChild>
