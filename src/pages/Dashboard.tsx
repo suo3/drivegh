@@ -14,8 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { z } from 'zod';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -207,7 +208,21 @@ const Dashboard = () => {
     }
   };
 
+  const transactionSchema = z.object({
+    amount: z.number().positive({ message: "Amount must be positive" }).max(1000000, { message: "Amount too large" }),
+    provider_percentage: z.number().min(0, { message: "Percentage must be at least 0" }).max(100, { message: "Percentage cannot exceed 100" })
+  });
+
   const handleCompletePayment = async (requestId: string, amount: number, providerPercentage: number) => {
+    try {
+      transactionSchema.parse({ amount, provider_percentage: providerPercentage });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+
     const { error: txError } = await supabase.from('transactions').insert([{
       service_request_id: requestId,
       transaction_type: 'customer_to_business',
@@ -232,6 +247,32 @@ const Dashboard = () => {
       toast.error('Failed to complete request');
     } else {
       toast.success('Payment recorded and request completed');
+      fetchData();
+    }
+  };
+
+  const handleUpdateTransaction = async (transactionId: string, amount: number, providerPercentage: number) => {
+    try {
+      transactionSchema.parse({ amount, provider_percentage: providerPercentage });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .update({
+        amount,
+        provider_percentage: providerPercentage
+      })
+      .eq('id', transactionId);
+
+    if (error) {
+      toast.error('Failed to update transaction');
+    } else {
+      toast.success('Transaction updated successfully');
       fetchData();
     }
   };
@@ -831,9 +872,73 @@ const Dashboard = () => {
                                       {request.status === 'completed' && (() => {
                                         const transaction = allTransactions.find(t => t.service_request_id === request.id);
                                         return transaction ? (
-                                          <div>
-                                            <Label className="text-muted-foreground">Amount Paid</Label>
-                                            <p className="font-medium text-lg">${Number(transaction.amount).toFixed(2)}</p>
+                                          <div className="col-span-2">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <Label className="text-muted-foreground">Payment Details</Label>
+                                              <Dialog>
+                                                <DialogTrigger asChild>
+                                                  <Button size="sm" variant="ghost">
+                                                    <Edit className="h-4 w-4 mr-2" />
+                                                    Edit Payment
+                                                  </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                  <DialogHeader>
+                                                    <DialogTitle>Edit Payment</DialogTitle>
+                                                    <DialogDescription>Update payment amount and provider percentage</DialogDescription>
+                                                  </DialogHeader>
+                                                  <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    const formData = new FormData(e.currentTarget);
+                                                    const amount = Number(formData.get('amount'));
+                                                    const percentage = Number(formData.get('provider_percentage'));
+                                                    handleUpdateTransaction(transaction.id, amount, percentage);
+                                                  }}>
+                                                    <div className="space-y-4">
+                                                      <div>
+                                                        <Label>Amount (GHS)</Label>
+                                                        <Input 
+                                                          name="amount" 
+                                                          type="number" 
+                                                          step="0.01" 
+                                                          required 
+                                                          defaultValue={transaction.amount}
+                                                          min="0.01"
+                                                          max="1000000"
+                                                        />
+                                                      </div>
+                                                      <div>
+                                                        <Label>Provider Percentage (%)</Label>
+                                                        <Input 
+                                                          name="provider_percentage" 
+                                                          type="number" 
+                                                          step="1" 
+                                                          min="0" 
+                                                          max="100" 
+                                                          required 
+                                                          defaultValue={transaction.provider_percentage}
+                                                        />
+                                                      </div>
+                                                      <div className="bg-muted p-3 rounded-md">
+                                                        <p className="text-sm font-medium mb-1">Current Breakdown:</p>
+                                                        <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
+                                                        <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
+                                                      </div>
+                                                      <Button type="submit" className="w-full">Update Payment</Button>
+                                                    </div>
+                                                  </form>
+                                                </DialogContent>
+                                              </Dialog>
+                                            </div>
+                                            <div className="space-y-1">
+                                              <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
+                                              <p className="text-sm text-muted-foreground">
+                                                Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
+                                              </p>
+                                              <p className="text-sm text-muted-foreground">
+                                                Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
+                                              </p>
+                                            </div>
                                           </div>
                                         ) : null;
                                       })()}
