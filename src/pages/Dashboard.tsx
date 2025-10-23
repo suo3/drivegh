@@ -842,41 +842,55 @@ const Dashboard = () => {
                                 </DialogContent>
                               </Dialog>
                               
-                              {request.status === 'pending' && (
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button size="sm">Assign</Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Assign Provider</DialogTitle>
-                                      <DialogDescription>Select a provider for this service request</DialogDescription>
-                                    </DialogHeader>
-                                    <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select provider" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {providers.map((provider) => (
-                                          <SelectItem key={provider.id} value={provider.id}>
-                                            {provider.full_name} - {provider.phone_number}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </DialogContent>
-                                </Dialog>
-                              )}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
+                                    <DialogDescription>Select a provider for this service request</DialogDescription>
+                                  </DialogHeader>
+                                  <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select provider" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {providers.map((provider) => (
+                                        <SelectItem key={provider.id} value={provider.id}>
+                                          {provider.full_name} - {provider.phone_number}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </DialogContent>
+                              </Dialog>
                               
-                              {request.status !== 'completed' && request.status !== 'cancelled' && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleUpdateRequestStatus(request.id, 'completed')}
-                                >
-                                  Mark Complete
-                                </Button>
-                              )}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    Change Status
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Change Request Status</DialogTitle>
+                                    <DialogDescription>Update the status of this service request</DialogDescription>
+                                  </DialogHeader>
+                                  <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select new status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">Pending</SelectItem>
+                                      <SelectItem value="assigned">Assigned</SelectItem>
+                                      <SelectItem value="in_progress">In Progress</SelectItem>
+                                      <SelectItem value="completed">Completed</SelectItem>
+                                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </DialogContent>
+                              </Dialog>
                               
                               {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
                                 <Dialog>

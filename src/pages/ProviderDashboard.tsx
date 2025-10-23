@@ -67,6 +67,25 @@ const ProviderDashboard = () => {
     }
   };
 
+  const rejectRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('service_requests')
+      .update({ 
+        status: 'pending',
+        provider_id: null,
+        assigned_at: null,
+        assigned_by: null
+      })
+      .eq('id', requestId);
+
+    if (error) {
+      toast.error('Failed to reject request');
+    } else {
+      toast.success('Request rejected successfully');
+      fetchData();
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -151,8 +170,8 @@ const ProviderDashboard = () => {
                         <Button size="sm" onClick={() => updateStatus(request.id, 'accepted')}>
                           Accept
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => updateStatus(request.id, 'denied')}>
-                          Deny
+                        <Button size="sm" variant="destructive" onClick={() => rejectRequest(request.id)}>
+                          Reject
                         </Button>
                       </div>
                     )}
