@@ -23,6 +23,30 @@ const CustomerDashboard = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel('customer_service_requests')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_requests',
+          filter: `customer_id=eq.${user.id}`
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchData = async () => {
     setLoading(true);
     const [requestsData, transactionsData] = await Promise.all([

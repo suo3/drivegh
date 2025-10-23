@@ -23,6 +23,30 @@ const ProviderDashboard = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    
+    const channel = supabase
+      .channel('provider_service_requests')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_requests',
+          filter: `provider_id=eq.${user.id}`
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchData = async () => {
     const [requestsData, earningsData, ratingsData] = await Promise.all([
       supabase

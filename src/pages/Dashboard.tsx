@@ -64,6 +64,29 @@ const Dashboard = () => {
     }
   }, [user, userRole, authLoading, navigate]);
 
+  useEffect(() => {
+    if (!user || userRole !== 'admin') return;
+    
+    const channel = supabase
+      .channel('service_requests_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        () => {
+          fetchServiceRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, userRole]);
+
   const fetchData = async () => {
     console.log('fetchData called with userRole:', userRole);
     setLoading(true);
@@ -210,6 +233,27 @@ const Dashboard = () => {
       toast.success('Provider assigned successfully');
       fetchData();
     }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('service_requests')
+      .delete()
+      .eq('id', requestId);
+
+    if (error) {
+      toast.error('Failed to delete request');
+    } else {
+      toast.success('Request deleted successfully');
+    }
+  };
+
+  const fetchServiceRequests = async () => {
+    const { data } = await supabase
+      .from('service_requests')
+      .select('*, profiles!service_requests_customer_id_fkey(full_name)')
+      .order('created_at', { ascending: false });
+    if (data) setAllRequests(data);
   };
 
   const transactionSchema = z.object({
@@ -1021,6 +1065,14 @@ const Dashboard = () => {
                                   </Select>
                                 </DialogContent>
                               </Dialog>
+                              
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteRequest(request.id)}
+                              >
+                                Delete
+                              </Button>
                               
                               {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
                                 <Dialog>
