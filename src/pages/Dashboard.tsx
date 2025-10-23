@@ -970,23 +970,29 @@ const Dashboard = () => {
                                 <DialogTrigger asChild>
                                   <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                  <DialogContent>
                                   <DialogHeader>
                                     <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
-                                    <DialogDescription>Select a provider for this service request</DialogDescription>
+                                    <DialogDescription>Select an available provider for this service request</DialogDescription>
                                   </DialogHeader>
-                                  <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select provider" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {providers.map((provider) => (
-                                        <SelectItem key={provider.id} value={provider.id}>
-                                          {provider.full_name} - {provider.phone_number}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  {providers.filter(p => p.is_available !== false).length === 0 ? (
+                                    <div className="text-center py-6">
+                                      <p className="text-muted-foreground">No available providers at the moment</p>
+                                    </div>
+                                  ) : (
+                                    <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select provider" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {providers.filter(p => p.is_available !== false).map((provider) => (
+                                          <SelectItem key={provider.id} value={provider.id}>
+                                            {provider.full_name} - {provider.phone_number}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
                                 </DialogContent>
                               </Dialog>
                               
@@ -1110,9 +1116,16 @@ const Dashboard = () => {
                           <TableCell>{provider.location || 'N/A'}</TableCell>
                           <TableCell>{completedJobs}</TableCell>
                           <TableCell>
-                            <Badge variant={activeJobs > 0 ? 'default' : 'secondary'}>
-                              {activeJobs > 0 ? `${activeJobs} Active` : 'Available'}
-                            </Badge>
+                            <div className="flex flex-col gap-1">
+                              <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
+                                {provider.is_available === false ? 'Unavailable' : 'Available'}
+                              </Badge>
+                              {activeJobs > 0 && (
+                                <span className="text-xs text-muted-foreground">
+                                  {activeJobs} Active Job{activeJobs > 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Dialog>
