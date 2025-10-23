@@ -100,10 +100,11 @@ const Dashboard = () => {
   };
 
   const fetchProviderData = async () => {
-    const [requestsRes, transactionsRes, ratingsRes] = await Promise.all([
+    const [requestsRes, transactionsRes, ratingsRes, profileRes] = await Promise.all([
       supabase.from('service_requests').select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number)').eq('provider_id', user?.id).order('created_at', { ascending: false }),
       supabase.from('transactions').select('amount').eq('service_requests.provider_id', user?.id),
-      supabase.from('ratings').select('*').eq('provider_id', user?.id)
+      supabase.from('ratings').select('*').eq('provider_id', user?.id),
+      supabase.from('profiles').select('is_available').eq('id', user?.id).single()
     ]);
 
     if (requestsRes.data) setRequests(requestsRes.data);
@@ -117,6 +118,9 @@ const Dashboard = () => {
         const avg = ratingsRes.data.reduce((sum, r) => sum + r.rating, 0) / ratingsRes.data.length;
         setAvgRating(avg);
       }
+    }
+    if (profileRes.data) {
+      setIsAvailable(profileRes.data.is_available);
     }
   };
 
@@ -274,6 +278,21 @@ const Dashboard = () => {
     } else {
       toast.success('Transaction updated successfully');
       fetchData();
+    }
+  };
+
+  const handleToggleAvailability = async (available: boolean) => {
+    setIsAvailable(available);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_available: available })
+      .eq('id', user?.id);
+    
+    if (error) {
+      toast.error('Failed to update availability');
+      setIsAvailable(!available);
+    } else {
+      toast.success(`You are now ${available ? 'available' : 'unavailable'} for new requests`);
     }
   };
 
@@ -570,7 +589,7 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold">Provider Dashboard</h1>
           <div className="flex items-center gap-2">
             <Label>Available</Label>
-            <Switch checked={isAvailable} onCheckedChange={setIsAvailable} />
+            <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} />
           </div>
         </div>
 
