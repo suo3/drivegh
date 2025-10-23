@@ -33,7 +33,7 @@ const ProviderDashboard = () => {
       supabase
         .from('transactions')
         .select('*, service_requests!inner(provider_id)')
-        .eq('transaction_type', 'business_to_provider')
+        .eq('transaction_type', 'customer_to_business')
         .eq('service_requests.provider_id', user?.id)
         .order('created_at', { ascending: false }),
       supabase
@@ -80,7 +80,7 @@ const ProviderDashboard = () => {
     );
   }
 
-  const totalEarnings = earnings.reduce((acc, t) => acc + parseFloat(t.amount), 0);
+  const totalEarnings = earnings.reduce((acc, t) => acc + parseFloat(t.provider_amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -185,7 +185,10 @@ const ProviderDashboard = () => {
                 {earnings.map((transaction) => (
                   <div key={transaction.id} className="border rounded-lg p-4 flex justify-between items-center">
                     <div>
-                      <p className="font-semibold">GHS {transaction.amount}</p>
+                      <p className="font-semibold">GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {transaction.provider_percentage}% of GHS {Number(transaction.amount).toFixed(2)}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(transaction.created_at).toLocaleString()}
                       </p>

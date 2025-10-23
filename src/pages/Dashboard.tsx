@@ -207,11 +207,12 @@ const Dashboard = () => {
     }
   };
 
-  const handleCompletePayment = async (requestId: string, amount: number) => {
+  const handleCompletePayment = async (requestId: string, amount: number, providerPercentage: number) => {
     const { error: txError } = await supabase.from('transactions').insert([{
       service_request_id: requestId,
       transaction_type: 'customer_to_business',
       amount,
+      provider_percentage: providerPercentage,
       payment_method: 'mobile_money',
       confirmed_by: user?.id,
       confirmed_at: new Date().toISOString()
@@ -890,12 +891,32 @@ const Dashboard = () => {
                                     <form onSubmit={(e) => {
                                       e.preventDefault();
                                       const formData = new FormData(e.currentTarget);
-                                      handleCompletePayment(request.id, Number(formData.get('amount')));
+                                      handleCompletePayment(
+                                        request.id, 
+                                        Number(formData.get('amount')),
+                                        Number(formData.get('provider_percentage'))
+                                      );
                                     }}>
                                       <div className="space-y-4">
                                         <div>
                                           <Label>Amount Received (GHS)</Label>
                                           <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                        </div>
+                                        <div>
+                                          <Label>Provider Percentage (%)</Label>
+                                          <Input 
+                                            name="provider_percentage" 
+                                            type="number" 
+                                            step="1" 
+                                            min="0" 
+                                            max="100" 
+                                            required 
+                                            defaultValue="70"
+                                            placeholder="70" 
+                                          />
+                                          <p className="text-xs text-muted-foreground mt-1">
+                                            Percentage of payment that goes to the provider
+                                          </p>
                                         </div>
                                         <Button type="submit" className="w-full">Confirm Payment</Button>
                                       </div>
