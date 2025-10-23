@@ -141,14 +141,14 @@ const Dashboard = () => {
   const fetchProviderData = async () => {
     const [requestsRes, transactionsRes, ratingsRes, profileRes] = await Promise.all([
       supabase.from('service_requests').select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number)').eq('provider_id', user?.id).order('created_at', { ascending: false }),
-      supabase.from('transactions').select('amount').eq('service_requests.provider_id', user?.id),
+      supabase.from('transactions').select('provider_amount, service_requests!inner(provider_id)').eq('service_requests.provider_id', user?.id),
       supabase.from('ratings').select('*').eq('provider_id', user?.id),
       supabase.from('profiles').select('is_available').eq('id', user?.id).single()
     ]);
 
     if (requestsRes.data) setRequests(requestsRes.data);
     if (transactionsRes.data) {
-      const total = transactionsRes.data.reduce((sum, t) => sum + Number(t.amount), 0);
+      const total = transactionsRes.data.reduce((sum, t) => sum + Number(t.provider_amount || 0), 0);
       setEarnings(total);
     }
     if (ratingsRes.data) {
