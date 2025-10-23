@@ -504,13 +504,14 @@ const Dashboard = () => {
                 <CardTitle>My Requests</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Service</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Provider</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -523,6 +524,11 @@ const Dashboard = () => {
                         <TableCell>{request.profiles?.full_name || 'Unassigned'}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {request.status === 'completed' && request.amount 
+                            ? `GHS ${Number(request.amount).toFixed(2)}` 
+                            : '-'}
                         </TableCell>
                         <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
@@ -792,6 +798,7 @@ const Dashboard = () => {
                       <TableHead>Service</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead>Completed</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -801,6 +808,9 @@ const Dashboard = () => {
                         <TableCell>{request.service_type}</TableCell>
                         <TableCell>{request.profiles?.full_name}</TableCell>
                         <TableCell>{request.location}</TableCell>
+                        <TableCell>
+                          {request.amount ? `GHS ${Number(request.amount).toFixed(2)}` : '-'}
+                        </TableCell>
                         <TableCell>{new Date(request.completed_at).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
@@ -881,6 +891,7 @@ const Dashboard = () => {
                       <TableHead>Location</TableHead>
                       <TableHead>Provider</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Amount</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -906,6 +917,11 @@ const Dashboard = () => {
                           </TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {request.status === 'completed' && request.amount 
+                              ? `GHS ${Number(request.amount).toFixed(2)}` 
+                              : '-'}
                           </TableCell>
                           <TableCell>
                             <div>

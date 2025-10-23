@@ -146,6 +146,7 @@ export type Database = {
       }
       service_requests: {
         Row: {
+          amount: number | null
           assigned_at: string | null
           assigned_by: string | null
           completed_at: string | null
@@ -160,6 +161,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          amount?: number | null
           assigned_at?: string | null
           assigned_by?: string | null
           completed_at?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          amount?: number | null
           assigned_at?: string | null
           assigned_by?: string | null
           completed_at?: string | null
