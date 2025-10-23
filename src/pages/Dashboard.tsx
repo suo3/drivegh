@@ -67,7 +67,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user || userRole !== 'admin') return;
     
-    const channel = supabase
+    const requestsChannel = supabase
       .channel('service_requests_changes')
       .on(
         'postgres_changes',
@@ -82,8 +82,24 @@ const Dashboard = () => {
       )
       .subscribe();
 
+    const profilesChannel = supabase
+      .channel('profiles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(requestsChannel);
+      supabase.removeChannel(profilesChannel);
     };
   }, [user, userRole]);
 
@@ -245,6 +261,20 @@ const Dashboard = () => {
       toast.error('Failed to delete request');
     } else {
       toast.success('Request deleted successfully');
+    }
+  };
+
+  const handleDeleteProfile = async (profileId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', profileId);
+
+    if (error) {
+      toast.error('Failed to delete profile');
+    } else {
+      toast.success('Profile deleted successfully');
+      fetchData();
     }
   };
 
@@ -1180,10 +1210,11 @@ const Dashboard = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">View Details</Button>
-                              </DialogTrigger>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">View Details</Button>
+                                </DialogTrigger>
                               <DialogContent className="max-w-2xl">
                                 <DialogHeader>
                                   <DialogTitle>Provider Details</DialogTitle>
@@ -1260,7 +1291,15 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               </DialogContent>
-                            </Dialog>
+                              </Dialog>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteProfile(provider.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -1314,10 +1353,11 @@ const Dashboard = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">View Details</Button>
-                              </DialogTrigger>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">View Details</Button>
+                                </DialogTrigger>
                               <DialogContent className="max-w-2xl">
                                 <DialogHeader>
                                   <DialogTitle>Customer Details</DialogTitle>
@@ -1395,7 +1435,15 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               </DialogContent>
-                            </Dialog>
+                              </Dialog>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteProfile(customer.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
