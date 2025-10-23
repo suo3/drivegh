@@ -217,7 +217,10 @@ export type Database = {
           id: string
           notes: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          platform_amount: number | null
           proof_url: string | null
+          provider_amount: number | null
+          provider_percentage: number
           reference_number: string | null
           service_request_id: string
           transaction_type: Database["public"]["Enums"]["transaction_type"]
@@ -230,7 +233,10 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          platform_amount?: number | null
           proof_url?: string | null
+          provider_amount?: number | null
+          provider_percentage?: number
           reference_number?: string | null
           service_request_id: string
           transaction_type: Database["public"]["Enums"]["transaction_type"]
@@ -243,7 +249,10 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          platform_amount?: number | null
           proof_url?: string | null
+          provider_amount?: number | null
+          provider_percentage?: number
           reference_number?: string | null
           service_request_id?: string
           transaction_type?: Database["public"]["Enums"]["transaction_type"]
