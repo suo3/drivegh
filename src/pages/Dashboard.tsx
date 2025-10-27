@@ -884,14 +884,7 @@ const Dashboard = () => {
               </div>
 
               {currentView === 'requests' && (
-            <TabsTrigger value="providers">Providers</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="requests">
-            <Card>
+                <Card>
               <CardHeader>
                 <CardTitle>All Service Requests</CardTitle>
                 <CardDescription>Manage all service requests across the platform</CardDescription>
@@ -1194,9 +1187,9 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              )}
 
-          <TabsContent value="providers">
+              {currentView === 'providers' && (
             <Card>
               <CardHeader>
                 <CardTitle>Provider Management</CardTitle>
@@ -1343,9 +1336,9 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              )}
 
-          <TabsContent value="customers">
+              {currentView === 'customers' && (
             <Card>
               <CardHeader>
                 <CardTitle>Customer Management</CardTitle>
@@ -1487,9 +1480,9 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              )}
 
-          <TabsContent value="payments">
+              {currentView === 'payments' && (
             <Card>
               <CardHeader>
                 <CardTitle>Payment Transactions</CardTitle>
@@ -1613,9 +1606,9 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              )}
 
-          <TabsContent value="profile">
+              {currentView === 'profile' && (
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
@@ -1627,10 +1620,11 @@ const Dashboard = () => {
                 <ProfileForm onSuccess={fetchData} />
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-      </>
+              )}
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
