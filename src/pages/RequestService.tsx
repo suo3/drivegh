@@ -18,6 +18,10 @@ const serviceSchema = z.object({
   location: z.string().trim().min(3, 'Location is required').max(200, 'Location must be less than 200 characters'),
   description: z.string().trim().max(1000, 'Description must be less than 1000 characters'),
   serviceType: z.enum(['towing', 'tire_change', 'fuel_delivery', 'battery_jump', 'lockout_service', 'emergency_assistance']),
+  vehicleMake: z.string().trim().min(1, 'Vehicle make is required').max(100, 'Vehicle make must be less than 100 characters'),
+  vehicleModel: z.string().trim().min(1, 'Vehicle model is required').max(100, 'Vehicle model must be less than 100 characters'),
+  vehicleYear: z.string().trim().optional(),
+  vehiclePlate: z.string().trim().optional(),
 });
 
 const RequestService = () => {
@@ -26,6 +30,10 @@ const RequestService = () => {
   const [serviceType, setServiceType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [vehicleMake, setVehicleMake] = useState('');
+  const [vehicleModel, setVehicleModel] = useState('');
+  const [vehicleYear, setVehicleYear] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!user) {
@@ -68,6 +76,10 @@ const RequestService = () => {
         location: location.trim(),
         description: description.trim(),
         serviceType,
+        vehicleMake: vehicleMake.trim(),
+        vehicleModel: vehicleModel.trim(),
+        vehicleYear: vehicleYear.trim(),
+        vehiclePlate: vehiclePlate.trim(),
       });
 
       if (!validation.success) {
@@ -81,6 +93,10 @@ const RequestService = () => {
         service_type: serviceType as 'towing' | 'tire_change' | 'fuel_delivery' | 'battery_jump' | 'lockout_service' | 'emergency_assistance',
         location: location.trim(),
         description: description.trim(),
+        vehicle_make: vehicleMake.trim(),
+        vehicle_model: vehicleModel.trim(),
+        vehicle_year: vehicleYear.trim() || null,
+        vehicle_plate: vehiclePlate.trim() || null,
         status: 'pending' as const,
       }]).select().single();
 
@@ -190,6 +206,58 @@ const RequestService = () => {
                     <p className="text-sm text-muted-foreground">
                       Be as specific as possible to help us find you quickly
                     </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Vehicle Information *</Label>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vehicleMake">Make *</Label>
+                        <Input
+                          id="vehicleMake"
+                          type="text"
+                          value={vehicleMake}
+                          onChange={(e) => setVehicleMake(e.target.value)}
+                          placeholder="e.g., Toyota, Honda"
+                          required
+                          maxLength={100}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="vehicleModel">Model *</Label>
+                        <Input
+                          id="vehicleModel"
+                          type="text"
+                          value={vehicleModel}
+                          onChange={(e) => setVehicleModel(e.target.value)}
+                          placeholder="e.g., Camry, Accord"
+                          required
+                          maxLength={100}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="vehicleYear">Year (Optional)</Label>
+                        <Input
+                          id="vehicleYear"
+                          type="text"
+                          value={vehicleYear}
+                          onChange={(e) => setVehicleYear(e.target.value)}
+                          placeholder="e.g., 2020"
+                          maxLength={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="vehiclePlate">License Plate (Optional)</Label>
+                        <Input
+                          id="vehiclePlate"
+                          type="text"
+                          value={vehiclePlate}
+                          onChange={(e) => setVehiclePlate(e.target.value)}
+                          placeholder="e.g., GR 1234-20"
+                          maxLength={20}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
