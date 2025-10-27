@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { ProfileForm } from '@/components/ProfileForm';
 import { z } from 'zod';
 
 const Dashboard = () => {
@@ -618,38 +619,12 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal details and contact information
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  handleUpdateProfile({
-                    full_name: formData.get('full_name'),
-                    phone_number: formData.get('phone_number'),
-                    location: formData.get('location'),
-                    bio: formData.get('bio')
-                  });
-                }}>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Full Name</Label>
-                      <Input name="full_name" defaultValue={profile?.full_name} />
-                    </div>
-                    <div>
-                      <Label>Phone Number</Label>
-                      <Input name="phone_number" defaultValue={profile?.phone_number} />
-                    </div>
-                    <div>
-                      <Label>Location</Label>
-                      <Input name="location" defaultValue={profile?.location} />
-                    </div>
-                    <div>
-                      <Label>Bio</Label>
-                      <Textarea name="bio" defaultValue={profile?.bio} />
-                    </div>
-                    <Button type="submit">Update Profile</Button>
-                  </div>
-                </form>
+                <ProfileForm onSuccess={fetchData} />
               </CardContent>
             </Card>
           </TabsContent>
