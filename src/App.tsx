@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import RequestService from "./pages/RequestService";
+import Profile from "./pages/Profile";
 import GetHelp from "./pages/GetHelp";
 import AboutUs from "./pages/AboutUs";
 import Partnership from "./pages/Partnership";
@@ -37,6 +38,11 @@ const App = () => (
             <Route path="/request-service" element={
               <ProtectedRoute>
                 <RequestService />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
             <Route path="/get-help" element={<GetHelp />} />
