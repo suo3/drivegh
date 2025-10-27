@@ -1,5 +1,4 @@
-import { NavLink } from 'react-router-dom';
-import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign } from 'lucide-react';
+import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -43,13 +43,34 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
   ];
 
   const items = role === 'customer' ? customerItems : role === 'provider' ? providerItems : adminItems;
+  
+  const getRoleTitle = () => {
+    if (role === 'customer') return 'Customer Portal';
+    if (role === 'provider') return 'Provider Portal';
+    return 'Admin Portal';
+  };
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar">
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <LayoutDashboard className="h-4 w-4 text-primary-foreground" />
+          </div>
+          {!collapsed && (
+            <div>
+              <p className="text-sm font-semibold text-sidebar-foreground">{getRoleTitle()}</p>
+            </div>
+          )}
+        </div>
+      </SidebarHeader>
+      
+      <SidebarContent className="px-2 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="px-3 text-xs font-medium text-sidebar-foreground/60">
+            Navigation
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="mt-2">
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.view}>
@@ -57,9 +78,10 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
                     onClick={() => onViewChange(item.view)}
                     isActive={currentView === item.view}
                     tooltip={item.title}
+                    className="group relative my-0.5 rounded-lg transition-all duration-200 hover:bg-sidebar-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm"
                   >
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span>{item.title}</span>}
+                    <item.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+                    {!collapsed && <span className="font-medium">{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

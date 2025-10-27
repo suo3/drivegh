@@ -418,20 +418,22 @@ const Dashboard = () => {
   if (userRole === 'customer') {
     return (
       <SidebarProvider>
-        <div className="min-h-screen w-full flex">
+        <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="customer" currentView={currentView} onViewChange={setCurrentView} />
           
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="border-b p-4 bg-background">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold">Customer Dashboard</h1>
+            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
+                <SidebarTrigger className="-ml-2" />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground truncate">Customer Dashboard</h1>
+                </div>
               </div>
             </header>
 
-            <main className="flex-1 p-6 space-y-6">
+            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto">
               <div className="flex justify-end">
                 <Dialog>
                   <DialogTrigger asChild>
@@ -649,26 +651,26 @@ const Dashboard = () => {
   if (userRole === 'provider') {
     return (
       <SidebarProvider>
-        <div className="min-h-screen w-full flex">
+        <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="provider" currentView={currentView} onViewChange={setCurrentView} />
           
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="border-b p-4 bg-background">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <SidebarTrigger />
-                  <h1 className="text-2xl font-bold">Provider Dashboard</h1>
+            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-6 lg:py-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <SidebarTrigger className="-ml-2" />
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground truncate">Provider Dashboard</h1>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label>Available</Label>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Label className="text-sm hidden sm:inline">Available</Label>
                   <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} />
                 </div>
               </div>
             </header>
 
-            <main className="flex-1 p-6 space-y-6">
+            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -834,20 +836,22 @@ const Dashboard = () => {
   if (userRole === 'admin') {
     return (
       <SidebarProvider>
-        <div className="min-h-screen w-full flex">
+        <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="admin" currentView={currentView} onViewChange={setCurrentView} />
           
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="border-b p-4 bg-background">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
+                <SidebarTrigger className="-ml-2" />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground truncate">Admin Dashboard</h1>
+                </div>
               </div>
             </header>
 
-            <main className="flex-1 p-6 space-y-6">
+            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader>

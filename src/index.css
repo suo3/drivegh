@@ -41,21 +41,14 @@ All colors MUST be HSL.
     --hero-bg: 217 91% 15%;
     --section-bg: 0 0% 98%;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 217 91% 20%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 217 91% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 91% 15%;
+    --sidebar-ring: 45 100% 51%;
   }
 
   .dark {
