@@ -682,6 +682,7 @@ const Dashboard = () => {
           <TabsList>
             <TabsTrigger value="assigned">Assigned Jobs</TabsTrigger>
             <TabsTrigger value="completed">Completed Jobs</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="assigned">
@@ -794,6 +795,20 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal details and contact information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileForm onSuccess={fetchData} />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
       </>
@@ -849,6 +864,7 @@ const Dashboard = () => {
             <TabsTrigger value="providers">Providers</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
@@ -1572,6 +1588,20 @@ const Dashboard = () => {
                     No transactions recorded yet
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal details and contact information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileForm onSuccess={fetchData} />
               </CardContent>
             </Card>
           </TabsContent>
