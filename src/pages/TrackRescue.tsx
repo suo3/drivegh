@@ -28,58 +28,59 @@ const TrackRescue = () => {
       
       console.log('Searching for phone number:', normalizedInput);
 
-      // First, find the user by phone number
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, phone_number')
-        .not('phone_number', 'is', null);
-
-      if (profileError) throw profileError;
-
-      console.log('Found profiles:', profiles);
-
-      // Find matching profile by comparing normalized phone numbers
-      const matchingProfile = profiles?.find(profile => {
-        const normalizedStored = profile.phone_number?.replace(/\D/g, '') || '';
-        // Match if either the full number matches or the last 10 digits match (for local numbers)
-        return normalizedStored === normalizedInput || 
-               normalizedStored.slice(-10) === normalizedInput.slice(-10);
-      });
-
-      if (!matchingProfile) {
-        toast.error('No service requests found for this phone number');
-        setServiceRequests([]);
-        setSearched(true);
-        setLoading(false);
-        return;
-      }
-
-      const foundUserId = matchingProfile.id;
-      setUserId(foundUserId);
-      console.log('Found user ID:', foundUserId);
-
-      // Fetch service requests for this user
-      const { data: requests, error: requestsError } = await supabase
+      // Search for requests by phone number (for guest users) or by customer_id (for logged-in users)
+      const { data: allRequests, error: requestsError } = await supabase
         .from('service_requests')
         .select(`
           *,
           profiles!service_requests_provider_id_fkey(full_name, phone_number)
         `)
-        .eq('customer_id', foundUserId)
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;
 
-      console.log('Found requests:', requests);
+      console.log('All requests:', allRequests);
 
-      setServiceRequests(requests || []);
-      setSearched(true);
+      // Filter requests that match the phone number
+      const matchingRequests = allRequests?.filter(request => {
+        // Check direct phone_number field (guest requests)
+        if (request.phone_number) {
+          const normalizedRequestPhone = request.phone_number.replace(/\D/g, '');
+          if (normalizedRequestPhone === normalizedInput || 
+              normalizedRequestPhone.slice(-10) === normalizedInput.slice(-10)) {
+            return true;
+          }
+        }
+        return false;
+      }) || [];
 
-      if (!requests || requests.length === 0) {
-        toast.info('No service requests found');
-      } else {
-        toast.success(`Found ${requests.length} service request(s)`);
+      // Also try to find user profile and their requests
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, phone_number')
+        .not('phone_number', 'is', null);
+
+      const matchingProfile = profiles?.find(profile => {
+        const normalizedStored = profile.phone_number?.replace(/\D/g, '') || '';
+        return normalizedStored === normalizedInput || 
+               normalizedStored.slice(-10) === normalizedInput.slice(-10);
+      });
+
+      if (matchingProfile) {
+        const profileRequests = allRequests?.filter(r => r.customer_id === matchingProfile.id) || [];
+        matchingRequests.push(...profileRequests);
       }
+
+      console.log('Matching requests:', matchingRequests);
+
+      if (matchingRequests.length === 0) {
+        toast.error('No service requests found for this phone number');
+      } else {
+        toast.success(`Found ${matchingRequests.length} service request(s)`);
+      }
+      
+      setServiceRequests(matchingRequests);
+      setSearched(true);
     } catch (error: any) {
       console.error('Error tracking rescue:', error);
       toast.error('Failed to track rescue. Please try again.');

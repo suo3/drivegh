@@ -154,10 +154,11 @@ export type Database = {
           assigned_by: string | null
           completed_at: string | null
           created_at: string | null
-          customer_id: string
+          customer_id: string | null
           description: string | null
           id: string
           location: string
+          phone_number: string | null
           provider_id: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["service_status"]
@@ -173,10 +174,11 @@ export type Database = {
           assigned_by?: string | null
           completed_at?: string | null
           created_at?: string | null
-          customer_id: string
+          customer_id?: string | null
           description?: string | null
           id?: string
           location: string
+          phone_number?: string | null
           provider_id?: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
@@ -192,10 +194,11 @@ export type Database = {
           assigned_by?: string | null
           completed_at?: string | null
           created_at?: string | null
-          customer_id?: string
+          customer_id?: string | null
           description?: string | null
           id?: string
           location?: string
+          phone_number?: string | null
           provider_id?: string | null
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]

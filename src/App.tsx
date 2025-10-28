@@ -34,11 +34,7 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/request-service" element={
-              <ProtectedRoute>
-                <RequestService />
-              </ProtectedRoute>
-            } />
+            <Route path="/request-service" element={<RequestService />} />
             <Route path="/get-help" element={<GetHelp />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/partnership" element={<Partnership />} />

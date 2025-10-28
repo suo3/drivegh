@@ -22,6 +22,7 @@ const serviceSchema = z.object({
   vehicleModel: z.string().trim().min(1, 'Vehicle model is required').max(100, 'Vehicle model must be less than 100 characters'),
   vehicleYear: z.string().trim().optional(),
   vehiclePlate: z.string().trim().optional(),
+  phoneNumber: z.string().trim().min(10, 'Phone number must be at least 10 digits').max(20, 'Phone number must be less than 20 characters'),
 });
 
 const RequestService = () => {
@@ -34,38 +35,8 @@ const RequestService = () => {
   const [vehicleModel, setVehicleModel] = useState('');
   const [vehicleYear, setVehicleYear] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen">
-        <Navbar />
-        <section className="bg-primary text-white pt-32 pb-16">
-          <div className="container mx-auto px-4">
-            <h1 className="text-5xl font-bold mb-4">Request Service</h1>
-            <p className="text-xl text-gray-200 max-w-3xl">
-              Sign in to submit a roadside assistance request
-            </p>
-          </div>
-        </section>
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4">
-            <Card className="p-12 max-w-2xl mx-auto text-center">
-              <Phone className="h-16 w-16 text-primary mx-auto mb-6" />
-              <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
-              <p className="text-muted-foreground mb-6">
-                Please sign in to submit a service request and track your rescue
-              </p>
-              <Button onClick={() => navigate('/auth')} size="lg">
-                Sign In to Continue
-              </Button>
-            </Card>
-          </div>
-        </section>
-        <Footer />
-      </div>
-    );
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +51,7 @@ const RequestService = () => {
         vehicleModel: vehicleModel.trim(),
         vehicleYear: vehicleYear.trim(),
         vehiclePlate: vehiclePlate.trim(),
+        phoneNumber: user ? '0000000000' : phoneNumber.trim(), // Skip validation if logged in
       });
 
       if (!validation.success) {
@@ -89,7 +61,8 @@ const RequestService = () => {
       }
 
       const { data, error } = await supabase.from('service_requests').insert([{
-        customer_id: user?.id,
+        customer_id: user?.id || null,
+        phone_number: user ? null : phoneNumber.trim(),
         service_type: serviceType as 'towing' | 'tire_change' | 'fuel_delivery' | 'battery_jump' | 'lockout_service' | 'emergency_assistance',
         location: location.trim(),
         description: description.trim(),
@@ -104,8 +77,12 @@ const RequestService = () => {
         console.error('Error creating request:', error);
         toast.error('Failed to create service request. Please try again.');
       } else {
-        toast.success('Service request submitted successfully! Our team will assign a provider shortly.');
-        navigate('/dashboard');
+        toast.success('Service request submitted successfully! Track it at /track-rescue with your phone number.');
+        if (user) {
+          navigate('/dashboard');
+        } else {
+          navigate('/track-rescue');
+        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -130,13 +107,15 @@ const RequestService = () => {
       
       <section className="bg-primary text-white pt-32 pb-16">
         <div className="container mx-auto px-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 text-white hover:text-accent">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
+          {user && (
+            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 text-white hover:text-accent">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          )}
           <h1 className="text-5xl font-bold mb-4">Request Roadside Assistance</h1>
           <p className="text-xl text-gray-200 max-w-3xl">
-            Submit your request and we'll assign a professional service provider to help you
+            {user ? 'Submit your request and we\'ll assign a professional service provider to help you' : 'Get help now - no account required'}
           </p>
         </div>
       </section>
@@ -188,6 +167,27 @@ const RequestService = () => {
                       ))}
                     </div>
                   </div>
+
+                  {!user && (
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">
+                        <Phone className="inline h-4 w-4 mr-1" />
+                        Your Phone Number *
+                      </Label>
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="e.g., 0244123456 or +233244123456"
+                        required
+                        maxLength={20}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        We'll use this to contact you and you can track your request with it
+                      </p>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="location">
