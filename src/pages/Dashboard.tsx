@@ -401,24 +401,32 @@ const Dashboard = () => {
   };
 
   const handleCreateUser = async (email: string, password: string, fullName: string, phoneNumber: string, role: string) => {
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        phone_number: phoneNumber,
-        role
+    try {
+      const { data, error } = await supabase.functions.invoke('create-user-account', {
+        body: {
+          email,
+          password,
+          fullName,
+          phoneNumber,
+          role
+        }
+      });
+
+      if (error) {
+        toast.error('Failed to create user: ' + error.message);
+        return;
       }
-    });
 
-    if (authError) {
-      toast.error('Failed to create user: ' + authError.message);
-      return;
+      if (data?.error) {
+        toast.error('Failed to create user: ' + data.error);
+        return;
+      }
+
+      toast.success('User created successfully');
+      fetchData();
+    } catch (error: any) {
+      toast.error('Failed to create user: ' + error.message);
     }
-
-    toast.success('User created successfully');
-    fetchData();
   };
 
   const handleUpdateUser = async (userId: string, updates: { full_name?: string; phone_number?: string; email?: string; location?: string; is_available?: boolean }) => {
@@ -504,28 +512,33 @@ const Dashboard = () => {
       return;
     }
 
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: application.email,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: application.contact_person,
-        phone_number: application.phone,
-        role: role
+    try {
+      const { data, error } = await supabase.functions.invoke('create-user-account', {
+        body: {
+          email: application.email,
+          password: password,
+          fullName: application.contact_person,
+          phoneNumber: application.phone,
+          role: role,
+          applicationId: application.id
+        }
+      });
+
+      if (error) {
+        toast.error('Failed to create user account: ' + error.message);
+        return;
       }
-    });
 
-    if (authError) {
-      toast.error('Failed to create user account: ' + authError.message);
-      return;
+      if (data?.error) {
+        toast.error('Failed to create user account: ' + data.error);
+        return;
+      }
+
+      toast.success(`User account created successfully as ${role}`);
+      fetchData();
+    } catch (error: any) {
+      toast.error('Failed to create user account: ' + error.message);
     }
-
-    // Update application status to approved
-    await handleUpdateApplicationStatus(application.id, 'approved');
-
-    toast.success(`User account created successfully as ${role}`);
-    fetchData();
   };
 
   const getStatusColor = (status: string) => {
