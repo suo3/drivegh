@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ const TrackRescue = () => {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +40,8 @@ const TrackRescue = () => {
         return;
       }
 
-      const userId = profiles[0].id;
+      const foundUserId = profiles[0].id;
+      setUserId(foundUserId);
 
       // Fetch service requests for this user
       const { data: requests, error: requestsError } = await supabase
@@ -48,7 +50,7 @@ const TrackRescue = () => {
           *,
           profiles!service_requests_provider_id_fkey(full_name, phone_number)
         `)
-        .eq('customer_id', userId)
+        .eq('customer_id', foundUserId)
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;
@@ -69,11 +71,59 @@ const TrackRescue = () => {
     }
   };
 
+  // Set up real-time subscription for updates
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('service_requests_tracking')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_requests',
+          filter: `customer_id=eq.${userId}`
+        },
+        async (payload) => {
+          console.log('Real-time update:', payload);
+          
+          // Refresh the service requests data
+          const { data: requests } = await supabase
+            .from('service_requests')
+            .select(`
+              *,
+              profiles!service_requests_provider_id_fkey(full_name, phone_number)
+            `)
+            .eq('customer_id', userId)
+            .order('created_at', { ascending: false });
+
+          if (requests) {
+            setServiceRequests(requests);
+            
+            // Show notification for status changes
+            if (payload.eventType === 'UPDATE' && payload.new) {
+              const newStatus = (payload.new as any).status;
+              toast.info(`Status updated to: ${getStatusLabel(newStatus)}`);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: 'bg-yellow-500',
       assigned: 'bg-blue-500',
+      accepted: 'bg-blue-600',
+      denied: 'bg-red-500',
       en_route: 'bg-purple-500',
+      in_progress: 'bg-indigo-500',
       completed: 'bg-green-600',
       cancelled: 'bg-gray-500',
     };
@@ -81,12 +131,13 @@ const TrackRescue = () => {
   };
 
   const getStatusLabel = (status: string) => {
-    return status.replace('_', ' ').toUpperCase();
+    return status.replace(/_/g, ' ').toUpperCase();
   };
 
   const getStatusIcon = (status: string) => {
     if (status === 'completed') return <CheckCircle2 className="h-6 w-6" />;
-    if (status === 'cancelled') return <AlertCircle className="h-6 w-6" />;
+    if (status === 'cancelled' || status === 'denied') return <AlertCircle className="h-6 w-6" />;
+    if (status === 'en_route') return <Navigation className="h-6 w-6" />;
     return <Clock className="h-6 w-6" />;
   };
 
@@ -197,6 +248,21 @@ const TrackRescue = () => {
                         </div>
                       )}
 
+                      {/* Vehicle Information */}
+                      {(request.vehicle_make || request.vehicle_model) && (
+                        <div className="flex items-start gap-3">
+                          <Car className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="font-medium">Vehicle</p>
+                            <p className="text-sm text-muted-foreground">
+                              {request.vehicle_make} {request.vehicle_model}
+                              {request.vehicle_year && ` (${request.vehicle_year})`}
+                              {request.vehicle_plate && ` - ${request.vehicle_plate}`}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                       {request.profiles && (
                         <>
                           <div className="flex items-start gap-3">
@@ -224,6 +290,7 @@ const TrackRescue = () => {
                         </>
                       )}
 
+                      {/* Status Messages */}
                       {request.status === 'pending' && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
                           <p className="text-sm text-yellow-900">
@@ -232,10 +299,34 @@ const TrackRescue = () => {
                         </div>
                       )}
 
-                      {request.status === 'en_route' && (
+                      {request.status === 'assigned' && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                           <p className="text-sm text-blue-900">
+                            👤 A provider has been assigned to your request!
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'accepted' && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-blue-900">
+                            ✅ Provider has accepted your request and will contact you shortly.
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'en_route' && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-purple-900">
                             🚗 <strong>Provider is on the way!</strong> Keep your phone nearby for any updates.
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'in_progress' && (
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-indigo-900">
+                            🔧 <strong>Service in progress.</strong> The provider is working on your vehicle.
                           </p>
                         </div>
                       )}
@@ -244,6 +335,22 @@ const TrackRescue = () => {
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
                           <p className="text-sm text-green-900">
                             ✅ Service completed. Thank you for using our service!
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'denied' && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-red-900">
+                            ❌ Request was declined. Please contact support or submit a new request.
+                          </p>
+                        </div>
+                      )}
+
+                      {request.status === 'cancelled' && (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-gray-900">
+                            🚫 This request has been cancelled.
                           </p>
                         </div>
                       )}
