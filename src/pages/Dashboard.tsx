@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import { z } from 'zod';
@@ -44,7 +44,6 @@ const Dashboard = () => {
   const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [selectedServiceType, setSelectedServiceType] = useState('');
 
   useEffect(() => {
     console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
@@ -632,145 +631,7 @@ const Dashboard = () => {
 
             <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto">
               <div className="flex justify-end">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>New Service Request</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create Service Request</DialogTitle>
-                      <DialogDescription>Fill out the form to request a service</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!selectedServiceType) {
-                        toast.error('Please select a service type');
-                        return;
-                      }
-                      const formData = new FormData(e.currentTarget);
-                      handleCreateRequest({
-                        service_type: selectedServiceType,
-                        location: formData.get('location') as string,
-                        description: formData.get('description') as string,
-                        vehicle_make: formData.get('vehicle_make') as string,
-                        vehicle_model: formData.get('vehicle_model') as string,
-                        vehicle_year: formData.get('vehicle_year') as string,
-                        vehicle_plate: formData.get('vehicle_plate') as string
-                      });
-                      setSelectedServiceType('');
-                    }}>
-                      <div className="space-y-6">
-                        <div className="space-y-3">
-                          <Label>What service do you need? *</Label>
-                          <div className="grid grid-cols-2 gap-3">
-                            {[
-                              { value: 'towing', icon: Truck, label: 'Towing', desc: 'Vehicle towing service' },
-                              { value: 'tire_change', icon: Wrench, label: 'Tire Change', desc: 'Flat tire replacement' },
-                              { value: 'fuel_delivery', icon: Fuel, label: 'Fuel Delivery', desc: 'Emergency fuel service' },
-                              { value: 'battery_jump', icon: Battery, label: 'Battery Jump', desc: 'Jump start service' },
-                              { value: 'lockout_service', icon: Key, label: 'Lockout Service', desc: 'Vehicle unlock' },
-                              { value: 'emergency_assistance', icon: Settings, label: 'Emergency Help', desc: 'Other emergencies' },
-                            ].map((service) => (
-                              <Card
-                                key={service.value}
-                                className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                                  selectedServiceType === service.value ? 'border-primary bg-primary/5' : ''
-                                }`}
-                                onClick={() => setSelectedServiceType(service.value)}
-                              >
-                                <div className="flex items-start gap-2">
-                                  <service.icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
-                                    selectedServiceType === service.value ? 'text-primary' : 'text-muted-foreground'
-                                  }`} />
-                                  <div>
-                                    <p className="font-semibold text-sm">{service.label}</p>
-                                    <p className="text-xs text-muted-foreground">{service.desc}</p>
-                                  </div>
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="location">
-                            <MapPin className="inline h-4 w-4 mr-1" />
-                            Your Current Location *
-                          </Label>
-                          <Input
-                            id="location"
-                            name="location"
-                            required
-                            placeholder="e.g., Accra Mall, East Legon, Accra"
-                            maxLength={200}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Be as specific as possible to help us find you quickly
-                          </p>
-                        </div>
-
-                        <div className="space-y-3">
-                          <Label>Vehicle Information *</Label>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="vehicle_make">Make *</Label>
-                              <Input
-                                id="vehicle_make"
-                                name="vehicle_make"
-                                required
-                                placeholder="e.g., Toyota, Honda"
-                                maxLength={100}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="vehicle_model">Model *</Label>
-                              <Input
-                                id="vehicle_model"
-                                name="vehicle_model"
-                                required
-                                placeholder="e.g., Camry, Accord"
-                                maxLength={100}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="vehicle_year">Year (Optional)</Label>
-                              <Input
-                                id="vehicle_year"
-                                name="vehicle_year"
-                                placeholder="e.g., 2020"
-                                maxLength={4}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="vehicle_plate">License Plate (Optional)</Label>
-                              <Input
-                                id="vehicle_plate"
-                                name="vehicle_plate"
-                                placeholder="e.g., GR 1234-20"
-                                maxLength={20}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="description">Additional Details (Optional)</Label>
-                          <Textarea
-                            id="description"
-                            name="description"
-                            placeholder="Tell us more about your situation..."
-                            maxLength={1000}
-                            rows={3}
-                          />
-                        </div>
-
-                        <Button type="submit" className="w-full" size="lg">
-                          Submit Service Request
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={() => navigate('/request-service')}>New Service Request</Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
