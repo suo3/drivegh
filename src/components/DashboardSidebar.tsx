@@ -38,6 +38,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     { title: 'Service Requests', view: 'requests', icon: ClipboardList },
     { title: 'Providers', view: 'providers', icon: UserCheck },
     { title: 'Customers', view: 'customers', icon: Users },
+    { title: 'Users', view: 'users', icon: User },
     { title: 'Payments', view: 'payments', icon: DollarSign },
     { title: 'Profile', view: 'profile', icon: User },
   ];

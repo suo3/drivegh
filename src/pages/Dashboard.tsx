@@ -43,6 +43,7 @@ const Dashboard = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
   useEffect(() => {
     console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
@@ -188,7 +189,7 @@ const Dashboard = () => {
 
   const fetchAdminData = async () => {
     // Fetch IDs by role first to avoid relying on PostgREST relationship inference
-    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes] = await Promise.all([
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes] = await Promise.all([
       supabase
         .from('service_requests')
         .select(`
@@ -207,6 +208,7 @@ const Dashboard = () => {
         .eq('role', 'customer'),
       supabase.from('transactions').select('*').order('created_at', { ascending: false }),
       supabase.from('partnership_applications').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('*, user_roles(role)').order('created_at', { ascending: false }),
     ]);
 
     const providerIds = providerIdsRes.data?.map((r: any) => r.user_id) || [];
@@ -226,6 +228,7 @@ const Dashboard = () => {
     if (customersRes.data) setCustomers(customersRes.data);
     if (transactionsRes.data) setAllTransactions(transactionsRes.data);
     if (appsRes.data) setApplications(appsRes.data);
+    if (allProfilesRes.data) setAllUsers(allProfilesRes.data);
   };
 
   const handleUpdateProfile = async (updates: any) => {
@@ -395,6 +398,85 @@ const Dashboard = () => {
     } else {
       toast.success(`You are now ${available ? 'available' : 'unavailable'} for new requests`);
     }
+  };
+
+  const handleCreateUser = async (email: string, password: string, fullName: string, phoneNumber: string, role: string) => {
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        phone_number: phoneNumber,
+        role
+      }
+    });
+
+    if (authError) {
+      toast.error('Failed to create user: ' + authError.message);
+      return;
+    }
+
+    toast.success('User created successfully');
+    fetchData();
+  };
+
+  const handleUpdateUser = async (userId: string, updates: { full_name?: string; phone_number?: string; email?: string; location?: string; is_available?: boolean }) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+
+    if (error) {
+      toast.error('Failed to update user');
+      return;
+    }
+
+    toast.success('User updated successfully');
+    fetchData();
+  };
+
+  const handleUpdateUserRole = async (userId: string, newRole: string, oldRole: string) => {
+    // Remove old role
+    const { error: deleteError } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+      .eq('role', oldRole as any);
+
+    if (deleteError) {
+      toast.error('Failed to remove old role');
+      return;
+    }
+
+    // Add new role
+    const { error: insertError } = await supabase
+      .from('user_roles')
+      .insert([{ user_id: userId, role: newRole as any }]);
+
+    if (insertError) {
+      toast.error('Failed to assign new role');
+      return;
+    }
+
+    toast.success('User role updated successfully');
+    fetchData();
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+
+    if (error) {
+      toast.error('Failed to delete user');
+      return;
+    }
+
+    toast.success('User deleted successfully');
+    fetchData();
   };
 
   const getStatusColor = (status: string) => {
@@ -1512,6 +1594,163 @@ const Dashboard = () => {
                     No customers registered yet
                   </div>
                 )}
+              </CardContent>
+            </Card>
+              )}
+
+              {currentView === 'users' && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>User Management</CardTitle>
+                    <CardDescription>Create, edit, and manage all users</CardDescription>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>Create User</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New User</DialogTitle>
+                        <DialogDescription>Add a new user to the system</DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        handleCreateUser(
+                          formData.get('email') as string,
+                          formData.get('password') as string,
+                          formData.get('full_name') as string,
+                          formData.get('phone_number') as string,
+                          formData.get('role') as string
+                        );
+                      }}>
+                        <div className="space-y-4">
+                          <div>
+                            <Label>Full Name</Label>
+                            <Input name="full_name" required />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input name="email" type="email" required />
+                          </div>
+                          <div>
+                            <Label>Password</Label>
+                            <Input name="password" type="password" required minLength={6} />
+                          </div>
+                          <div>
+                            <Label>Phone Number</Label>
+                            <Input name="phone_number" required />
+                          </div>
+                          <div>
+                            <Label>Role</Label>
+                            <Select name="role" required>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="customer">Customer</SelectItem>
+                                <SelectItem value="provider">Provider</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button type="submit" className="w-full">Create User</Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allUsers.map((user) => {
+                      const userRole = user.user_roles?.[0]?.role || 'N/A';
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.full_name}</TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
+                          <TableCell>{user.phone_number || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge>{userRole}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">Edit</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Edit User</DialogTitle>
+                                  </DialogHeader>
+                                  <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    handleUpdateUser(user.id, {
+                                      full_name: formData.get('full_name') as string,
+                                      phone_number: formData.get('phone_number') as string,
+                                      email: formData.get('email') as string,
+                                      location: formData.get('location') as string,
+                                    });
+                                  }}>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <Label>Full Name</Label>
+                                        <Input name="full_name" defaultValue={user.full_name} required />
+                                      </div>
+                                      <div>
+                                        <Label>Email</Label>
+                                        <Input name="email" type="email" defaultValue={user.email || ''} />
+                                      </div>
+                                      <div>
+                                        <Label>Phone</Label>
+                                        <Input name="phone_number" defaultValue={user.phone_number || ''} />
+                                      </div>
+                                      <div>
+                                        <Label>Location</Label>
+                                        <Input name="location" defaultValue={user.location || ''} />
+                                      </div>
+                                      <div>
+                                        <Label>Change Role</Label>
+                                        <Select 
+                                          defaultValue={userRole}
+                                          onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="customer">Customer</SelectItem>
+                                            <SelectItem value="provider">Provider</SelectItem>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <Button type="submit" className="w-full">Save Changes</Button>
+                                    </div>
+                                  </form>
+                                </DialogContent>
+                              </Dialog>
+                              <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
               )}
