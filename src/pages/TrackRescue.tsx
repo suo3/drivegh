@@ -356,7 +356,44 @@ const TrackRescue = () => {
                       )}
                     </div>
 
-                    {/* Timestamps */}
+                      {/* Action Buttons */}
+                      {['pending', 'assigned', 'accepted'].includes(request.status) && (
+                        <div className="px-6 pb-4 border-t pt-4">
+                          <Button 
+                            variant="destructive"
+                            onClick={async () => {
+                              if (confirm('Are you sure you want to cancel this request?')) {
+                                const { error } = await supabase
+                                  .from('service_requests')
+                                  .update({ status: 'cancelled' })
+                                  .eq('id', request.id);
+                                
+                                if (error) {
+                                  toast.error('Failed to cancel request');
+                                } else {
+                                  toast.success('Request cancelled successfully');
+                                  // Refresh the data
+                                  const { data: requests } = await supabase
+                                    .from('service_requests')
+                                    .select(`
+                                      *,
+                                      profiles!service_requests_provider_id_fkey(full_name, phone_number)
+                                    `)
+                                    .eq('customer_id', userId)
+                                    .order('created_at', { ascending: false });
+                                  
+                                  if (requests) setServiceRequests(requests);
+                                }
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            Cancel Request
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Timestamps */}
                     <div className="px-6 pb-4 border-t pt-4 flex justify-between text-xs text-muted-foreground">
                       <span>Requested: {new Date(request.created_at).toLocaleString()}</span>
                       {request.completed_at && (

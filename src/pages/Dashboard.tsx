@@ -695,6 +695,30 @@ const Dashboard = () => {
                             </TableCell>
                             <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                             <TableCell>
+                              {['pending', 'assigned', 'accepted'].includes(request.status) && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (confirm('Are you sure you want to cancel this request?')) {
+                                      const { error } = await supabase
+                                        .from('service_requests')
+                                        .update({ status: 'cancelled' })
+                                        .eq('id', request.id);
+                                      
+                                      if (error) {
+                                        toast.error('Failed to cancel request');
+                                      } else {
+                                        toast.success('Request cancelled successfully');
+                                        fetchData();
+                                      }
+                                    }
+                                  }}
+                                  className="mr-2"
+                                >
+                                  Cancel
+                                </Button>
+                              )}
                               {request.status === 'completed' && (
                                 <Dialog>
                                   <DialogTrigger asChild>
