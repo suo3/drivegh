@@ -189,7 +189,7 @@ const Dashboard = () => {
 
   const fetchAdminData = async () => {
     // Fetch IDs by role first to avoid relying on PostgREST relationship inference
-    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes] = await Promise.all([
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes, allUserRolesRes] = await Promise.all([
       supabase
         .from('service_requests')
         .select(`
@@ -208,7 +208,8 @@ const Dashboard = () => {
         .eq('role', 'customer'),
       supabase.from('transactions').select('*').order('created_at', { ascending: false }),
       supabase.from('partnership_applications').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('*, user_roles(role)').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('user_roles').select('user_id, role'),
     ]);
 
     const providerIds = providerIdsRes.data?.map((r: any) => r.user_id) || [];
@@ -228,7 +229,15 @@ const Dashboard = () => {
     if (customersRes.data) setCustomers(customersRes.data);
     if (transactionsRes.data) setAllTransactions(transactionsRes.data);
     if (appsRes.data) setApplications(appsRes.data);
-    if (allProfilesRes.data) setAllUsers(allProfilesRes.data);
+    
+    // Combine profiles with their roles
+    if (allProfilesRes.data && allUserRolesRes.data) {
+      const profilesWithRoles = allProfilesRes.data.map(profile => ({
+        ...profile,
+        user_roles: allUserRolesRes.data.filter(ur => ur.user_id === profile.id)
+      }));
+      setAllUsers(profilesWithRoles);
+    }
   };
 
   const handleUpdateProfile = async (updates: any) => {
