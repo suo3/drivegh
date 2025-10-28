@@ -135,7 +135,15 @@ const Dashboard = () => {
 
   const fetchCustomerData = async () => {
     const [requestsRes, transactionsRes, profileRes] = await Promise.all([
-      supabase.from('service_requests').select('*, profiles!service_requests_provider_id_fkey(full_name)').eq('customer_id', user?.id).order('created_at', { ascending: false }),
+      supabase
+        .from('service_requests')
+        .select(`
+          *, 
+          profiles!service_requests_provider_id_fkey(full_name),
+          transactions(amount, provider_amount)
+        `)
+        .eq('customer_id', user?.id)
+        .order('created_at', { ascending: false }),
       supabase.from('transactions').select('*, service_requests(service_type)').eq('service_requests.customer_id', user?.id),
       supabase.from('profiles').select('*').eq('id', user?.id).single()
     ]);
@@ -147,7 +155,15 @@ const Dashboard = () => {
 
   const fetchProviderData = async () => {
     const [requestsRes, transactionsRes, ratingsRes, profileRes] = await Promise.all([
-      supabase.from('service_requests').select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number)').eq('provider_id', user?.id).order('created_at', { ascending: false }),
+      supabase
+        .from('service_requests')
+        .select(`
+          *, 
+          profiles!service_requests_customer_id_fkey(full_name, phone_number),
+          transactions(amount, provider_amount)
+        `)
+        .eq('provider_id', user?.id)
+        .order('created_at', { ascending: false }),
       supabase.from('transactions').select('provider_amount, service_requests!inner(provider_id)').eq('service_requests.provider_id', user?.id),
       supabase.from('ratings').select('*').eq('provider_id', user?.id),
       supabase.from('profiles').select('is_available').eq('id', user?.id).single()
@@ -175,7 +191,11 @@ const Dashboard = () => {
     const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes] = await Promise.all([
       supabase
         .from('service_requests')
-        .select('*, profiles!service_requests_customer_id_fkey(full_name)')
+        .select(`
+          *, 
+          profiles!service_requests_customer_id_fkey(full_name),
+          transactions(amount, provider_amount, platform_amount)
+        `)
         .order('created_at', { ascending: false }),
       supabase
         .from('user_roles')
@@ -539,9 +559,9 @@ const Dashboard = () => {
                               <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                             </TableCell>
                             <TableCell>
-                              {request.status === 'completed' && request.amount 
-                                ? `GHS ${Number(request.amount).toFixed(2)}` 
-                                : '-'}
+                              {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                                : request.status === 'completed' ? 'Pending Payment' : '-'}
                             </TableCell>
                             <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                             <TableCell>
@@ -801,7 +821,9 @@ const Dashboard = () => {
                             <TableCell>{request.profiles?.full_name}</TableCell>
                             <TableCell>{request.location}</TableCell>
                             <TableCell>
-                              {request.amount ? `GHS ${Number(request.amount).toFixed(2)}` : '-'}
+                              {request.transactions && request.transactions.length > 0 && request.transactions[0].provider_amount
+                                ? `GHS ${Number(request.transactions[0].provider_amount).toFixed(2)}` 
+                                : request.status === 'completed' ? 'Pending Payment' : '-'}
                             </TableCell>
                             <TableCell>{new Date(request.completed_at).toLocaleDateString()}</TableCell>
                           </TableRow>
@@ -930,9 +952,9 @@ const Dashboard = () => {
                             <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                           </TableCell>
                           <TableCell>
-                            {request.status === 'completed' && request.amount 
-                              ? `GHS ${Number(request.amount).toFixed(2)}` 
-                              : '-'}
+                            {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                              ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                              : request.status === 'completed' ? 'Pending Payment' : '-'}
                           </TableCell>
                           <TableCell>
                             <div>
