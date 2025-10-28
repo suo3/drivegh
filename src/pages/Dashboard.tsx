@@ -255,7 +255,11 @@ const Dashboard = () => {
       customer_id: user?.id,
       service_type: data.service_type,
       location: data.location,
-      description: data.description
+      description: data.description,
+      vehicle_make: data.vehicle_make,
+      vehicle_model: data.vehicle_model,
+      vehicle_year: data.vehicle_year || null,
+      vehicle_plate: data.vehicle_plate || null
     }]);
     if (error) {
       toast.error('Failed to create request');
@@ -642,7 +646,11 @@ const Dashboard = () => {
                       handleCreateRequest({
                         service_type: formData.get('service_type') as string,
                         location: formData.get('location') as string,
-                        description: formData.get('description') as string
+                        description: formData.get('description') as string,
+                        vehicle_make: formData.get('vehicle_make') as string,
+                        vehicle_model: formData.get('vehicle_model') as string,
+                        vehicle_year: formData.get('vehicle_year') as string,
+                        vehicle_plate: formData.get('vehicle_plate') as string
                       });
                     }}>
                       <div className="space-y-4">
@@ -668,6 +676,27 @@ const Dashboard = () => {
                         <div>
                           <Label>Description</Label>
                           <Textarea name="description" placeholder="Additional details" />
+                        </div>
+                        <div className="space-y-3">
+                          <Label>Vehicle Information *</Label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label htmlFor="vehicle_make">Make *</Label>
+                              <Input id="vehicle_make" name="vehicle_make" required placeholder="e.g., Toyota" />
+                            </div>
+                            <div>
+                              <Label htmlFor="vehicle_model">Model *</Label>
+                              <Input id="vehicle_model" name="vehicle_model" required placeholder="e.g., Camry" />
+                            </div>
+                            <div>
+                              <Label htmlFor="vehicle_year">Year</Label>
+                              <Input id="vehicle_year" name="vehicle_year" placeholder="e.g., 2020" maxLength={4} />
+                            </div>
+                            <div>
+                              <Label htmlFor="vehicle_plate">License Plate</Label>
+                              <Input id="vehicle_plate" name="vehicle_plate" placeholder="e.g., GR 1234-20" />
+                            </div>
+                          </div>
                         </div>
                         <Button type="submit" className="w-full">Submit Request</Button>
                       </div>
