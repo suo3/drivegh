@@ -23,16 +23,30 @@ const TrackRescue = () => {
     setSearched(false);
 
     try {
+      // Normalize phone number: remove all non-numeric characters
+      const normalizedInput = phoneNumber.replace(/\D/g, '');
+      
+      console.log('Searching for phone number:', normalizedInput);
+
       // First, find the user by phone number
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('phone_number', phoneNumber)
-        .limit(1);
+        .select('id, phone_number')
+        .not('phone_number', 'is', null);
 
       if (profileError) throw profileError;
 
-      if (!profiles || profiles.length === 0) {
+      console.log('Found profiles:', profiles);
+
+      // Find matching profile by comparing normalized phone numbers
+      const matchingProfile = profiles?.find(profile => {
+        const normalizedStored = profile.phone_number?.replace(/\D/g, '') || '';
+        // Match if either the full number matches or the last 10 digits match (for local numbers)
+        return normalizedStored === normalizedInput || 
+               normalizedStored.slice(-10) === normalizedInput.slice(-10);
+      });
+
+      if (!matchingProfile) {
         toast.error('No service requests found for this phone number');
         setServiceRequests([]);
         setSearched(true);
@@ -40,8 +54,9 @@ const TrackRescue = () => {
         return;
       }
 
-      const foundUserId = profiles[0].id;
+      const foundUserId = matchingProfile.id;
       setUserId(foundUserId);
+      console.log('Found user ID:', foundUserId);
 
       // Fetch service requests for this user
       const { data: requests, error: requestsError } = await supabase
@@ -54,6 +69,8 @@ const TrackRescue = () => {
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;
+
+      console.log('Found requests:', requests);
 
       setServiceRequests(requests || []);
       setSearched(true);
@@ -164,14 +181,14 @@ const TrackRescue = () => {
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="e.g., +233 24 123 4567"
+                    placeholder="e.g., 8142221617 or +233 814 222 1617"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
                     disabled={loading}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Enter the phone number you used when requesting assistance
+                    Enter your phone number (with or without formatting)
                   </p>
                 </div>
                 <Button type="submit" className="w-full" size="lg" disabled={loading}>
