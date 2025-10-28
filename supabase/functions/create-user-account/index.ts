@@ -18,16 +18,18 @@ Deno.serve(async (req) => {
     // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
     
-    // Create regular client for checking auth
-    const authHeader = req.headers.get('Authorization')!
-    const supabase = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    )
+    // Verify the caller is authenticated using access token
+    const authHeader = req.headers.get('Authorization') || ''
+    const accessToken = authHeader.replace('Bearer ', '')
 
-    // Verify the caller is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (!accessToken) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken)
     if (authError || !user) {
       console.error('Authentication error:', authError)
       return new Response(
@@ -37,7 +39,7 @@ Deno.serve(async (req) => {
     }
 
     // Verify the caller is an admin
-    const { data: roleData, error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -96,7 +98,7 @@ Deno.serve(async (req) => {
 
     // Update application status if provided
     if (applicationId) {
-      const { error: appError } = await supabase
+      const { error: appError } = await supabaseAdmin
         .from('partnership_applications')
         .update({
           status: 'approved',
