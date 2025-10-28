@@ -1242,7 +1242,7 @@ const Dashboard = () => {
                       return (
                         <TableRow key={provider.id}>
                           <TableCell className="font-medium">{provider.full_name}</TableCell>
-                          <TableCell>{provider.id}</TableCell>
+                          <TableCell>{provider.email || 'N/A'}</TableCell>
                           <TableCell>{provider.phone_number || 'N/A'}</TableCell>
                           <TableCell>{provider.location || 'N/A'}</TableCell>
                           <TableCell>{completedJobs}</TableCell>
@@ -1274,6 +1274,10 @@ const Dashboard = () => {
                                     <div>
                                       <Label className="text-muted-foreground">Full Name</Label>
                                       <p className="font-medium">{provider.full_name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Email</Label>
+                                      <p className="font-medium">{provider.email || 'N/A'}</p>
                                     </div>
                                     <div>
                                       <Label className="text-muted-foreground">Phone Number</Label>
@@ -1392,7 +1396,7 @@ const Dashboard = () => {
                       return (
                         <TableRow key={customer.id}>
                           <TableCell className="font-medium">{customer.full_name}</TableCell>
-                          <TableCell>{customer.id}</TableCell>
+                          <TableCell>{customer.email || 'N/A'}</TableCell>
                           <TableCell>{customer.phone_number || 'N/A'}</TableCell>
                           <TableCell>{customer.location || 'N/A'}</TableCell>
                           <TableCell>{totalRequests}</TableCell>
@@ -1417,6 +1421,10 @@ const Dashboard = () => {
                                     <div>
                                       <Label className="text-muted-foreground">Full Name</Label>
                                       <p className="font-medium">{customer.full_name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Email</Label>
+                                      <p className="font-medium">{customer.email || 'N/A'}</p>
                                     </div>
                                     <div>
                                       <Label className="text-muted-foreground">Phone Number</Label>
