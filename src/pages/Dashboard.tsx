@@ -498,6 +498,36 @@ const Dashboard = () => {
     fetchData();
   };
 
+  const handleCreateUserFromApplication = async (application: any, role: 'provider' | 'customer', password: string) => {
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: application.email,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: application.contact_person,
+        phone_number: application.phone,
+        role: role
+      }
+    });
+
+    if (authError) {
+      toast.error('Failed to create user account: ' + authError.message);
+      return;
+    }
+
+    // Update application status to approved
+    await handleUpdateApplicationStatus(application.id, 'approved');
+
+    toast.success(`User account created successfully as ${role}`);
+    fetchData();
+  };
+
   const getStatusColor = (status: string) => {
     const colors: any = {
       pending: 'bg-yellow-500',
@@ -1987,31 +2017,78 @@ const Dashboard = () => {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="border-t pt-4 flex gap-2">
-                                      <Button
-                                        onClick={() => handleUpdateApplicationStatus(app.id, 'approved')}
-                                        disabled={app.status === 'approved'}
-                                        className="flex-1"
-                                      >
-                                        Approve
-                                      </Button>
-                                      <Button
-                                        variant="destructive"
-                                        onClick={() => handleUpdateApplicationStatus(app.id, 'rejected')}
-                                        disabled={app.status === 'rejected'}
-                                        className="flex-1"
-                                      >
-                                        Reject
-                                      </Button>
-                                      {app.status !== 'pending' && (
+                                    <div className="border-t pt-4 space-y-4">
+                                      <div className="flex gap-2">
                                         <Button
-                                          variant="outline"
-                                          onClick={() => handleUpdateApplicationStatus(app.id, 'pending')}
+                                          onClick={() => handleUpdateApplicationStatus(app.id, 'approved')}
+                                          disabled={app.status === 'approved'}
                                           className="flex-1"
                                         >
-                                          Reset to Pending
+                                          Approve Only
                                         </Button>
-                                      )}
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => handleUpdateApplicationStatus(app.id, 'rejected')}
+                                          disabled={app.status === 'rejected'}
+                                          className="flex-1"
+                                        >
+                                          Reject
+                                        </Button>
+                                        {app.status !== 'pending' && (
+                                          <Button
+                                            variant="outline"
+                                            onClick={() => handleUpdateApplicationStatus(app.id, 'pending')}
+                                            className="flex-1"
+                                          >
+                                            Reset to Pending
+                                          </Button>
+                                        )}
+                                      </div>
+
+                                      <div className="border-t pt-4">
+                                        <Label className="text-sm font-semibold mb-2 block">Create User Account</Label>
+                                        <p className="text-xs text-muted-foreground mb-3">
+                                          Convert this application into a user account with provider or customer access
+                                        </p>
+                                        <form onSubmit={(e) => {
+                                          e.preventDefault();
+                                          const formData = new FormData(e.currentTarget);
+                                          handleCreateUserFromApplication(
+                                            app,
+                                            formData.get('role') as 'provider' | 'customer',
+                                            formData.get('password') as string
+                                          );
+                                        }}>
+                                          <div className="space-y-3">
+                                            <div>
+                                              <Label htmlFor={`role-${app.id}`}>Assign as</Label>
+                                              <Select name="role" required>
+                                                <SelectTrigger id={`role-${app.id}`}>
+                                                  <SelectValue placeholder="Select role" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="provider">Provider</SelectItem>
+                                                  <SelectItem value="customer">Customer</SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                            <div>
+                                              <Label htmlFor={`password-${app.id}`}>Initial Password</Label>
+                                              <Input
+                                                id={`password-${app.id}`}
+                                                name="password"
+                                                type="password"
+                                                placeholder="Min. 6 characters"
+                                                required
+                                                minLength={6}
+                                              />
+                                            </div>
+                                            <Button type="submit" className="w-full">
+                                              Create Account
+                                            </Button>
+                                          </div>
+                                        </form>
+                                      </div>
                                     </div>
                                   </div>
                                 </DialogContent>
