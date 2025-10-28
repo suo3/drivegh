@@ -40,6 +40,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     { title: 'Customers', view: 'customers', icon: Users },
     { title: 'Users', view: 'users', icon: User },
     { title: 'Payments', view: 'payments', icon: DollarSign },
+    { title: 'Partnership Applications', view: 'applications', icon: UserCheck },
     { title: 'Profile', view: 'profile', icon: User },
   ];
 

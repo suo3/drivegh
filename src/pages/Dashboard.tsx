@@ -479,6 +479,25 @@ const Dashboard = () => {
     fetchData();
   };
 
+  const handleUpdateApplicationStatus = async (applicationId: string, status: string) => {
+    const { error } = await supabase
+      .from('partnership_applications')
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString()
+      })
+      .eq('id', applicationId);
+
+    if (error) {
+      toast.error('Failed to update application status');
+      return;
+    }
+
+    toast.success('Application status updated successfully');
+    fetchData();
+  };
+
   const getStatusColor = (status: string) => {
     const colors: any = {
       pending: 'bg-yellow-500',
@@ -1859,6 +1878,156 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
+              )}
+
+              {currentView === 'applications' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Partnership Applications</CardTitle>
+                    <CardDescription>Review and manage partnership applications</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Business Name</TableHead>
+                          <TableHead>Contact Person</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>City</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {applications.map((app) => (
+                          <TableRow key={app.id}>
+                            <TableCell className="font-medium">{app.business_name}</TableCell>
+                            <TableCell>{app.contact_person}</TableCell>
+                            <TableCell>{app.email}</TableCell>
+                            <TableCell>{app.phone}</TableCell>
+                            <TableCell>{app.city}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  app.status === 'approved' ? 'default' : 
+                                  app.status === 'rejected' ? 'destructive' : 
+                                  'secondary'
+                                }
+                              >
+                                {app.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="text-sm">{new Date(app.created_at).toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(app.created_at).toLocaleTimeString()}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">View</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Partnership Application Details</DialogTitle>
+                                    <DialogDescription>{app.business_name}</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="text-muted-foreground">Business Name</Label>
+                                        <p className="font-medium">{app.business_name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Contact Person</Label>
+                                        <p className="font-medium">{app.contact_person}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Email</Label>
+                                        <p className="font-medium">{app.email}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Phone</Label>
+                                        <p className="font-medium">{app.phone}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">City/Location</Label>
+                                        <p className="font-medium">{app.city}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Status</Label>
+                                        <Badge 
+                                          variant={
+                                            app.status === 'approved' ? 'default' : 
+                                            app.status === 'rejected' ? 'destructive' : 
+                                            'secondary'
+                                          }
+                                          className="mt-2"
+                                        >
+                                          {app.status}
+                                        </Badge>
+                                      </div>
+                                      {app.message && (
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Message</Label>
+                                          <p className="font-medium whitespace-pre-wrap">{app.message}</p>
+                                        </div>
+                                      )}
+                                      <div>
+                                        <Label className="text-muted-foreground">Applied On</Label>
+                                        <p className="text-sm">{new Date(app.created_at).toLocaleString()}</p>
+                                      </div>
+                                      {app.reviewed_at && (
+                                        <div>
+                                          <Label className="text-muted-foreground">Reviewed On</Label>
+                                          <p className="text-sm">{new Date(app.reviewed_at).toLocaleString()}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="border-t pt-4 flex gap-2">
+                                      <Button
+                                        onClick={() => handleUpdateApplicationStatus(app.id, 'approved')}
+                                        disabled={app.status === 'approved'}
+                                        className="flex-1"
+                                      >
+                                        Approve
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        onClick={() => handleUpdateApplicationStatus(app.id, 'rejected')}
+                                        disabled={app.status === 'rejected'}
+                                        className="flex-1"
+                                      >
+                                        Reject
+                                      </Button>
+                                      {app.status !== 'pending' && (
+                                        <Button
+                                          variant="outline"
+                                          onClick={() => handleUpdateApplicationStatus(app.id, 'pending')}
+                                          className="flex-1"
+                                        >
+                                          Reset to Pending
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {applications.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No partnership applications yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'profile' && (
