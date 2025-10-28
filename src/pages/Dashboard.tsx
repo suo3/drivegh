@@ -1308,17 +1308,17 @@ const Dashboard = () => {
                                           <p className="text-sm text-muted-foreground">Active Jobs</p>
                                         </CardContent>
                                       </Card>
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">
-                                            ${allTransactions
-                                              .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
-                                              .reduce((sum, t) => sum + Number(t.amount), 0)
-                                              .toFixed(2)}
-                                          </p>
-                                          <p className="text-sm text-muted-foreground">Total Earnings</p>
-                                        </CardContent>
-                                      </Card>
+                                       <Card>
+                                         <CardContent className="pt-6">
+                                           <p className="text-2xl font-bold">
+                                             ${allTransactions
+                                               .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                               .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                               .toFixed(2)}
+                                           </p>
+                                           <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                         </CardContent>
+                                       </Card>
                                     </div>
                                   </div>
 
