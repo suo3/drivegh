@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { User, Mail, Phone, MapPin, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Loader2, Lock, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const profileSchema = z.object({
   full_name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
@@ -22,7 +24,8 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm = ({ onSuccess }: ProfileFormProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [fullName, setFullName] = useState('');
@@ -31,6 +34,10 @@ export const ProfileForm = ({ onSuccess }: ProfileFormProps) => {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [email, setEmail] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -115,6 +122,79 @@ export const ProfileForm = ({ onSuccess }: ProfileFormProps) => {
     }
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast.error('Failed to update password: ' + error.message);
+      } else {
+        toast.success('Password updated successfully!');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    const confirmed = confirm(
+      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm(
+      'This is your last chance. Are you absolutely sure you want to delete your account?'
+    );
+
+    if (!doubleConfirm) return;
+
+    setDeleteLoading(true);
+    try {
+      // Delete user profile first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
+      }
+
+      // Sign out the user
+      await signOut();
+      toast.success('Your account has been deleted');
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account. Please contact support.');
+      setDeleteLoading(false);
+    }
+  };
+
   if (fetching) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -124,117 +204,218 @@ export const ProfileForm = ({ onSuccess }: ProfileFormProps) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="email">
-          <Mail className="inline h-4 w-4 mr-1" />
-          Email Address
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          disabled
-          className="bg-muted"
-        />
-        <p className="text-sm text-muted-foreground">
-          Email cannot be changed from this page
-        </p>
-      </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Update your personal details</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                <Mail className="inline h-4 w-4 mr-1" />
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-sm text-muted-foreground">
+                Email cannot be changed from this page
+              </p>
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="fullName">
-          <User className="inline h-4 w-4 mr-1" />
-          Full Name *
-        </Label>
-        <Input
-          id="fullName"
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="Enter your full name"
-          required
-          maxLength={100}
-        />
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="fullName">
+                <User className="inline h-4 w-4 mr-1" />
+                Full Name *
+              </Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
+                required
+                maxLength={100}
+              />
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phoneNumber">
-          <Phone className="inline h-4 w-4 mr-1" />
-          Phone Number
-        </Label>
-        <Input
-          id="phoneNumber"
-          type="tel"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          placeholder="e.g., +233 20 123 4567"
-          maxLength={20}
-        />
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">
+                <Phone className="inline h-4 w-4 mr-1" />
+                Phone Number
+              </Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="e.g., +233 20 123 4567"
+                maxLength={20}
+              />
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="location">
-          <MapPin className="inline h-4 w-4 mr-1" />
-          Location
-        </Label>
-        <Input
-          id="location"
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="e.g., Accra, Ghana"
-          maxLength={200}
-        />
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">
+                <MapPin className="inline h-4 w-4 mr-1" />
+                Location
+              </Label>
+              <Input
+                id="location"
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g., Accra, Ghana"
+                maxLength={200}
+              />
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder="Tell us about yourself..."
-          maxLength={500}
-          rows={4}
-        />
-        <p className="text-sm text-muted-foreground">
-          {bio.length}/500 characters
-        </p>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about yourself..."
+                maxLength={500}
+                rows={4}
+              />
+              <p className="text-sm text-muted-foreground">
+                {bio.length}/500 characters
+              </p>
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="avatarUrl">Avatar URL</Label>
-        <Input
-          id="avatarUrl"
-          type="url"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder="https://example.com/avatar.jpg"
-        />
-        <p className="text-sm text-muted-foreground">
-          Enter a URL for your profile picture
-        </p>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="avatarUrl">Avatar URL</Label>
+              <Input
+                id="avatarUrl"
+                type="url"
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="https://example.com/avatar.jpg"
+              />
+              <p className="text-sm text-muted-foreground">
+                Enter a URL for your profile picture
+              </p>
+            </div>
 
-      <Button 
-        type="submit" 
-        className="w-full" 
-        size="lg" 
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          <>
-            <Save className="mr-2 h-4 w-4" />
-            Save Changes
-          </>
-        )}
-      </Button>
-    </form>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              size="lg" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Lock className="inline h-5 w-5 mr-2" />
+            Change Password
+          </CardTitle>
+          <CardDescription>Update your account password</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                minLength={6}
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                Must be at least 6 characters
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                minLength={6}
+                required
+              />
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={passwordLoading}
+            >
+              {passwordLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Password'
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">
+            <AlertTriangle className="inline h-5 w-5 mr-2" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Permanent actions that cannot be undone
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Once you delete your account, there is no going back. All your data will be permanently removed.
+            </p>
+            <Button 
+              variant="destructive" 
+              className="w-full" 
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting Account...
+                </>
+              ) : (
+                'Delete My Account'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

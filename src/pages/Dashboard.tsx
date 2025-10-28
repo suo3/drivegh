@@ -730,17 +730,7 @@ const Dashboard = () => {
               )}
 
               {currentView === 'profile' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>
-                      Update your personal details and contact information
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ProfileForm onSuccess={fetchData} />
-                  </CardContent>
-                </Card>
+                <ProfileForm onSuccess={fetchData} />
               )}
             </main>
           </div>
@@ -917,17 +907,7 @@ const Dashboard = () => {
               )}
 
               {currentView === 'profile' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>
-                      Update your personal details and contact information
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ProfileForm onSuccess={fetchData} />
-                  </CardContent>
-                </Card>
+                <ProfileForm onSuccess={fetchData} />
               )}
             </main>
           </div>
@@ -1882,17 +1862,7 @@ const Dashboard = () => {
               )}
 
               {currentView === 'profile' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>
-                  Update your personal details and contact information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ProfileForm onSuccess={fetchData} />
-              </CardContent>
-            </Card>
+            <ProfileForm onSuccess={fetchData} />
               )}
             </main>
           </div>
