@@ -11,12 +11,6 @@ const GetHelp = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // If user is logged in, redirect to request service page
-    if (user) {
-      navigate('/request-service');
-    }
-  }, [user, navigate]);
 
   const services = [
     { icon: Truck, title: 'Towing Services', desc: 'Vehicle towing for any situation' },
@@ -55,10 +49,10 @@ const GetHelp = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Request Service Online</h2>
               <p className="text-muted-foreground mb-6">
-                Sign in to submit a service request and track your rescue team in real-time
+                Submit a service request and track your rescue team - no account required
               </p>
-              <Button onClick={() => navigate('/auth')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                Sign In to Request Service
+              <Button onClick={() => navigate('/request-service')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                Request Service Now
               </Button>
             </div>
 
@@ -95,13 +89,13 @@ const GetHelp = () => {
 
             <Card className="p-8 bg-primary text-white text-center">
               <h3 className="text-2xl font-bold mb-4">Need Help Right Now?</h3>
-              <p className="mb-6">Call our 24/7 emergency hotline or sign in to request service online</p>
+              <p className="mb-6">Call our 24/7 emergency hotline or request service online</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button onClick={() => window.location.href = 'tel:+233202222244'} size="lg" variant="outline" className="bg-white text-primary hover:bg-gray-100">
                   Call Now
                 </Button>
-                <Button onClick={() => navigate('/auth')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  Sign In
+                <Button onClick={() => navigate('/request-service')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  Request Service
                 </Button>
               </div>
             </Card>
