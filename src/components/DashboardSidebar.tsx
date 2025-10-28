@@ -78,7 +78,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
                     onClick={() => onViewChange(item.view)}
                     isActive={currentView === item.view}
                     tooltip={item.title}
-                    className="group relative my-0.5 rounded-lg transition-all duration-200 hover:bg-sidebar-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm"
+                    className="group relative my-0.5 rounded-lg transition-all duration-200 hover:bg-sidebar-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-1 data-[active=true]:before:rounded-r-full data-[active=true]:before:bg-primary-foreground"
                   >
                     <item.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                     {!collapsed && <span className="font-medium">{item.title}</span>}
