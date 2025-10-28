@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import { z } from 'zod';
@@ -503,6 +503,25 @@ const Dashboard = () => {
     }
 
     toast.success('Application status updated successfully');
+    fetchData();
+  };
+
+  const handleDeleteApplication = async (applicationId: string) => {
+    if (!confirm('Are you sure you want to delete this partnership application? This action cannot be undone.')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('partnership_applications')
+      .delete()
+      .eq('id', applicationId);
+
+    if (error) {
+      toast.error('Failed to delete application');
+      return;
+    }
+
+    toast.success('Application deleted successfully');
     fetchData();
   };
 
@@ -2101,6 +2120,17 @@ const Dashboard = () => {
                                             </Button>
                                           </div>
                                         </form>
+                                      </div>
+
+                                      <div className="border-t pt-4">
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => handleDeleteApplication(app.id)}
+                                          className="w-full"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete Application
+                                        </Button>
                                       </div>
                                     </div>
                                   </div>
