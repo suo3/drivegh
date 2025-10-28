@@ -9,8 +9,19 @@ import { DollarSign, Users, TrendingUp, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+
+const partnershipSchema = z.object({
+  businessName: z.string().trim().min(1, 'Business name is required').max(100),
+  contactPerson: z.string().trim().min(1, 'Contact person is required').max(100),
+  email: z.string().trim().email('Invalid email address').max(255),
+  phone: z.string().trim().min(1, 'Phone number is required').max(20),
+  city: z.string().trim().min(1, 'City is required').max(100),
+  message: z.string().max(1000).optional(),
+});
 
 const Partnership = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     businessName: '',
     contactPerson: '',
@@ -30,30 +41,48 @@ const Partnership = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { error } = await supabase
-      .from('partnership_applications')
-      .insert([{
-        business_name: formData.businessName,
-        contact_person: formData.contactPerson,
-        email: formData.email,
-        phone: formData.phone,
-        city: formData.city,
-        message: formData.message,
-      }]);
+    // Validate form data
+    const validation = partnershipSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
 
-    if (error) {
-      toast.error('Failed to submit application. Please try again.');
-      console.error('Error submitting application:', error);
-    } else {
-      toast.success('Thank you! We\'ll review your application and get back to you soon.');
-      setFormData({
-        businessName: '',
-        contactPerson: '',
-        email: '',
-        phone: '',
-        city: '',
-        message: '',
-      });
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('partnership_applications')
+        .insert([{
+          business_name: formData.businessName,
+          contact_person: formData.contactPerson,
+          email: formData.email,
+          phone: formData.phone,
+          city: formData.city,
+          message: formData.message || null,
+        }]);
+
+      if (error) {
+        toast.error('Failed to submit application. Please try again.');
+        console.error('Error submitting application:', error);
+      } else {
+        toast.success('Thank you! We\'ll review your application and get back to you soon.');
+        setFormData({
+          businessName: '',
+          contactPerson: '',
+          email: '',
+          phone: '',
+          city: '',
+          message: '',
+        });
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+      console.error('Unexpected error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -168,8 +197,8 @@ const Partnership = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Submit Application
+                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </Button>
               </form>
             </Card>
