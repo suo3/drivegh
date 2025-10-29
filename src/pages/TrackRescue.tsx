@@ -58,43 +58,13 @@ const TrackRescue = () => {
     setSearched(false);
 
     try {
-      // Normalize for logs (we use robust matcher for actual comparison)
-      const normalizedInput = digitsOnly(phoneNumber);
-      console.log('Searching for phone number:', normalizedInput);
+      // Normalize input
+      const normalizedDigits = digitsOnly(phoneNumber);
+      const inputLast10 = lastN(phoneNumber, 10);
+      const inputLast9 = lastN(phoneNumber, 9);
+      console.log('Searching for phone:', { normalizedDigits, inputLast10, inputLast9 });
 
-      // Search for requests by phone number (for guest users) or by customer_id (for logged-in users)
-      const { data: allRequests, error: requestsError } = await supabase
-        .from('service_requests')
-        .select(`
-          *,
-          profiles!service_requests_provider_id_fkey(full_name, phone_number)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (requestsError) {
-        console.error('Error fetching requests:', requestsError);
-        throw requestsError;
-      }
-
-      console.log('All requests fetched:', allRequests?.length || 0);
-
-      // Filter requests that match the phone number
-      const matchingRequests = allRequests?.filter(request => {
-        // Check direct phone_number field (guest requests)
-        if (request.phone_number) {
-          const isMatch = phonesMatch(request.phone_number, phoneNumber);
-          console.log('Checking request phone:', request.phone_number, 'match:', isMatch);
-          if (isMatch) {
-            console.log('Match found!');
-            return true;
-          }
-        }
-        return false;
-      }) || [];
-
-      console.log('Matching requests from direct phone search:', matchingRequests.length);
-
-      // Also try to find user profile and their requests
+      // 1) Load profiles and find any user IDs whose phone matches the input (so logged-in-created requests are discoverable when logged out)
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, phone_number')
@@ -102,32 +72,67 @@ const TrackRescue = () => {
 
       if (profileError) {
         console.error('Error fetching profiles:', profileError);
+        throw profileError;
       }
 
-      console.log('Profiles with phone numbers:', profiles?.length || 0);
+      const matchingProfileIds = new Set<string>();
+      profiles?.forEach((p) => {
+        if (phonesMatch(p.phone_number || '', phoneNumber)) matchingProfileIds.add(p.id);
+      });
+      console.log('Matching profile IDs:', Array.from(matchingProfileIds));
 
-      const matchingProfile = profiles?.find(profile => {
-        const isMatch = phonesMatch(profile.phone_number || '', phoneNumber);
-        return isMatch;
+      // 2) Fetch candidate requests in parallel
+      const [guestReqRes, profileReqRes] = await Promise.all([
+        // Guest requests (created without login): they have a phone_number saved
+        supabase
+          .from('service_requests')
+          .select(`
+            *,
+            profiles!service_requests_provider_id_fkey(full_name, phone_number)
+          `)
+          .not('phone_number', 'is', null)
+          .order('created_at', { ascending: false }),
+        // Requests created while logged in: match by customer_id derived from profile phone
+        matchingProfileIds.size
+          ? supabase
+              .from('service_requests')
+              .select(`
+                *,
+                profiles!service_requests_provider_id_fkey(full_name, phone_number)
+              `)
+              .in('customer_id', Array.from(matchingProfileIds))
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [], error: null } as any),
+      ]);
+
+      if (guestReqRes.error) throw guestReqRes.error;
+      if ((profileReqRes as any).error) throw (profileReqRes as any).error;
+
+      // 3) Filter guest requests by robust phone matcher
+      const guestMatches = (guestReqRes.data || []).filter((r: any) =>
+        r.phone_number ? phonesMatch(r.phone_number, phoneNumber) : false
+      );
+
+      const profileMatches = (profileReqRes as any).data || [];
+
+      // 4) Merge and dedupe
+      const byId = new Map<string, any>();
+      [...guestMatches, ...profileMatches].forEach((r: any) => byId.set(r.id, r));
+      const results = Array.from(byId.values());
+
+      console.log('Found matches:', {
+        guestMatches: guestMatches.length,
+        profileMatches: profileMatches.length,
+        total: results.length,
       });
 
-      console.log('Matching profile found:', !!matchingProfile);
-
-      if (matchingProfile) {
-        const profileRequests = allRequests?.filter(r => r.customer_id === matchingProfile.id) || [];
-        console.log('Additional requests from profile:', profileRequests.length);
-        matchingRequests.push(...profileRequests);
-      }
-
-      console.log('Total matching requests:', matchingRequests.length);
-
-      if (matchingRequests.length === 0) {
+      if (results.length === 0) {
         toast.error('No service requests found for this phone number');
       } else {
-        toast.success(`Found ${matchingRequests.length} service request(s)`);
+        toast.success(`Found ${results.length} service request(s)`);
       }
-      
-      setServiceRequests(matchingRequests);
+
+      setServiceRequests(results);
       setSearched(true);
     } catch (error: any) {
       console.error('Error tracking rescue:', error);
