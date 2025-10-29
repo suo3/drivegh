@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
@@ -720,7 +721,7 @@ const Dashboard = () => {
                                 </Button>
                               )}
                               {request.status === 'completed' && (
-                                <Dialog>
+                                <Dialog open={ratingDialogOpen === request.id} onOpenChange={(open) => setRatingDialogOpen(open ? request.id : null)}>
                                   <DialogTrigger asChild>
                                     <Button variant="outline" size="sm">Rate</Button>
                                   </DialogTrigger>
@@ -731,15 +732,20 @@ const Dashboard = () => {
                                     <form onSubmit={async (e) => {
                                       e.preventDefault();
                                       const formData = new FormData(e.currentTarget);
-                                       const { error } = await supabase.from('ratings').insert([{
+                                      const { error } = await supabase.from('ratings').insert([{
                                         service_request_id: request.id,
                                         provider_id: request.provider_id,
                                         customer_id: user?.id,
                                         rating: Number(formData.get('rating')),
                                         review: formData.get('review') as string
                                       }]);
-                                      if (error) toast.error('Failed to submit rating');
-                                      else toast.success('Rating submitted successfully');
+                                      if (error) {
+                                        toast.error('Failed to submit rating');
+                                      } else {
+                                        toast.success('Rating submitted successfully');
+                                        setRatingDialogOpen(null);
+                                        fetchData();
+                                      }
                                     }}>
                                       <div className="space-y-4">
                                         <div>
