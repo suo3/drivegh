@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const TrackRescue = () => {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +188,37 @@ const TrackRescue = () => {
     return status.replace(/_/g, ' ').toUpperCase();
   };
 
+  const getStatusPriority = (status: string) => {
+    const priorities: Record<string, number> = {
+      in_progress: 1,
+      en_route: 2,
+      accepted: 3,
+      assigned: 4,
+      pending: 5,
+      completed: 6,
+      denied: 7,
+      cancelled: 8,
+    };
+    return priorities[status] || 9;
+  };
+
+  const filteredAndSortedRequests = useMemo(() => {
+    let filtered = serviceRequests;
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(req => req.status === statusFilter);
+    }
+    
+    // Sort by priority (active requests first, cancelled last)
+    return [...filtered].sort((a, b) => {
+      const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
+      if (priorityDiff !== 0) return priorityDiff;
+      // If same priority, sort by creation date (newest first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [serviceRequests, statusFilter]);
+
   const getStatusIcon = (status: string) => {
     if (status === 'completed') return <CheckCircle2 className="h-6 w-6" />;
     if (status === 'cancelled' || status === 'denied') return <AlertCircle className="h-6 w-6" />;
@@ -263,15 +296,37 @@ const TrackRescue = () => {
 
             {serviceRequests.length > 0 && (
               <>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Your Service Requests</h2>
-                  <Badge variant="outline" className="text-lg px-4 py-2">
-                    {serviceRequests.length} {serviceRequests.length === 1 ? 'Request' : 'Requests'}
-                  </Badge>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-bold">Your Service Requests</h2>
+                    <Badge variant="outline" className="text-lg px-4 py-2">
+                      {filteredAndSortedRequests.length} of {serviceRequests.length}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Requests</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="assigned">Assigned</SelectItem>
+                        <SelectItem value="accepted">Accepted</SelectItem>
+                        <SelectItem value="en_route">En Route</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="denied">Denied</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {serviceRequests.map((request) => (
+                  {filteredAndSortedRequests.map((request) => (
                   <Card key={request.id} className="overflow-hidden">
                     {/* Status Banner */}
                     <div className={`${getStatusColor(request.status)} text-white p-4`}>
