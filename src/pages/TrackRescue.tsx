@@ -19,16 +19,18 @@ const TrackRescue = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-
-  const handleTrack = async (e: React.FormEvent) => {
+ 
+  // Normalize numbers for Ghana/E.164 comparison: compare last 9 digits
+  const comparable = (num: string) => num.replace(/\D/g, '').slice(-9);
+ 
+   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setSearched(false);
 
     try {
-      // Normalize phone number: remove all non-numeric characters
-      const normalizedInput = phoneNumber.replace(/\D/g, '');
-      
+      // Normalize phone number for comparison (last 9 digits)
+      const normalizedInput = comparable(phoneNumber);
       console.log('Searching for phone number:', normalizedInput);
 
       // Search for requests by phone number (for guest users) or by customer_id (for logged-in users)
@@ -51,10 +53,9 @@ const TrackRescue = () => {
       const matchingRequests = allRequests?.filter(request => {
         // Check direct phone_number field (guest requests)
         if (request.phone_number) {
-          const normalizedRequestPhone = request.phone_number.replace(/\D/g, '');
+          const normalizedRequestPhone = comparable(request.phone_number);
           console.log('Checking request phone:', normalizedRequestPhone, 'against input:', normalizedInput);
-          if (normalizedRequestPhone === normalizedInput || 
-              normalizedRequestPhone.slice(-10) === normalizedInput.slice(-10)) {
+          if (normalizedRequestPhone === normalizedInput) {
             console.log('Match found!');
             return true;
           }
@@ -77,9 +78,8 @@ const TrackRescue = () => {
       console.log('Profiles with phone numbers:', profiles?.length || 0);
 
       const matchingProfile = profiles?.find(profile => {
-        const normalizedStored = profile.phone_number?.replace(/\D/g, '') || '';
-        return normalizedStored === normalizedInput || 
-               normalizedStored.slice(-10) === normalizedInput.slice(-10);
+        const normalizedStored = comparable(profile.phone_number || '');
+        return normalizedStored === normalizedInput;
       });
 
       console.log('Matching profile found:', !!matchingProfile);
