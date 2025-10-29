@@ -112,9 +112,6 @@ const TrackRescue = () => {
 
         setServiceRequests(requests || []);
         setSearched(true);
-        if (requests && requests.length > 0) {
-          toast.success(`Found ${requests.length} service request(s)`);
-        }
       } catch (error) {
         console.error('Error fetching requests:', error);
       } finally {
@@ -242,37 +239,38 @@ const TrackRescue = () => {
       <section className="py-12 bg-background">
         <div className="container mx-auto px-6">
           <div className="w-full">
-            {!user && (
-              <Card className="p-8 mb-8 max-w-2xl mx-auto">
-                <form onSubmit={handleTrack} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Enter Your Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      type="tel"
-                      placeholder="e.g., 8142221617 or +233 814 222 1617"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Enter your phone number (with or without formatting)
-                    </p>
-                  </div>
-                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Searching...
-                      </>
-                    ) : (
-                      'Track My Requests'
-                    )}
-                  </Button>
-                </form>
-              </Card>
-            )}
+            <Card className="p-8 mb-8 max-w-2xl mx-auto">
+              <form onSubmit={handleTrack} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Search by Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="e.g., 8142221617 or +233 814 222 1617"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {user 
+                      ? "Search for requests by phone number (including requests made without login)" 
+                      : "Enter your phone number (with or without formatting)"
+                    }
+                  </p>
+                </div>
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    'Track My Requests'
+                  )}
+                </Button>
+              </form>
+            </Card>
 
             {user && loading && (
               <Card className="p-8 mb-8 text-center max-w-2xl mx-auto">
