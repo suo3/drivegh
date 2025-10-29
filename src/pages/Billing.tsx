@@ -91,7 +91,7 @@ const Billing = () => {
   }, [user]);
 
   const totalSpent = transactions
-    .filter(t => t.transaction_type === 'payment')
+    .filter(t => t.transaction_type === 'customer_to_business')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const servicesUsed = new Set(transactions.map(t => t.service_request_id)).size;
