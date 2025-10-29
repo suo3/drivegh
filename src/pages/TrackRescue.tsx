@@ -40,28 +40,41 @@ const TrackRescue = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (requestsError) throw requestsError;
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
+        throw requestsError;
+      }
 
-      console.log('All requests:', allRequests);
+      console.log('All requests fetched:', allRequests?.length || 0);
 
       // Filter requests that match the phone number
       const matchingRequests = allRequests?.filter(request => {
         // Check direct phone_number field (guest requests)
         if (request.phone_number) {
           const normalizedRequestPhone = request.phone_number.replace(/\D/g, '');
+          console.log('Checking request phone:', normalizedRequestPhone, 'against input:', normalizedInput);
           if (normalizedRequestPhone === normalizedInput || 
               normalizedRequestPhone.slice(-10) === normalizedInput.slice(-10)) {
+            console.log('Match found!');
             return true;
           }
         }
         return false;
       }) || [];
 
+      console.log('Matching requests from direct phone search:', matchingRequests.length);
+
       // Also try to find user profile and their requests
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, phone_number')
         .not('phone_number', 'is', null);
+
+      if (profileError) {
+        console.error('Error fetching profiles:', profileError);
+      }
+
+      console.log('Profiles with phone numbers:', profiles?.length || 0);
 
       const matchingProfile = profiles?.find(profile => {
         const normalizedStored = profile.phone_number?.replace(/\D/g, '') || '';
@@ -69,12 +82,15 @@ const TrackRescue = () => {
                normalizedStored.slice(-10) === normalizedInput.slice(-10);
       });
 
+      console.log('Matching profile found:', !!matchingProfile);
+
       if (matchingProfile) {
         const profileRequests = allRequests?.filter(r => r.customer_id === matchingProfile.id) || [];
+        console.log('Additional requests from profile:', profileRequests.length);
         matchingRequests.push(...profileRequests);
       }
 
-      console.log('Matching requests:', matchingRequests);
+      console.log('Total matching requests:', matchingRequests.length);
 
       if (matchingRequests.length === 0) {
         toast.error('No service requests found for this phone number');
