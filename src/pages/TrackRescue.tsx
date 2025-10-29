@@ -20,8 +20,37 @@ const TrackRescue = () => {
   const [searched, setSearched] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
  
-  // Normalize numbers for Ghana/E.164 comparison: compare last 9 digits
-  const comparable = (num: string) => num.replace(/\D/g, '').slice(-9);
+  // Robust phone normalization and matching across formats
+  const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
+  const lastN = (num: string, n: number) => digitsOnly(num).slice(-n);
+  const toGhanaVariants = (num: string) => {
+    const d = digitsOnly(num);
+    const variants = new Set<string>();
+    if (!d) return variants;
+    variants.add(d);
+    variants.add(lastN(d, 10));
+    variants.add(lastN(d, 9));
+    // Convert local Ghana 0XXXXXXXXX to E.164 233XXXXXXXXX
+    if (d.startsWith('0') && d.length >= 10) {
+      variants.add('233' + d.slice(1));
+    }
+    // Convert E.164 Ghana 233XXXXXXXXX to local 0XXXXXXXXX
+    if (d.startsWith('233') && d.length >= 11) {
+      variants.add('0' + d.slice(3));
+    }
+    return variants;
+  };
+  const phonesMatch = (a: string, b: string) => {
+    const va = toGhanaVariants(a);
+    const vb = toGhanaVariants(b);
+    // Include last-10 and last-9 as generic fallbacks
+    va.add(lastN(a, 10));
+    va.add(lastN(a, 9));
+    vb.add(lastN(b, 10));
+    vb.add(lastN(b, 9));
+    for (const x of va) if (x && vb.has(x)) return true;
+    return false;
+  };
  
    const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +58,8 @@ const TrackRescue = () => {
     setSearched(false);
 
     try {
-      // Normalize phone number for comparison (last 9 digits)
-      const normalizedInput = comparable(phoneNumber);
+      // Normalize for logs (we use robust matcher for actual comparison)
+      const normalizedInput = digitsOnly(phoneNumber);
       console.log('Searching for phone number:', normalizedInput);
 
       // Search for requests by phone number (for guest users) or by customer_id (for logged-in users)
@@ -53,9 +82,9 @@ const TrackRescue = () => {
       const matchingRequests = allRequests?.filter(request => {
         // Check direct phone_number field (guest requests)
         if (request.phone_number) {
-          const normalizedRequestPhone = comparable(request.phone_number);
-          console.log('Checking request phone:', normalizedRequestPhone, 'against input:', normalizedInput);
-          if (normalizedRequestPhone === normalizedInput) {
+          const isMatch = phonesMatch(request.phone_number, phoneNumber);
+          console.log('Checking request phone:', request.phone_number, 'match:', isMatch);
+          if (isMatch) {
             console.log('Match found!');
             return true;
           }
@@ -78,8 +107,8 @@ const TrackRescue = () => {
       console.log('Profiles with phone numbers:', profiles?.length || 0);
 
       const matchingProfile = profiles?.find(profile => {
-        const normalizedStored = comparable(profile.phone_number || '');
-        return normalizedStored === normalizedInput;
+        const isMatch = phonesMatch(profile.phone_number || '', phoneNumber);
+        return isMatch;
       });
 
       console.log('Matching profile found:', !!matchingProfile);
