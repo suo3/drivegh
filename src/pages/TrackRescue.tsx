@@ -206,11 +206,11 @@ const TrackRescue = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
+      <section className="py-12 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="w-full">
             {!user && (
-              <Card className="p-8 mb-8">
+              <Card className="p-8 mb-8 max-w-2xl mx-auto">
                 <form onSubmit={handleTrack} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Enter Your Phone Number</Label>
@@ -242,14 +242,14 @@ const TrackRescue = () => {
             )}
 
             {user && loading && (
-              <Card className="p-8 mb-8 text-center">
+              <Card className="p-8 mb-8 text-center max-w-2xl mx-auto">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
                 <p className="text-muted-foreground">Loading your requests...</p>
               </Card>
             )}
 
             {searched && serviceRequests.length === 0 && (
-              <Card className="p-8 text-center">
+              <Card className="p-8 text-center max-w-2xl mx-auto">
                 <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No Service Requests Found</h3>
                 <p className="text-muted-foreground mb-4">
