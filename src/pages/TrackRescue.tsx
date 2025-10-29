@@ -262,15 +262,16 @@ const TrackRescue = () => {
             )}
 
             {serviceRequests.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+              <>
+                <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">Your Service Requests</h2>
                   <Badge variant="outline" className="text-lg px-4 py-2">
                     {serviceRequests.length} {serviceRequests.length === 1 ? 'Request' : 'Requests'}
                   </Badge>
                 </div>
 
-                {serviceRequests.map((request) => (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {serviceRequests.map((request) => (
                   <Card key={request.id} className="overflow-hidden">
                     {/* Status Banner */}
                     <div className={`${getStatusColor(request.status)} text-white p-4`}>
@@ -463,7 +464,8 @@ const TrackRescue = () => {
                     </div>
                   </Card>
                 ))}
-              </div>
+                </div>
+              </>
             )}
           </div>
         </div>
