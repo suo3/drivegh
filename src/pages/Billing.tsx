@@ -46,19 +46,33 @@ const Billing = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch transactions related to user's service requests
+        // Fetch user's service requests first
+        const { data: userRequests, error: requestsError } = await supabase
+          .from('service_requests')
+          .select('id')
+          .or(`customer_id.eq.${user.id},provider_id.eq.${user.id}`);
+
+        if (requestsError) throw requestsError;
+
+        const requestIds = userRequests?.map(r => r.id) || [];
+
+        if (requestIds.length === 0) {
+          setTransactions([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch transactions for those service requests
         const { data, error: fetchError } = await supabase
           .from('transactions')
           .select(`
             *,
-            service_requests!inner (
+            service_requests (
               service_type,
-              status,
-              customer_id,
-              provider_id
+              status
             )
           `)
-          .or(`service_requests.customer_id.eq.${user.id},service_requests.provider_id.eq.${user.id}`)
+          .in('service_request_id', requestIds)
           .order('created_at', { ascending: false });
 
         if (fetchError) throw fetchError;
