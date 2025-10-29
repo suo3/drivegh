@@ -9,13 +9,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 
 const TrackRescue = () => {
+  const { user } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,9 +90,42 @@ const TrackRescue = () => {
     }
   };
 
+  // Auto-fetch requests for logged-in users
+  useEffect(() => {
+    const fetchUserRequests = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      try {
+        const { data: requests, error } = await supabase
+          .from('service_requests')
+          .select(`
+            *,
+            profiles!service_requests_provider_id_fkey(full_name, phone_number)
+          `)
+          .eq('customer_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        setServiceRequests(requests || []);
+        setSearched(true);
+        if (requests && requests.length > 0) {
+          toast.success(`Found ${requests.length} service request(s)`);
+        }
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRequests();
+  }, [user]);
+
   // Set up real-time subscription for updates
   useEffect(() => {
-    if (!userId) return;
+    if (!user) return;
 
     const channel = supabase
       .channel('service_requests_tracking')
@@ -101,7 +135,7 @@ const TrackRescue = () => {
           event: '*',
           schema: 'public',
           table: 'service_requests',
-          filter: `customer_id=eq.${userId}`
+          filter: `customer_id=eq.${user.id}`
         },
         async (payload) => {
           console.log('Real-time update:', payload);
@@ -113,7 +147,7 @@ const TrackRescue = () => {
               *,
               profiles!service_requests_provider_id_fkey(full_name, phone_number)
             `)
-            .eq('customer_id', userId)
+            .eq('customer_id', user.id)
             .order('created_at', { ascending: false });
 
           if (requests) {
@@ -132,7 +166,7 @@ const TrackRescue = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -175,35 +209,44 @@ const TrackRescue = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
-            <Card className="p-8 mb-8">
-              <form onSubmit={handleTrack} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Enter Your Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    type="tel"
-                    placeholder="e.g., 8142221617 or +233 814 222 1617"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Enter your phone number (with or without formatting)
-                  </p>
-                </div>
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    'Track My Requests'
-                  )}
-                </Button>
-              </form>
-            </Card>
+            {!user && (
+              <Card className="p-8 mb-8">
+                <form onSubmit={handleTrack} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Enter Your Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="e.g., 8142221617 or +233 814 222 1617"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Enter your phone number (with or without formatting)
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      'Track My Requests'
+                    )}
+                  </Button>
+                </form>
+              </Card>
+            )}
+
+            {user && loading && (
+              <Card className="p-8 mb-8 text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">Loading your requests...</p>
+              </Card>
+            )}
 
             {searched && serviceRequests.length === 0 && (
               <Card className="p-8 text-center">
@@ -391,13 +434,13 @@ const TrackRescue = () => {
                                 } else {
                                   toast.success('Request cancelled successfully');
                                   // Refresh the data
-                                  const { data: requests } = await supabase
+                                   const { data: requests } = await supabase
                                     .from('service_requests')
                                     .select(`
                                       *,
                                       profiles!service_requests_provider_id_fkey(full_name, phone_number)
                                     `)
-                                    .eq('customer_id', userId)
+                                    .eq('customer_id', user?.id)
                                     .order('created_at', { ascending: false });
                                   
                                   if (requests) setServiceRequests(requests);
