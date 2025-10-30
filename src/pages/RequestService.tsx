@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { ArrowLeft, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin, Phone, Copy, Share2, ExternalLink } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -37,6 +38,8 @@ const RequestService = () => {
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,12 +80,9 @@ const RequestService = () => {
         console.error('Error creating request:', error);
         toast.error('Failed to create service request. Please try again.');
       } else {
-        toast.success('Service request submitted successfully! Track it at /track-rescue with your phone number.');
-        if (user) {
-          navigate('/dashboard');
-        } else {
-          navigate('/track-rescue');
-        }
+        setCreatedRequestId(data.id);
+        setSuccessDialogOpen(true);
+        toast.success('Service request submitted successfully!');
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -293,6 +293,92 @@ const RequestService = () => {
       </section>
 
       <Footer />
+
+      {/* Success Dialog */}
+      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Request Submitted Successfully! 🎉</DialogTitle>
+            <DialogDescription>
+              Save this link to track your service request anytime
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <Label className="text-sm font-semibold mb-2 block">Your Tracking Link:</Label>
+              <p className="text-sm break-all text-muted-foreground font-mono">
+                {window.location.origin}/request/{createdRequestId}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={async () => {
+                  const url = `${window.location.origin}/request/${createdRequestId}`;
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    toast.success('Link copied to clipboard!');
+                  } catch (error) {
+                    toast.error('Failed to copy link');
+                  }
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </Button>
+
+              <Button
+                onClick={async () => {
+                  const url = `${window.location.origin}/request/${createdRequestId}`;
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: 'Track My Service Request',
+                        text: 'Track my roadside assistance request',
+                        url: url,
+                      });
+                      toast.success('Link shared successfully!');
+                    } catch (error) {
+                      console.log('Share cancelled or failed');
+                    }
+                  } else {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      toast.success('Link copied to clipboard!');
+                    } catch (error) {
+                      toast.error('Failed to copy link');
+                    }
+                  }
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share Link
+              </Button>
+
+              <Button
+                onClick={() => {
+                  navigate(`/request/${createdRequestId}`);
+                }}
+                className="w-full"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Track My Request
+              </Button>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-900">
+                💡 <strong>Tip:</strong> Bookmark this link or save it to your notes so you can check your request status anytime!
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
