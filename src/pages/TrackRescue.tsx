@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter, Star } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -19,6 +21,11 @@ const TrackRescue = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [ratings, setRatings] = useState<any[]>([]);
+  const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
+  const [currentRating, setCurrentRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
  
   // Robust phone normalization and matching across formats
   const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
@@ -81,8 +88,8 @@ const TrackRescue = () => {
       });
       console.log('Matching profile IDs:', Array.from(matchingProfileIds));
 
-      // 2) Fetch candidate requests in parallel
-      const [guestReqRes, profileReqRes] = await Promise.all([
+      // 2) Fetch candidate requests and ratings in parallel
+      const [guestReqRes, profileReqRes, ratingsRes] = await Promise.all([
         // Guest requests (created without login): they have a phone_number saved
         supabase
           .from('service_requests')
@@ -103,10 +110,15 @@ const TrackRescue = () => {
               .in('customer_id', Array.from(matchingProfileIds))
               .order('created_at', { ascending: false })
           : Promise.resolve({ data: [], error: null } as any),
+        // Fetch ratings
+        supabase.from('ratings').select('*')
       ]);
 
       if (guestReqRes.error) throw guestReqRes.error;
       if ((profileReqRes as any).error) throw (profileReqRes as any).error;
+
+      // Store ratings
+      setRatings(ratingsRes.data || []);
 
       // 3) Filter guest requests by robust phone matcher
       const guestMatches = (guestReqRes.data || []).filter((r: any) =>
@@ -149,18 +161,22 @@ const TrackRescue = () => {
       
       setLoading(true);
       try {
-        const { data: requests, error } = await supabase
-          .from('service_requests')
-          .select(`
-            *,
-            profiles!service_requests_provider_id_fkey(full_name, phone_number)
-          `)
-          .eq('customer_id', user.id)
-          .order('created_at', { ascending: false });
+        const [requestsRes, ratingsRes] = await Promise.all([
+          supabase
+            .from('service_requests')
+            .select(`
+              *,
+              profiles!service_requests_provider_id_fkey(full_name, phone_number)
+            `)
+            .eq('customer_id', user.id)
+            .order('created_at', { ascending: false }),
+          supabase.from('ratings').select('*')
+        ]);
 
-        if (error) throw error;
+        if (requestsRes.error) throw requestsRes.error;
 
-        setServiceRequests(requests || []);
+        setServiceRequests(requestsRes.data || []);
+        setRatings(ratingsRes.data || []);
         setSearched(true);
       } catch (error) {
         console.error('Error fetching requests:', error);
@@ -190,17 +206,21 @@ const TrackRescue = () => {
           console.log('Real-time update:', payload);
           
           // Refresh the service requests data
-          const { data: requests } = await supabase
-            .from('service_requests')
-            .select(`
-              *,
-              profiles!service_requests_provider_id_fkey(full_name, phone_number)
-            `)
-            .eq('customer_id', user.id)
-            .order('created_at', { ascending: false });
+          const [requestsRes, ratingsRes] = await Promise.all([
+            supabase
+              .from('service_requests')
+              .select(`
+                *,
+                profiles!service_requests_provider_id_fkey(full_name, phone_number)
+              `)
+              .eq('customer_id', user.id)
+              .order('created_at', { ascending: false }),
+            supabase.from('ratings').select('*')
+          ]);
 
-          if (requests) {
-            setServiceRequests(requests);
+          if (requestsRes.data) {
+            setServiceRequests(requestsRes.data);
+            setRatings(ratingsRes.data || []);
             
             // Show notification for status changes
             if (payload.eventType === 'UPDATE' && payload.new) {
@@ -271,6 +291,65 @@ const TrackRescue = () => {
     if (status === 'cancelled' || status === 'denied') return <AlertCircle className="h-6 w-6" />;
     if (status === 'en_route') return <Navigation className="h-6 w-6" />;
     return <Clock className="h-6 w-6" />;
+  };
+
+  const getProviderRating = (providerId: string) => {
+    const providerRatings = ratings.filter(r => r.provider_id === providerId);
+    if (providerRatings.length === 0) return null;
+    const avgRating = providerRatings.reduce((sum, r) => sum + r.rating, 0) / providerRatings.length;
+    return { avgRating: avgRating.toFixed(1), count: providerRatings.length };
+  };
+
+  const getRequestRating = (requestId: string) => {
+    return ratings.find(r => r.service_request_id === requestId);
+  };
+
+  const handleSubmitRating = async (requestId: string, providerId: string, customerId: string) => {
+    if (currentRating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
+
+    try {
+      const existingRating = getRequestRating(requestId);
+      
+      if (existingRating) {
+        const { error } = await supabase
+          .from('ratings')
+          .update({
+            rating: currentRating,
+            review: reviewText,
+          })
+          .eq('id', existingRating.id);
+
+        if (error) throw error;
+        toast.success('Rating updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('ratings')
+          .insert({
+            service_request_id: requestId,
+            provider_id: providerId,
+            customer_id: customerId,
+            rating: currentRating,
+            review: reviewText,
+          });
+
+        if (error) throw error;
+        toast.success('Rating submitted successfully');
+      }
+
+      // Refresh ratings
+      const { data: newRatings } = await supabase.from('ratings').select('*');
+      setRatings(newRatings || []);
+      
+      setRatingDialogOpen(null);
+      setCurrentRating(0);
+      setReviewText('');
+    } catch (error: any) {
+      console.error('Error submitting rating:', error);
+      toast.error('Failed to submit rating');
+    }
   };
 
   return (
@@ -436,7 +515,20 @@ const TrackRescue = () => {
                             <User className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
                               <p className="font-medium">Service Provider</p>
-                              <p className="text-sm text-muted-foreground">{request.profiles.full_name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm text-muted-foreground">{request.profiles.full_name}</p>
+                                {request.provider_id && getProviderRating(request.provider_id) && (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                                    <span className="text-xs font-medium">
+                                      {getProviderRating(request.provider_id)?.avgRating}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      ({getProviderRating(request.provider_id)?.count})
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -503,6 +595,28 @@ const TrackRescue = () => {
                           <p className="text-sm text-green-900">
                             ✅ Service completed. Thank you for using our service!
                           </p>
+                          {getRequestRating(request.id) && (
+                            <div className="mt-2 pt-2 border-t border-green-200">
+                              <p className="text-xs font-medium text-green-900 mb-1">Your Rating:</p>
+                              <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-4 w-4 ${
+                                      star <= getRequestRating(request.id)!.rating
+                                        ? 'fill-yellow-500 text-yellow-500'
+                                        : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
+                                {getRequestRating(request.id)!.review && (
+                                  <span className="text-xs text-green-700 ml-2">
+                                    "{getRequestRating(request.id)!.review}"
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -560,6 +674,27 @@ const TrackRescue = () => {
                         </div>
                       )}
 
+                      {/* Rate Service Button */}
+                      {request.status === 'completed' && user && request.customer_id === user.id && (
+                        <div className="px-6 pb-4 border-t pt-4">
+                          <Button
+                            variant={getRequestRating(request.id) ? "outline" : "default"}
+                            onClick={() => {
+                              const existingRating = getRequestRating(request.id);
+                              if (existingRating) {
+                                setCurrentRating(existingRating.rating);
+                                setReviewText(existingRating.review || '');
+                              }
+                              setRatingDialogOpen(request.id);
+                            }}
+                            className="w-full"
+                          >
+                            <Star className="h-4 w-4 mr-2" />
+                            {getRequestRating(request.id) ? 'Update Rating' : 'Rate Service'}
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Timestamps */}
                     <div className="px-6 pb-4 border-t pt-4 flex justify-between text-xs text-muted-foreground">
                       <span>Requested: {new Date(request.created_at).toLocaleString()}</span>
@@ -577,6 +712,69 @@ const TrackRescue = () => {
       </section>
 
       <Footer />
+
+      {/* Rating Dialog */}
+      <Dialog open={ratingDialogOpen !== null} onOpenChange={(open) => {
+        if (!open) {
+          setRatingDialogOpen(null);
+          setCurrentRating(0);
+          setHoverRating(0);
+          setReviewText('');
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rate Your Service</DialogTitle>
+            <DialogDescription>
+              How was your experience with the service provider?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setCurrentRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={`h-8 w-8 ${
+                      star <= (hoverRating || currentRating)
+                        ? 'fill-yellow-500 text-yellow-500'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="review">Review (Optional)</Label>
+              <Textarea
+                id="review"
+                placeholder="Share your experience..."
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <Button
+              onClick={() => {
+                const request = serviceRequests.find(r => r.id === ratingDialogOpen);
+                if (request && user) {
+                  handleSubmitRating(request.id, request.provider_id, user.id);
+                }
+              }}
+              className="w-full"
+              disabled={currentRating === 0}
+            >
+              Submit Rating
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
