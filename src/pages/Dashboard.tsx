@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
+import ServiceManager from '@/components/ServiceManager';
 import { z } from 'zod';
 
 const Dashboard = () => {
@@ -2242,6 +2243,10 @@ const Dashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+              )}
+
+              {currentView === 'services' && (
+                <ServiceManager />
               )}
 
               {currentView === 'profile' && (
