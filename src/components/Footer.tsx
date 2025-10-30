@@ -1,7 +1,26 @@
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const [services, setServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (data) setServices(data);
+  };
+
   return (
     <footer className="bg-[#0a1628] text-white">
       <div className="container mx-auto px-4 py-12">
@@ -20,11 +39,16 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">SERVICES</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Towing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Tyre</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Jump Start</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Lockout</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Out of Fuel</a></li>
+              {services.map((service) => (
+                <li key={service.id}>
+                  <button
+                    onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    {service.name}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 

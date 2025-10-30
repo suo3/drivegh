@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,8 @@ const serviceSchema = z.object({
 const RequestService = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [services, setServices] = useState<any[]>([]);
   const [serviceType, setServiceType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -40,6 +43,32 @@ const RequestService = () => {
   const [loading, setLoading] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const serviceParam = searchParams.get('service');
+    if (serviceParam) {
+      setServiceType(serviceParam);
+    }
+  }, [searchParams]);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (data) setServices(data);
+  };
+
+  const getIconComponent = (iconName: string) => {
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || LucideIcons.Settings;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,14 +121,6 @@ const RequestService = () => {
     }
   };
 
-  const services = [
-    { value: 'towing', icon: Truck, label: 'Towing', desc: 'Vehicle towing service' },
-    { value: 'tire_change', icon: Wrench, label: 'Tire Change', desc: 'Flat tire replacement' },
-    { value: 'fuel_delivery', icon: Fuel, label: 'Fuel Delivery', desc: 'Emergency fuel service' },
-    { value: 'battery_jump', icon: Battery, label: 'Battery Jump', desc: 'Jump start service' },
-    { value: 'lockout_service', icon: Key, label: 'Lockout Service', desc: 'Vehicle unlock' },
-    { value: 'emergency_assistance', icon: Settings, label: 'Emergency Help', desc: 'Other emergencies' },
-  ];
 
   return (
     <div className="min-h-screen">
@@ -146,25 +167,28 @@ const RequestService = () => {
                   <div className="space-y-3">
                     <Label>What service do you need? *</Label>
                     <div className="grid md:grid-cols-2 gap-3">
-                      {services.map((service) => (
-                        <Card
-                          key={service.value}
-                          className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                            serviceType === service.value ? 'border-primary bg-primary/5' : ''
-                          }`}
-                          onClick={() => setServiceType(service.value)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <service.icon className={`h-6 w-6 mt-1 ${
-                              serviceType === service.value ? 'text-primary' : 'text-muted-foreground'
-                            }`} />
-                            <div>
-                              <p className="font-semibold">{service.label}</p>
-                              <p className="text-sm text-muted-foreground">{service.desc}</p>
+                      {services.map((service) => {
+                        const Icon = getIconComponent(service.icon);
+                        return (
+                          <Card
+                            key={service.id}
+                            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                              serviceType === service.slug ? 'border-primary bg-primary/5' : ''
+                            }`}
+                            onClick={() => setServiceType(service.slug)}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Icon className={`h-6 w-6 mt-1 ${
+                                serviceType === service.slug ? 'text-primary' : 'text-muted-foreground'
+                              }`} />
+                              <div>
+                                <p className="font-semibold">{service.name}</p>
+                                <p className="text-sm text-muted-foreground">{service.description}</p>
+                              </div>
                             </div>
-                          </div>
-                        </Card>
-                      ))}
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
 

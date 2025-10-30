@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Truck, User, LogOut, LayoutDashboard } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +11,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, userRole, loading, signOut } = useAuth();
+  const [services, setServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (data) setServices(data);
+  };
 
   const handleDashboardClick = () => {
     navigate('/dashboard');
+  };
+
+  const getIconComponent = (iconName: string) => {
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || LucideIcons.Settings;
   };
 
   return (
@@ -33,7 +55,28 @@ const Navbar = () => {
           <Link to="/" className="hover:text-accent transition-colors">HOME</Link>
           <Link to="/about" className="hover:text-accent transition-colors">ABOUT US</Link>
           <Link to="/partnership" className="hover:text-accent transition-colors">PARTNERSHIP</Link>
-          <a href="#services" className="hover:text-accent transition-colors">SERVICES</a>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hover:text-accent transition-colors outline-none">
+              SERVICES
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56 bg-background">
+              {services.map((service) => {
+                const Icon = getIconComponent(service.icon);
+                return (
+                  <DropdownMenuItem
+                    key={service.id}
+                    onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                    className="cursor-pointer"
+                  >
+                    <Icon className="h-4 w-4 mr-2" />
+                    {service.name}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <Link to="/billing" className="hover:text-accent transition-colors">BILLING</Link>
           <Link to="/track-rescue" className="hover:text-accent transition-colors">TRACK RESCUE</Link>
         </div>

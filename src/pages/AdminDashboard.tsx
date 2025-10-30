@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import ServiceManager from '@/components/ServiceManager';
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
@@ -201,6 +202,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="requests">Service Requests</TabsTrigger>
             <TabsTrigger value="applications">Partnership Applications</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
@@ -348,6 +350,10 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="services">
+            <ServiceManager />
           </TabsContent>
         </Tabs>
       </div>
