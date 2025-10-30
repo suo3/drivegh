@@ -13,9 +13,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { useNavigate } from 'react-router-dom';
 
 const TrackRescue = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -456,7 +458,11 @@ const TrackRescue = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredAndSortedRequests.map((request) => (
-                  <Card key={request.id} className="overflow-hidden">
+                  <Card 
+                    key={request.id} 
+                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/request/${request.id}`)}
+                  >
                     {/* Status Banner */}
                     <div className={`${getStatusColor(request.status)} text-white p-4`}>
                       <div className="flex items-center justify-between">

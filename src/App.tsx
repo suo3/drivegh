@@ -13,6 +13,7 @@ import GetHelp from "./pages/GetHelp";
 import AboutUs from "./pages/AboutUs";
 import Partnership from "./pages/Partnership";
 import TrackRescue from "./pages/TrackRescue";
+import RequestDetails from "./pages/RequestDetails";
 import Billing from "./pages/Billing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/about" element={<AboutUs />} />
             <Route path="/partnership" element={<Partnership />} />
             <Route path="/track-rescue" element={<TrackRescue />} />
+            <Route path="/request/:id" element={<RequestDetails />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
