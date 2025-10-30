@@ -102,106 +102,113 @@ const Partnership = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Why Partner with DRIVE Ghana?</h2>
+            <h2 className="text-4xl font-bold mb-4">Partner with DRIVE Ghana</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join our network of professional service providers and benefit from our platform
+              Join our network and start growing your business today
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-16">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
-                <benefit.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground text-sm">{benefit.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-[hsl(var(--section-bg))]">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">Apply to Become a Partner</h2>
-              <p className="text-muted-foreground">
-                Fill out the form below and our team will review your application
-              </p>
+          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-start">
+            {/* Benefits Column */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-6">Why Partner with Us?</h3>
+              </div>
+              {benefits.map((benefit, index) => (
+                <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex gap-4">
+                    <benefit.icon className="h-12 w-12 text-primary flex-shrink-0" />
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2">{benefit.title}</h4>
+                      <p className="text-muted-foreground text-sm">{benefit.desc}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
 
-            <Card className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name *</Label>
-                  <Input
-                    id="businessName"
-                    value={formData.businessName}
-                    onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-                    required
-                  />
+            {/* Form Column */}
+            <div className="lg:sticky lg:top-8">
+              <Card className="p-8">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold mb-2">Apply Now</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Fill out the form and we'll review your application
+                  </p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="contactPerson">Contact Person *</Label>
-                  <Input
-                    id="contactPerson"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({...formData, contactPerson: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="businessName">Business Name *</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      id="businessName"
+                      value={formData.businessName}
+                      onChange={(e) => setFormData({...formData, businessName: e.target.value})}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Label htmlFor="contactPerson">Contact Person *</Label>
                     <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      id="contactPerson"
+                      value={formData.contactPerson}
+                      onChange={(e) => setFormData({...formData, contactPerson: e.target.value})}
                       required
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="city">City/Location *</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    required
-                  />
-                </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        required
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Tell us about your services</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    rows={4}
-                    placeholder="What services do you offer? How many years of experience do you have?"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number *</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
-                </Button>
-              </form>
-            </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City/Location *</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Tell us about your services</Label>
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      rows={4}
+                      placeholder="What services do you offer? How many years of experience do you have?"
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  </Button>
+                </form>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
