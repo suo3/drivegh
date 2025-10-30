@@ -53,6 +53,15 @@ const RequestDetails = () => {
 
         setRequest(requestRes.data);
         setRatings(ratingsRes.data || []);
+
+        // Auto-open rating dialog for completed requests without rating
+        const hasRating = ratingsRes.data?.some(r => r.service_request_id === id);
+        if (requestRes.data.status === 'completed' && 
+            user && 
+            requestRes.data.customer_id === user.id && 
+            !hasRating) {
+          setTimeout(() => setRatingDialogOpen(true), 500);
+        }
       } catch (error) {
         console.error('Error fetching request:', error);
         toast.error('Failed to load request details');
@@ -62,7 +71,7 @@ const RequestDetails = () => {
     };
 
     fetchRequestDetails();
-  }, [id, navigate]);
+  }, [id, navigate, user]);
 
   // Set up real-time subscription
   useEffect(() => {
