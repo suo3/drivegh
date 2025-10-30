@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -9,14 +8,8 @@ import Footer from '@/components/Footer';
 import heroTaxi from '@/assets/hero-taxi.png';
 
 const Index = () => {
-  const { user, userRole, loading } = useAuth();
+  const { loading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && user && userRole) {
-      navigate('/dashboard');
-    }
-  }, [user, userRole, loading, navigate]);
 
   if (loading) {
     return (
