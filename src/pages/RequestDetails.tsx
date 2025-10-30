@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 const RequestDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, code } = useParams<{ id?: string; code?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [request, setRequest] = useState<any>(null);
@@ -27,21 +27,26 @@ const RequestDetails = () => {
 
   useEffect(() => {
     const fetchRequestDetails = async () => {
-      if (!id) return;
+      const identifier = code || id;
+      if (!identifier) return;
       
       setLoading(true);
       try {
-        const [requestRes, ratingsRes] = await Promise.all([
-          supabase
-            .from('service_requests')
-            .select(`
-              *,
-              profiles!service_requests_provider_id_fkey(full_name, phone_number)
-            `)
-            .eq('id', id)
-            .maybeSingle(),
-          supabase.from('ratings').select('*')
-        ]);
+        // Try to fetch by tracking code first, then by ID
+        const query = supabase
+          .from('service_requests')
+          .select(`
+            *,
+            profiles!service_requests_provider_id_fkey(full_name, phone_number)
+          `);
+        
+        // If identifier looks like a UUID, search by ID, otherwise by tracking code
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+        const requestRes = isUUID 
+          ? await query.eq('id', identifier).maybeSingle()
+          : await query.eq('tracking_code', identifier.toUpperCase()).maybeSingle();
+        
+        const ratingsRes = await supabase.from('ratings').select('*');
 
         if (requestRes.error) throw requestRes.error;
         
@@ -55,7 +60,7 @@ const RequestDetails = () => {
         setRatings(ratingsRes.data || []);
 
         // Auto-open rating dialog for completed requests without rating
-        const hasRating = ratingsRes.data?.some(r => r.service_request_id === id);
+        const hasRating = ratingsRes.data?.some(r => r.service_request_id === requestRes.data.id);
         if (requestRes.data.status === 'completed' && 
             user && 
             requestRes.data.customer_id === user.id && 
@@ -71,21 +76,21 @@ const RequestDetails = () => {
     };
 
     fetchRequestDetails();
-  }, [id, navigate, user]);
+  }, [id, code, navigate, user]);
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!id) return;
+    if (!request?.id) return;
 
     const channel = supabase
-      .channel(`service_request_${id}`)
+      .channel(`service_request_${request.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'service_requests',
-          filter: `id=eq.${id}`
+          filter: `id=eq.${request.id}`
         },
         async (payload) => {
           console.log('Real-time update:', payload);
@@ -97,7 +102,7 @@ const RequestDetails = () => {
               *,
               profiles!service_requests_provider_id_fkey(full_name, phone_number)
             `)
-            .eq('id', id)
+            .eq('id', request.id)
             .maybeSingle();
 
           if (data) {
@@ -115,7 +120,7 @@ const RequestDetails = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id]);
+  }, [request?.id]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -150,7 +155,7 @@ const RequestDetails = () => {
   };
 
   const getRequestRating = () => {
-    return ratings.find(r => r.service_request_id === id);
+    return ratings.find(r => r.service_request_id === request?.id);
   };
 
   const handleSubmitRating = async () => {
@@ -221,7 +226,7 @@ const RequestDetails = () => {
             *,
             profiles!service_requests_provider_id_fkey(full_name, phone_number)
           `)
-          .eq('id', id)
+          .eq('id', request.id)
           .maybeSingle();
         
         if (data) setRequest(data);
@@ -306,7 +311,7 @@ const RequestDetails = () => {
             <h1 className="text-4xl font-bold">Service Request Details</h1>
           </div>
           <p className="text-xl text-gray-200 ml-14">
-            Request ID: {request.id.slice(0, 8)}...
+            Tracking Code: <span className="font-mono font-bold">{request.tracking_code}</span>
           </p>
         </div>
       </section>

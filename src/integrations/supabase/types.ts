@@ -162,6 +162,7 @@ export type Database = {
           provider_id: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["service_status"]
+          tracking_code: string | null
           updated_at: string | null
           vehicle_make: string | null
           vehicle_model: string | null
@@ -182,6 +183,7 @@ export type Database = {
           provider_id?: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
+          tracking_code?: string | null
           updated_at?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
@@ -202,6 +204,7 @@ export type Database = {
           provider_id?: string | null
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
+          tracking_code?: string | null
           updated_at?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
@@ -324,6 +327,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_tracking_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

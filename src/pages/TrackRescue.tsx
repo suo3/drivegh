@@ -461,7 +461,7 @@ const TrackRescue = () => {
                   <Card 
                     key={request.id} 
                     className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => navigate(`/request/${request.id}`)}
+                    onClick={() => navigate(`/track/${request.tracking_code || request.id}`)}
                   >
                     {/* Status Banner */}
                     <div className={`${getStatusColor(request.status)} text-white p-4`}>

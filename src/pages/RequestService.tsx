@@ -80,7 +80,7 @@ const RequestService = () => {
         console.error('Error creating request:', error);
         toast.error('Failed to create service request. Please try again.');
       } else {
-        setCreatedRequestId(data.id);
+        setCreatedRequestId(data.tracking_code || data.id);
         setSuccessDialogOpen(true);
         toast.success('Service request submitted successfully!');
       }
@@ -300,22 +300,29 @@ const RequestService = () => {
           <DialogHeader>
             <DialogTitle className="text-2xl">Request Submitted Successfully! 🎉</DialogTitle>
             <DialogDescription>
-              Save this link to track your service request anytime
+              Your service request has been created. Save this tracking code to check your request status anytime.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <Label className="text-sm font-semibold mb-2 block">Your Tracking Link:</Label>
-              <p className="text-sm break-all text-muted-foreground font-mono">
-                {window.location.origin}/request/{createdRequestId}
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm font-medium mb-2">Tracking Code:</p>
+              <p className="text-2xl font-bold text-center py-2 tracking-wider">
+                {createdRequestId}
+              </p>
+            </div>
+            
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm font-medium mb-2">Tracking Link:</p>
+              <p className="text-sm break-all text-muted-foreground">
+                {window.location.origin}/track/{createdRequestId}
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
               <Button
                 onClick={async () => {
-                  const url = `${window.location.origin}/request/${createdRequestId}`;
+                  const url = `${window.location.origin}/track/${createdRequestId}`;
                   try {
                     await navigator.clipboard.writeText(url);
                     toast.success('Link copied to clipboard!');
@@ -332,7 +339,7 @@ const RequestService = () => {
 
               <Button
                 onClick={async () => {
-                  const url = `${window.location.origin}/request/${createdRequestId}`;
+                  const url = `${window.location.origin}/track/${createdRequestId}`;
                   if (navigator.share) {
                     try {
                       await navigator.share({
@@ -362,7 +369,7 @@ const RequestService = () => {
 
               <Button
                 onClick={() => {
-                  navigate(`/request/${createdRequestId}`);
+                  navigate(`/track/${createdRequestId}`);
                 }}
                 className="w-full"
               >
