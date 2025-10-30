@@ -190,7 +190,7 @@ const Dashboard = () => {
 
   const fetchAdminData = async () => {
     // Fetch IDs by role first to avoid relying on PostgREST relationship inference
-    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes, allUserRolesRes] = await Promise.all([
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes, allUserRolesRes, ratingsRes] = await Promise.all([
       supabase
         .from('service_requests')
         .select(`
@@ -211,6 +211,7 @@ const Dashboard = () => {
       supabase.from('partnership_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
+      supabase.from('ratings').select('*'),
     ]);
 
     const providerIds = providerIdsRes.data?.map((r: any) => r.user_id) || [];
@@ -226,7 +227,22 @@ const Dashboard = () => {
     ]);
 
     if (requestsRes.data) setAllRequests(requestsRes.data);
-    if (providersRes.data) setProviders(providersRes.data);
+    if (providersRes.data) {
+      // Add ratings to providers
+      const providersWithRatings = providersRes.data.map(provider => {
+        const providerRatings = ratingsRes.data?.filter(r => r.provider_id === provider.id) || [];
+        const avgRating = providerRatings.length > 0
+          ? providerRatings.reduce((sum, r) => sum + r.rating, 0) / providerRatings.length
+          : 0;
+        return {
+          ...provider,
+          ratings: providerRatings,
+          avgRating,
+          ratingCount: providerRatings.length
+        };
+      });
+      setProviders(providersWithRatings);
+    }
     if (customersRes.data) setCustomers(customersRes.data);
     if (transactionsRes.data) setAllTransactions(transactionsRes.data);
     if (appsRes.data) setApplications(appsRes.data);
@@ -1470,25 +1486,78 @@ const Dashboard = () => {
                                           <p className="text-sm text-muted-foreground">Completed Jobs</p>
                                         </CardContent>
                                       </Card>
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">{activeJobs}</p>
-                                          <p className="text-sm text-muted-foreground">Active Jobs</p>
-                                        </CardContent>
-                                      </Card>
                                        <Card>
                                          <CardContent className="pt-6">
-                                           <p className="text-2xl font-bold">
-                                             ${allTransactions
-                                               .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
-                                               .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
-                                               .toFixed(2)}
-                                           </p>
-                                           <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                           <p className="text-2xl font-bold">{activeJobs}</p>
+                                           <p className="text-sm text-muted-foreground">Active Jobs</p>
                                          </CardContent>
                                        </Card>
-                                    </div>
-                                  </div>
+                                        <Card>
+                                          <CardContent className="pt-6">
+                                            <p className="text-2xl font-bold">
+                                              ${allTransactions
+                                                .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                                .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                                .toFixed(2)}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                          </CardContent>
+                                        </Card>
+                                     </div>
+                                   </div>
+
+                                   <div className="border-t pt-4">
+                                     <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
+                                     <div className="grid grid-cols-2 gap-4 mb-4">
+                                       <Card>
+                                         <CardContent className="pt-6">
+                                           <div className="flex items-center gap-2">
+                                             <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                                             <p className="text-2xl font-bold">
+                                               {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
+                                             </p>
+                                           </div>
+                                           <p className="text-sm text-muted-foreground">Average Rating</p>
+                                         </CardContent>
+                                       </Card>
+                                       <Card>
+                                         <CardContent className="pt-6">
+                                           <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
+                                           <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                         </CardContent>
+                                       </Card>
+                                     </div>
+                                     {provider.ratings && provider.ratings.length > 0 ? (
+                                       <div className="space-y-2 max-h-48 overflow-y-auto">
+                                         {provider.ratings.slice(0, 5).map((rating: any) => (
+                                           <div key={rating.id} className="p-3 border rounded">
+                                             <div className="flex items-center gap-2 mb-1">
+                                               <div className="flex">
+                                                 {[...Array(5)].map((_, i) => (
+                                                   <Star
+                                                     key={i}
+                                                     className={`h-4 w-4 ${
+                                                       i < rating.rating
+                                                         ? 'fill-yellow-400 text-yellow-400'
+                                                         : 'text-gray-300'
+                                                     }`}
+                                                   />
+                                                 ))}
+                                               </div>
+                                               <span className="text-sm text-muted-foreground">
+                                                 {new Date(rating.created_at).toLocaleDateString()}
+                                               </span>
+                                             </div>
+                                             {rating.review && (
+                                               <p className="text-sm text-muted-foreground">{rating.review}</p>
+                                             )}
+                                           </div>
+                                         ))}
+                                       </div>
+                                     ) : (
+                                       <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
+                                     )}
+                                   </div>
 
                                   <div className="border-t pt-4">
                                     <h4 className="font-semibold mb-2">Recent Jobs</h4>
