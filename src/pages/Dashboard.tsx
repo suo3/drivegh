@@ -731,16 +731,44 @@ const Dashboard = () => {
                                     </DialogHeader>
                                     <form onSubmit={async (e) => {
                                       e.preventDefault();
+                                      if (!user?.id) {
+                                        toast.error('You must be signed in to submit a rating');
+                                        return;
+                                      }
                                       const formData = new FormData(e.currentTarget);
-                                      const { error } = await supabase.from('ratings').insert([{
+                                      const rating = Number(formData.get('rating'));
+                                      const review = (formData.get('review') as string) || null;
+
+                                      const payload = {
                                         service_request_id: request.id,
                                         provider_id: request.provider_id,
-                                        customer_id: user?.id,
-                                        rating: Number(formData.get('rating')),
-                                        review: formData.get('review') as string
-                                      }]);
+                                        customer_id: user.id,
+                                        rating,
+                                        review,
+                                      };
+
+                                      const { error } = await supabase.from('ratings').insert([payload]);
+
                                       if (error) {
-                                        toast.error('Failed to submit rating');
+                                        // Handle duplicate rating by updating existing record
+                                        if ((error as any).code === '23505' || error.message?.includes('duplicate key value')) {
+                                          const { error: updateError } = await supabase
+                                            .from('ratings')
+                                            .update({ rating, review })
+                                            .eq('service_request_id', request.id)
+                                            .eq('customer_id', user.id);
+
+                                          if (updateError) {
+                                            toast.error('Failed to update existing rating');
+                                            return;
+                                          }
+
+                                          toast.success('Rating updated successfully');
+                                          setRatingDialogOpen(null);
+                                          fetchData();
+                                        } else {
+                                          toast.error(error.message || 'Failed to submit rating');
+                                        }
                                       } else {
                                         toast.success('Rating submitted successfully');
                                         setRatingDialogOpen(null);
