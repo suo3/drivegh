@@ -26,7 +26,7 @@ const AboutUs = () => {
 
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-start max-w-6xl mx-auto">
             <div>
               <h2 className="text-4xl font-bold mb-6">Our Story</h2>
               <p className="text-muted-foreground mb-4">
@@ -44,47 +44,22 @@ const AboutUs = () => {
                 to help you get back on the road safely.
               </p>
             </div>
-            <div className="bg-primary/10 p-8 rounded-lg">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-4xl font-bold text-primary mb-2">4,500+</h3>
-                  <p className="text-muted-foreground">Rescues completed this year</p>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-bold text-primary mb-2">50+</h3>
-                  <p className="text-muted-foreground">Professional service providers</p>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-bold text-primary mb-2">10+</h3>
-                  <p className="text-muted-foreground">Cities covered nationwide</p>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-bold text-primary mb-2">4.8/5</h3>
-                  <p className="text-muted-foreground">Average customer rating</p>
-                </div>
+            <div>
+              <h3 className="text-2xl font-bold mb-6">Our Values</h3>
+              <div className="grid gap-4">
+                {values.map((value, index) => (
+                  <Card key={index} className="p-4 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <value.icon className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="text-lg font-semibold mb-1">{value.title}</h4>
+                        <p className="text-muted-foreground text-sm">{value.desc}</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-[hsl(var(--section-bg))]">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Our Values</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              The principles that guide everything we do
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {values.map((value, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
-                <value.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">{value.title}</h3>
-                <p className="text-muted-foreground text-sm">{value.desc}</p>
-              </Card>
-            ))}
           </div>
         </div>
       </section>
