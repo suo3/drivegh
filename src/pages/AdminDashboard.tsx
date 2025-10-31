@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, FileText, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ServiceManager from '@/components/ServiceManager';
@@ -150,8 +150,8 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <Loader2 className="h-8 w-8 animate-spin text-primary animate-scale-in" />
       </div>
     );
   }
@@ -161,163 +161,261 @@ const AdminDashboard = () => {
     .reduce((acc, t) => acc + parseFloat(t.amount), 0);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
+      <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
+        <div className="flex justify-between items-center p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm border border-primary/10">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
+              Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage all operations and resources</p>
+          </div>
+          <Button variant="outline" onClick={handleSignOut} className="hover-scale">Sign Out</Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Revenue</CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="hover-lift transition-all duration-300 bg-gradient-to-br from-primary/10 via-background to-background border-primary/20 animate-scale-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/20">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">GHS {totalRevenue.toFixed(2)}</p>
+              <p className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                GHS {totalRevenue.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">Total business income</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Requests</CardTitle>
+          <Card className="hover-lift transition-all duration-300 bg-gradient-to-br from-orange-500/10 via-background to-background border-orange-500/20 animate-scale-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pending Requests</CardTitle>
+                <div className="p-2 rounded-lg bg-orange-500/20">
+                  <AlertCircle className="h-5 w-5 text-orange-500" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">
+              <p className="text-4xl font-bold">
                 {requests.filter(r => r.status === 'pending').length}
               </p>
+              <p className="text-xs text-muted-foreground mt-2">Awaiting assignment</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Providers</CardTitle>
+          <Card className="hover-lift transition-all duration-300 bg-gradient-to-br from-blue-500/10 via-background to-background border-blue-500/20 animate-scale-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Providers</CardTitle>
+                <div className="p-2 rounded-lg bg-blue-500/20">
+                  <Users className="h-5 w-5 text-blue-500" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{providers.length}</p>
+              <p className="text-4xl font-bold">{providers.length}</p>
+              <p className="text-xs text-muted-foreground mt-2">Registered service providers</p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="requests">Service Requests</TabsTrigger>
-            <TabsTrigger value="applications">Partnership Applications</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsList className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Briefcase className="h-4 w-4 mr-2" />
+              Service Requests
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Building className="h-4 w-4 mr-2" />
+              Partnership Applications
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger value="services" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <FileText className="h-4 w-4 mr-2" />
+              Services
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
-            <Card>
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
               <CardHeader>
-                <CardTitle>Service Requests</CardTitle>
-            <CardDescription>Manage and assign service requests</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {requests.map((request) => (
-                <div key={request.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-semibold capitalize">{request.service_type.replace('_', ' ')}</p>
-                      <p className="text-sm text-muted-foreground">{request.location}</p>
-                      <p className="text-sm">Customer: {request.profiles?.full_name}</p>
-                      {request.provider && <p className="text-sm">Provider: {request.provider.full_name}</p>}
-                    </div>
-                    <Badge>{request.status}</Badge>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Briefcase className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="flex gap-2 mt-3">
-                    {request.status === 'pending' && (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setAssignDialog(true);
-                        }}
-                      >
-                        Assign Provider
-                      </Button>
-                    )}
-                    {request.status === 'in_progress' && (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setPaymentType('customer_to_business');
-                          setPaymentDialog(true);
-                        }}
-                      >
-                        Confirm Payment
-                      </Button>
-                    )}
-                    {request.status === 'completed' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setPaymentType('business_to_provider');
-                          setPaymentDialog(true);
-                        }}
-                      >
-                        Pay Provider
-                      </Button>
-                    )}
+                  <div>
+                    <CardTitle className="text-2xl">Service Requests</CardTitle>
+                    <CardDescription>Manage and assign service requests</CardDescription>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {requests.map((request) => (
+                    <Card key={request.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Briefcase className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-lg capitalize">{request.service_type.replace('_', ' ')}</p>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4" />
+                                {request.location}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm mt-1">
+                                <User className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Customer:</span> {request.profiles?.full_name}
+                              </div>
+                              {request.provider && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <User className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Provider:</span> {request.provider.full_name}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Badge className="capitalize">{request.status.replace('_', ' ')}</Badge>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          {request.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setAssignDialog(true);
+                              }}
+                              className="hover-scale"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Assign Provider
+                            </Button>
+                          )}
+                          {request.status === 'in_progress' && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setPaymentType('customer_to_business');
+                                setPaymentDialog(true);
+                              }}
+                              className="hover-scale"
+                            >
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Confirm Payment
+                            </Button>
+                          )}
+                          {request.status === 'completed' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setPaymentType('business_to_provider');
+                                setPaymentDialog(true);
+                              }}
+                              className="hover-scale"
+                            >
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Pay Provider
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="applications">
-            <Card>
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
               <CardHeader>
-                <CardTitle>Partnership Applications</CardTitle>
-                <CardDescription>Review and manage partnership requests</CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Building className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">Partnership Applications</CardTitle>
+                    <CardDescription>Review and manage partnership requests</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {applications.map((app) => (
-                    <div key={app.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="font-semibold">{app.business_name}</p>
-                          <p className="text-sm text-muted-foreground">{app.contact_person}</p>
-                          <p className="text-sm">{app.email} | {app.phone}</p>
-                          <p className="text-sm text-muted-foreground">Location: {app.city}</p>
+                    <Card key={app.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Building className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-lg">{app.business_name}</p>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="h-4 w-4" />
+                                {app.contact_person}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                {app.email} | {app.phone}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4" />
+                                {app.city}
+                              </div>
+                            </div>
+                          </div>
+                          <Badge variant={
+                            app.status === 'approved' ? 'default' : 
+                            app.status === 'rejected' ? 'destructive' : 
+                            'secondary'
+                          } className="capitalize">
+                            {app.status}
+                          </Badge>
                         </div>
-                        <Badge variant={
-                          app.status === 'approved' ? 'default' : 
-                          app.status === 'rejected' ? 'destructive' : 
-                          'secondary'
-                        }>
-                          {app.status}
-                        </Badge>
-                      </div>
-                      {app.message && (
-                        <p className="text-sm mb-3 p-3 bg-muted rounded">{app.message}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Applied: {new Date(app.created_at).toLocaleString()}
-                      </p>
-                      {app.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateApplicationStatus(app.id, 'approved')}
-                          >
-                            Approve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => updateApplicationStatus(app.id, 'rejected')}
-                          >
-                            Reject
-                          </Button>
+                        {app.message && (
+                          <div className="mb-4 p-4 bg-muted/30 rounded-lg">
+                            <p className="text-sm">{app.message}</p>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                          <Clock className="h-3 w-3" />
+                          Applied: {new Date(app.created_at).toLocaleString()}
                         </div>
-                      )}
-                    </div>
+                        {app.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => updateApplicationStatus(app.id, 'approved')}
+                              className="hover-scale"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Approve
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => updateApplicationStatus(app.id, 'rejected')}
+                              className="hover-scale"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
@@ -325,27 +423,44 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="transactions">
-            <Card>
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
               <CardHeader>
-                <CardTitle>Transaction History</CardTitle>
-                <CardDescription>All payments and transactions</CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">Transaction History</CardTitle>
+                    <CardDescription>All payments and transactions</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {transactions.map((transaction) => (
-                    <div key={transaction.id} className="border rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold">GHS {transaction.amount}</p>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          {transaction.transaction_type.replace('_', ' ')}
-                        </p>
-                        <p className="text-sm">Ref: {transaction.reference_number || 'N/A'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(transaction.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <Badge>{transaction.confirmed_at ? 'Confirmed' : 'Pending'}</Badge>
-                    </div>
+                    <Card key={transaction.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                      <CardContent className="p-4 flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-lg bg-primary/10">
+                            <DollarSign className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-lg">GHS {transaction.amount}</p>
+                            <p className="text-sm text-muted-foreground capitalize">
+                              {transaction.transaction_type.replace('_', ' ')}
+                            </p>
+                            <p className="text-sm">Ref: {transaction.reference_number || 'N/A'}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <Clock className="h-3 w-3" />
+                              {new Date(transaction.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant={transaction.confirmed_at ? 'default' : 'secondary'}>
+                          {transaction.confirmed_at ? 'Confirmed' : 'Pending'}
+                        </Badge>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
@@ -359,66 +474,100 @@ const AdminDashboard = () => {
       </div>
 
       <Dialog open={assignDialog} onOpenChange={setAssignDialog}>
-        <DialogContent>
+        <DialogContent className="bg-gradient-to-br from-background via-background to-primary/5 border-primary/20">
           <DialogHeader>
-            <DialogTitle>Assign Provider</DialogTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-primary/20">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <DialogTitle className="text-2xl">Assign Provider</DialogTitle>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Select Provider</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" />
+                Select Provider
+              </Label>
               <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 bg-background/50 border-primary/20">
                   <SelectValue placeholder="Choose a provider" />
                 </SelectTrigger>
                 <SelectContent>
                   {providers.map((provider) => (
                     <SelectItem key={provider.id} value={provider.id}>
-                      {provider.full_name} - {provider.location || 'No location'}
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-primary" />
+                        {provider.full_name} - {provider.location || 'No location'}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={assignProvider} className="w-full">Assign</Button>
+            <Button onClick={assignProvider} className="w-full h-12 hover-scale">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Assign Provider
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
-        <DialogContent>
+        <DialogContent className="bg-gradient-to-br from-background via-background to-primary/5 border-primary/20">
           <DialogHeader>
-            <DialogTitle>
-              {paymentType === 'customer_to_business' ? 'Confirm Customer Payment' : 'Confirm Provider Payment'}
-            </DialogTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-primary/20">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <DialogTitle className="text-2xl">
+                {paymentType === 'customer_to_business' ? 'Confirm Customer Payment' : 'Confirm Provider Payment'}
+              </DialogTitle>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Amount (GHS)</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" />
+                Amount (GHS)
+              </Label>
               <Input
                 type="number"
                 step="0.01"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 placeholder="0.00"
+                className="h-12 bg-background/50 border-primary/20"
               />
             </div>
-            <div>
-              <Label>Reference Number</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                Reference Number
+              </Label>
               <Input
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
                 placeholder="Transaction reference"
+                className="h-12 bg-background/50 border-primary/20"
               />
             </div>
-            <div>
-              <Label>Notes</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                Notes
+              </Label>
               <Textarea
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
                 placeholder="Additional notes"
+                className="bg-background/50 border-primary/20 min-h-[100px]"
               />
             </div>
-            <Button onClick={confirmPayment} className="w-full">Confirm Payment</Button>
+            <Button onClick={confirmPayment} className="w-full h-12 hover-scale">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Confirm Payment
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
