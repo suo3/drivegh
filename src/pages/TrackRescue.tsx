@@ -355,53 +355,53 @@ const TrackRescue = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 lg:pb-0">
       <Navbar />
       
       {/* Hero Section - Modern gradient with floating elements */}
-      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      <section className="relative pt-20 pb-12 lg:pt-32 lg:pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
+        {/* Animated gradient orbs - hidden on mobile */}
+        <div className="hidden lg:block absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
+        <div className="hidden lg:block absolute bottom-20 left-10 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
-              <Navigation className="w-4 h-4" />
+          <div className="max-w-4xl mx-auto text-center space-y-3 lg:space-y-6 animate-fade-in">
+            <div className="inline-flex items-center gap-2 glass px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-white/90 text-xs lg:text-sm">
+              <Navigation className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="font-medium">Live Tracking</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold leading-tight">
               <span className="block">Track Your</span>
               <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
                 Rescue Status
               </span>
             </h1>
             
-            <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-lg lg:text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
               Real-time updates on your service requests. Monitor your rescue team's progress from assignment to completion.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
+      <section className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
         <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
         
-        <div className="container mx-auto px-6 relative">
+        <div className="container mx-auto px-4 lg:px-6 relative">
           <div className="w-full">
             {serviceRequests.length === 0 && (
-              <Card className="p-12 mb-12 max-w-2xl mx-auto shadow-2xl border-2 hover-lift animate-scale-in bg-gradient-to-br from-white to-gray-50/50">
-                <div className="text-center mb-8">
-                  <div className="bg-gradient-to-br from-primary to-secondary rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                    <Navigation className="h-10 w-10 text-white" />
+              <Card className="p-6 lg:p-12 mb-8 lg:mb-12 max-w-2xl mx-auto shadow-2xl border-2 hover-lift animate-scale-in bg-gradient-to-br from-white to-gray-50/50">
+                <div className="text-center mb-6 lg:mb-8">
+                  <div className="bg-gradient-to-br from-primary to-secondary rounded-full w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mx-auto mb-4 lg:mb-6">
+                    <Navigation className="h-8 w-8 lg:h-10 lg:w-10 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-3">Find Your Requests</h2>
-                  <p className="text-muted-foreground text-lg">
+                  <h2 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-3">Find Your Requests</h2>
+                  <p className="text-muted-foreground text-sm lg:text-lg">
                     {user 
                       ? "Search for requests by phone number" 
                       : "Enter your phone number to track all your service requests"
@@ -409,36 +409,36 @@ const TrackRescue = () => {
                   </p>
                 </div>
                 
-                <form onSubmit={handleTrack} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="phoneNumber" className="text-base font-semibold">Phone Number</Label>
+                <form onSubmit={handleTrack} className="space-y-4 lg:space-y-6">
+                  <div className="space-y-2 lg:space-y-3">
+                    <Label htmlFor="phoneNumber" className="text-sm lg:text-base font-semibold">Phone Number</Label>
                     <Input
                       id="phoneNumber"
                       type="tel"
-                      placeholder="e.g., 024 123 4567 or +233 24 123 4567"
+                      placeholder="e.g., 024 123 4567"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                       disabled={loading}
-                      className="h-14 text-lg"
+                      className="h-12 lg:h-14 text-base lg:text-lg"
                     />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       Enter your phone number with or without formatting
                     </p>
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold text-lg h-14" 
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold text-base lg:text-lg h-12 lg:h-14" 
                     disabled={loading}
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 lg:h-6 lg:w-6 animate-spin" />
                         Searching...
                       </>
                     ) : (
                       <>
-                        <Navigation className="mr-2 h-5 w-5" />
+                        <Navigation className="mr-2 h-4 w-4 lg:h-5 lg:w-5" />
                         Track My Requests
                       </>
                     )}
@@ -448,22 +448,22 @@ const TrackRescue = () => {
             )}
 
             {user && loading && (
-              <Card className="p-16 mb-12 text-center max-w-2xl mx-auto shadow-xl animate-scale-in">
-                <Loader2 className="h-16 w-16 animate-spin mx-auto mb-6 text-primary" />
-                <p className="text-muted-foreground text-lg">Loading your requests...</p>
+              <Card className="p-8 lg:p-16 mb-8 lg:mb-12 text-center max-w-2xl mx-auto shadow-xl animate-scale-in">
+                <Loader2 className="h-12 w-12 lg:h-16 lg:w-16 animate-spin mx-auto mb-4 lg:mb-6 text-primary" />
+                <p className="text-muted-foreground text-sm lg:text-lg">Loading your requests...</p>
               </Card>
             )}
 
             {searched && serviceRequests.length === 0 && (
-              <Card className="p-16 text-center max-w-2xl mx-auto shadow-xl border-2 animate-scale-in">
-                <div className="bg-muted rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                  <AlertCircle className="h-10 w-10 text-muted-foreground" />
+              <Card className="p-8 lg:p-16 text-center max-w-2xl mx-auto shadow-xl border-2 animate-scale-in">
+                <div className="bg-muted rounded-full w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mx-auto mb-4 lg:mb-6">
+                  <AlertCircle className="h-8 w-8 lg:h-10 lg:w-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">No Service Requests Found</h3>
-                <p className="text-muted-foreground text-lg mb-4">
+                <h3 className="text-xl lg:text-2xl font-bold mb-2 lg:mb-3">No Service Requests Found</h3>
+                <p className="text-muted-foreground text-sm lg:text-lg mb-3 lg:mb-4">
                   We couldn't find any service requests for this phone number.
                 </p>
-                <p className="text-sm text-muted-foreground mb-6">
+                <p className="text-xs lg:text-sm text-muted-foreground mb-4 lg:mb-6">
                   Make sure you're using the same phone number you provided when requesting assistance.
                 </p>
                 <Button 
@@ -477,23 +477,23 @@ const TrackRescue = () => {
 
             {serviceRequests.length > 0 && (
               <>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10 animate-fade-in">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-primary/10 rounded-2xl p-4">
-                      <Car className="h-8 w-8 text-primary" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 lg:gap-6 mb-6 lg:mb-10 animate-fade-in">
+                  <div className="flex items-center gap-3 lg:gap-4">
+                    <div className="bg-primary/10 rounded-xl lg:rounded-2xl p-2.5 lg:p-4">
+                      <Car className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold">Your Service Requests</h2>
-                      <p className="text-muted-foreground">
+                      <h2 className="text-xl lg:text-3xl font-bold">Your Service Requests</h2>
+                      <p className="text-xs lg:text-base text-muted-foreground">
                         Showing {filteredAndSortedRequests.length} of {serviceRequests.length} requests
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 glass-dark p-3 rounded-xl">
-                    <Filter className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex items-center gap-2 lg:gap-3 glass-dark p-2 lg:p-3 rounded-xl w-full sm:w-auto">
+                    <Filter className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[200px] border-0 bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-full sm:w-[180px] lg:w-[200px] border-0 bg-transparent focus:ring-0 text-sm lg:text-base">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -511,7 +511,7 @@ const TrackRescue = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                   {filteredAndSortedRequests.map((request, index) => (
                   <Card 
                     key={request.id} 
@@ -520,24 +520,24 @@ const TrackRescue = () => {
                     onClick={() => navigate(`/track/${request.tracking_code || request.id}`)}
                   >
                     {/* Status Banner - Enhanced gradient */}
-                    <div className={`${getStatusColor(request.status)} text-white p-6 relative overflow-hidden`}>
+                    <div className={`${getStatusColor(request.status)} text-white p-4 lg:p-6 relative overflow-hidden`}>
                       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                       <div className="relative flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <div className="flex items-center gap-3 lg:gap-4">
+                          <div className="bg-white/20 backdrop-blur-sm rounded-lg lg:rounded-xl p-2 lg:p-3">
                             {getStatusIcon(request.status)}
                           </div>
                           <div>
-                            <h3 className="font-bold text-xl">
+                            <h3 className="font-bold text-lg lg:text-xl">
                               {getStatusLabel(request.status)}
                             </h3>
-                            <p className="text-sm opacity-90 capitalize mt-1">
+                            <p className="text-xs lg:text-sm opacity-90 capitalize mt-0.5 lg:mt-1">
                               {request.service_type.replace('_', ' ')} Service
                             </p>
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm opacity-90 mt-3 text-right">
+                      <div className="text-xs lg:text-sm opacity-90 mt-2 lg:mt-3 text-right">
                         {new Date(request.created_at).toLocaleDateString('en-GB', {
                           day: '2-digit',
                           month: 'short',
@@ -547,32 +547,32 @@ const TrackRescue = () => {
                     </div>
 
                     {/* Request Details - Enhanced spacing and icons */}
-                    <div className="p-6 space-y-5">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
-                          <MapPin className="h-5 w-5 text-primary" />
+                    <div className="p-4 lg:p-6 space-y-3 lg:space-y-5">
+                      <div className="flex items-start gap-3 lg:gap-4">
+                        <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                          <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold mb-1">Location</p>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{request.location}</p>
+                          <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Location</p>
+                          <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                         </div>
                       </div>
 
                       {request.description && (
-                        <div className="flex items-start gap-4">
-                          <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
-                            <AlertCircle className="h-5 w-5 text-primary" />
+                        <div className="flex items-start gap-3 lg:gap-4">
+                          <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                            <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold mb-1">Description</p>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{request.description}</p>
+                            <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Description</p>
+                            <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.description}</p>
                           </div>
                         </div>
                       )}
 
-                      {/* Vehicle Information */}
+                      {/* Vehicle Information - Hidden on mobile */}
                       {(request.vehicle_make || request.vehicle_model) && (
-                        <div className="flex items-start gap-4">
+                        <div className="hidden lg:flex items-start gap-4">
                           <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
                             <Car className="h-5 w-5 text-primary" />
                           </div>
@@ -589,17 +589,17 @@ const TrackRescue = () => {
 
                       {request.profiles && (
                         <>
-                          <div className="flex items-start gap-4">
-                            <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
-                              <User className="h-5 w-5 text-primary" />
+                          <div className="flex items-start gap-3 lg:gap-4">
+                            <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                              <User className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold mb-1">Service Provider</p>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm text-muted-foreground">{request.profiles.full_name}</p>
+                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Service Provider</p>
+                              <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap">
+                                <p className="text-xs lg:text-sm text-muted-foreground">{request.profiles.full_name}</p>
                                 {request.provider_id && getProviderRating(request.provider_id) && (
-                                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-md">
-                                    <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                                  <div className="flex items-center gap-0.5 lg:gap-1 bg-yellow-50 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md">
+                                    <Star className="h-3 w-3 lg:h-3.5 lg:w-3.5 fill-yellow-500 text-yellow-500" />
                                     <span className="text-xs font-bold text-yellow-900">
                                       {getProviderRating(request.provider_id)?.avgRating}
                                     </span>
@@ -613,15 +613,15 @@ const TrackRescue = () => {
                           </div>
 
                           {request.profiles.phone_number && (
-                            <div className="flex items-start gap-4">
-                              <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
-                                <Phone className="h-5 w-5 text-primary" />
+                            <div className="flex items-start gap-3 lg:gap-4">
+                              <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                                <Phone className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <p className="font-semibold mb-1">Provider Contact</p>
+                                <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Provider Contact</p>
                                 <a 
                                   href={`tel:${request.profiles.phone_number}`}
-                                  className="text-sm text-primary hover:underline font-medium"
+                                  className="text-xs lg:text-sm text-primary hover:underline font-medium"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {request.profiles.phone_number}
@@ -634,48 +634,48 @@ const TrackRescue = () => {
 
                       {/* Status Messages */}
                       {request.status === 'pending' && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-yellow-900">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-yellow-900">
                             ⏳ Your request is pending. We're finding the best provider for you.
                           </p>
                         </div>
                       )}
 
                       {request.status === 'assigned' && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-blue-900">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-blue-900">
                             👤 A provider has been assigned to your request!
                           </p>
                         </div>
                       )}
 
                       {request.status === 'accepted' && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-blue-900">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-blue-900">
                             ✅ Provider has accepted your request and will contact you shortly.
                           </p>
                         </div>
                       )}
 
                       {request.status === 'en_route' && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-purple-900">
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-purple-900">
                             🚗 <strong>Provider is on the way!</strong> Keep your phone nearby for any updates.
                           </p>
                         </div>
                       )}
 
                       {request.status === 'in_progress' && (
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-indigo-900">
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-indigo-900">
                             🔧 <strong>Service in progress.</strong> The provider is working on your vehicle.
                           </p>
                         </div>
                       )}
 
                       {request.status === 'completed' && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-green-900">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-green-900">
                             ✅ Service completed. Thank you for using our service!
                           </p>
                           {getRequestRating(request.id) && (
@@ -685,7 +685,7 @@ const TrackRescue = () => {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star
                                     key={star}
-                                    className={`h-4 w-4 ${
+                                    className={`h-3.5 w-3.5 lg:h-4 lg:w-4 ${
                                       star <= getRequestRating(request.id)!.rating
                                         ? 'fill-yellow-500 text-yellow-500'
                                         : 'text-gray-300'
@@ -693,7 +693,7 @@ const TrackRescue = () => {
                                   />
                                 ))}
                                 {getRequestRating(request.id)!.review && (
-                                  <span className="text-xs text-green-700 ml-2">
+                                  <span className="text-xs text-green-700 ml-2 line-clamp-1">
                                     "{getRequestRating(request.id)!.review}"
                                   </span>
                                 )}
@@ -704,16 +704,16 @@ const TrackRescue = () => {
                       )}
 
                       {request.status === 'denied' && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-red-900">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-red-900">
                             ❌ Request was declined. Please contact support or submit a new request.
                           </p>
                         </div>
                       )}
 
                       {request.status === 'cancelled' && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
-                          <p className="text-sm text-gray-900">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                          <p className="text-xs lg:text-sm text-gray-900">
                             🚫 This request has been cancelled.
                           </p>
                         </div>
@@ -780,8 +780,8 @@ const TrackRescue = () => {
                         </div>
                       )}
 
-                      {/* Timestamps - Enhanced */}
-                    <div className="px-6 pb-4 border-t pt-4 flex flex-col gap-2 text-xs text-muted-foreground">
+                      {/* Timestamps - Enhanced - Hidden on mobile */}
+                    <div className="hidden lg:flex px-6 pb-4 border-t pt-4 flex-col gap-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Clock className="h-3 w-3" />
                         <span>Requested: {new Date(request.created_at).toLocaleString('en-GB', {
