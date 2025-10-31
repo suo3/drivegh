@@ -51,6 +51,10 @@ const Dashboard = () => {
   // Contact messages filters
   const [messageStatusFilter, setMessageStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  
+  // Customer request filters
+  const [requestStatusFilter, setRequestStatusFilter] = useState<string>('all');
+  const [requestSearchQuery, setRequestSearchQuery] = useState('');
 
   useEffect(() => {
     console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
@@ -761,9 +765,55 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>My Requests</CardTitle>
+                    <CardDescription>View and manage your service requests</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                      <Table>
+                  <CardContent className="space-y-4">
+                    {/* Filters */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex-1">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Search by service, location, or provider..."
+                            value={requestSearchQuery}
+                            onChange={(e) => setRequestSearchQuery(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      <Select value={requestStatusFilter} onValueChange={setRequestStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-[200px]">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="assigned">Assigned</SelectItem>
+                          <SelectItem value="accepted">Accepted</SelectItem>
+                          <SelectItem value="en_route">En Route</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Results count */}
+                    {(requestStatusFilter !== 'all' || requestSearchQuery) && (
+                      <div className="text-sm text-muted-foreground">
+                        Showing {requests.filter(request => {
+                          const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                          const matchesSearch = !requestSearchQuery || 
+                            request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                          return matchesStatus && matchesSearch;
+                        }).length} of {requests.length} requests
+                      </div>
+                    )}
+
+                    <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Service</TableHead>
@@ -776,7 +826,35 @@ const Dashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {requests.map((request) => (
+                        {requests
+                          .filter(request => {
+                            const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                            const matchesSearch = !requestSearchQuery || 
+                              request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                              request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                              request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                            return matchesStatus && matchesSearch;
+                          })
+                          .length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8">
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                  <ClipboardList className="h-8 w-8" />
+                                  <p>No requests found matching your filters</p>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            requests
+                              .filter(request => {
+                                const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                                const matchesSearch = !requestSearchQuery || 
+                                  request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                  request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                  request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                                return matchesStatus && matchesSearch;
+                              })
+                              .map((request) => (
                           <TableRow key={request.id}>
                             <TableCell>{request.service_type}</TableCell>
                             <TableCell>{request.location}</TableCell>
@@ -883,16 +961,17 @@ const Dashboard = () => {
                                       </div>
                                     </form>
                                   </DialogContent>
-                                </Dialog>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              )}
+                                 </Dialog>
+                               )}
+                             </TableCell>
+                           </TableRow>
+                         ))
+                        )}
+                       </TableBody>
+                     </Table>
+                   </CardContent>
+                 </Card>
+               )}
 
               {currentView === 'payments' && (
                 <Card>
