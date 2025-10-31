@@ -127,7 +127,7 @@ const RequestService = () => {
       <Navbar />
       
       {/* Hero Section - Modern gradient with floating elements */}
-      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
+      <section className="relative pt-16 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
         {/* Animated gradient orbs */}
         <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-red-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>

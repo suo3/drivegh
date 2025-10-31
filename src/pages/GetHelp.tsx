@@ -25,7 +25,7 @@ const GetHelp = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="bg-primary text-white pt-32 pb-16">
+      <section className="bg-primary text-white pt-16 pb-10 lg:pt-20 lg:pb-12">
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4">Get Emergency Help Now</h1>
           <p className="text-xl text-gray-200 max-w-3xl">

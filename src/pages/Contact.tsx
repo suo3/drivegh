@@ -73,7 +73,7 @@ const Contact = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 text-white pt-32 pb-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 text-white pt-16 pb-10 lg:pt-20 lg:pb-12 overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:60px_60px]" />
         <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent" />
         

@@ -51,7 +51,7 @@ const Index = () => {
       <Navbar />
 
       {/* Hero Section - Modern asymmetric design */}
-      <section id="home" className="relative pt-24 pb-20 overflow-hidden bg-gradient-to-br from-[hsl(217,91%,15%)] via-[hsl(217,91%,20%)] to-[hsl(217,91%,25%)]">
+      <section id="home" className="relative pt-16 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-gradient-to-br from-[hsl(217,91%,15%)] via-[hsl(217,91%,20%)] to-[hsl(217,91%,25%)]">
         {/* Animated gradient orbs */}
         <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-secondary/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
