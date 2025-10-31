@@ -174,18 +174,34 @@ const RequestService = () => {
       {/* Compact Banner */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Request Service</h1>
-              <p className="text-white/80 text-sm">
-                {user ? 'Submit your request for immediate assistance' : 'No account required - just fill out the form'}
-              </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">Request Roadside Assistance</h1>
+              
+              {/* Emergency Call Badge */}
+              <a 
+                href="tel:+233202222244"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-full text-white hover:bg-red-500/30 transition-all group animate-fade-in"
+              >
+                <div className="relative flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-red-200">Emergency? Call Now</span>
+                  <span className="text-sm font-bold">+233 20 222 2244</span>
+                </div>
+                <div className="relative flex items-center justify-center ml-2">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                  <div className="absolute w-2 h-2 bg-red-400 rounded-full animate-ping"></div>
+                </div>
+              </a>
             </div>
+            
             {user && (
               <Button 
                 variant="ghost" 
                 onClick={() => navigate('/dashboard')} 
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 self-start md:self-center"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Dashboard
@@ -201,25 +217,6 @@ const RequestService = () => {
         
         <div className="container mx-auto px-4 relative">
           <div className="max-w-5xl mx-auto">
-            {/* Emergency Call Card - Enhanced */}
-            <Card className="p-8 mb-12 bg-gradient-to-br from-red-50 to-orange-50/50 border-2 border-red-200 hover-lift shadow-xl animate-scale-in">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl p-5 flex-shrink-0">
-                  <Phone className="h-12 w-12 text-white" />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="font-bold text-2xl mb-2">Emergency? Call Us Directly</h3>
-                  <a href="tel:+233202222244" className="text-3xl md:text-4xl font-bold text-primary hover:text-primary/80 transition-colors">
-                    +233 20 222 2244
-                  </a>
-                  <p className="text-muted-foreground mt-2 flex items-center justify-center md:justify-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    Available 24/7 for immediate assistance
-                  </p>
-                </div>
-              </div>
-            </Card>
-
             <Card className="shadow-2xl border-2 overflow-hidden animate-fade-in">
               <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b-2">
                 <CardTitle className="text-3xl flex items-center gap-3">
