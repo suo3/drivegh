@@ -73,24 +73,13 @@ const Contact = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 text-white pt-16 pb-10 lg:pt-20 lg:pb-12 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:60px_60px]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent" />
-        
-        {/* Floating elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-10 right-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-40 right-40 w-24 h-24 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="text-6xl font-bold mb-6">Contact Us</h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto">
-              Get in touch with our team - we're here to help 24/7
-            </p>
-          </div>
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Contact Us</h1>
+          <p className="text-white/80 text-sm">Get in touch with our support team</p>
         </div>
       </section>
+
 
       <section className="py-20 bg-gradient-to-br from-background via-background to-primary/5">
         <div className="container mx-auto px-4">

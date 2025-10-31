@@ -50,79 +50,36 @@ const Index = () => {
     <div className="min-h-screen pb-20 lg:pb-0">
       <Navbar />
 
-      {/* Hero Section - Modern asymmetric design */}
-      <section id="home" className="relative pt-16 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-gradient-to-br from-[hsl(217,91%,15%)] via-[hsl(217,91%,20%)] to-[hsl(217,91%,25%)]">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-secondary/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-16 items-center">
-            {/* Left content */}
-            <div className="space-y-8 animate-fade-in-left">
-              {/* Trust badge */}
-              <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="font-medium">24/7 Live Support • 30min Avg Response</span>
-              </div>
-              
-              <h1 className="text-5xl md:text-7xl font-bold leading-[1.1] text-white">
-                <span className="block">Roadside Help</span>
-                <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
-                  When You Need It
-                </span>
+      {/* Compact Banner */}
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
+                Emergency Roadside Assistance
               </h1>
-              
-              <p className="text-xl text-gray-200 max-w-xl leading-relaxed">
-                Ghana's fastest emergency roadside assistance. Professional help arrives in 30 minutes or less, anywhere you are.
+              <p className="text-white/80 text-sm">
+                24/7 support • 30min response • Ghana-wide coverage
               </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <Button 
-                  onClick={() => navigate('/get-help')} 
-                  size="lg" 
-                  className="bg-gradient-to-r from-accent to-yellow-400 text-accent-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 font-semibold text-lg px-8 pulse-glow"
-                >
-                  Request Help Now
-                </Button>
-                <Button 
-                  onClick={() => navigate('/track-rescue')} 
-                  size="lg" 
-                  className="glass border-2 border-white/30 text-white hover:bg-white/20 font-semibold text-lg px-8 backdrop-blur-md"
-                >
-                  Track Rescue
-                </Button>
-              </div>
-              
-              {/* Stats row */}
-              <div className="flex flex-wrap gap-8 pt-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <div className="text-3xl font-bold text-accent">4.5</div>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 text-accent fill-accent" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-300">Customer Rating</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl font-bold text-white">4,500+</div>
-                  <p className="text-sm text-gray-300">Rescues This Year</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl font-bold text-white">&lt;30min</div>
-                  <p className="text-sm text-gray-300">Avg Response Time</p>
-                </div>
-              </div>
             </div>
-            
-            {/* Right content - Hero image with floating effect */}
-            <div className="relative animate-fade-in-right">
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                onClick={() => navigate('/get-help')} 
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+              >
+                Request Help Now
+              </Button>
+              <Button 
+                onClick={() => navigate('/track-rescue')} 
+                variant="outline"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+              >
+                Track Rescue
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
               <div className="absolute -inset-4 bg-gradient-to-r from-accent/30 to-secondary/30 rounded-3xl blur-2xl"></div>
               <img 
                 src={heroTaxi} 

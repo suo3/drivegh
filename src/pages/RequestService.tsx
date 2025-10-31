@@ -126,45 +126,26 @@ const RequestService = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero Section - Modern gradient with floating elements */}
-      <section className="relative pt-16 pb-12 lg:pt-20 lg:pb-16 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-red-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      {/* Compact Banner */}
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Request Service</h1>
+              <p className="text-white/80 text-sm">
+                {user ? 'Submit your request for immediate assistance' : 'No account required - just fill out the form'}
+              </p>
+            </div>
             {user && (
               <Button 
                 variant="ghost" 
                 onClick={() => navigate('/dashboard')} 
-                className="glass border border-white/20 text-white hover:bg-white/20 mb-6"
+                className="text-white hover:bg-white/20"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
+                Dashboard
               </Button>
             )}
-            
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
-                <AlertCircle className="w-4 h-4" />
-                <span className="font-medium">Emergency Assistance</span>
-              </div>
-              
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                <span className="block">Request Roadside</span>
-                <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
-                  Assistance Now
-                </span>
-              </h1>
-              
-              <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-                {user ? 'Submit your request and we\'ll assign a professional service provider immediately' : 'Get help now - no account required, just fill out the form below'}
-              </p>
-            </div>
           </div>
         </div>
       </section>
