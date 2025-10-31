@@ -68,25 +68,47 @@ const Index = () => {
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
                 Emergency Roadside Assistance
               </h1>
-              <p className="text-white/80 text-sm">
-                24/7 support • 30min response • Ghana-wide coverage
-              </p>
+              
+              {/* Animated Status Badges */}
+              <div className="flex flex-wrap gap-2 md:gap-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                {/* 24/7 Live Support Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-white/20 transition-all group cursor-default">
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="absolute w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                  </div>
+                  <span className="text-xs md:text-sm font-medium whitespace-nowrap">24/7 Live Support</span>
+                </div>
+
+                {/* Response Time Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-white/20 transition-all group cursor-default animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full group-hover:scale-125 transition-transform"></div>
+                  <span className="text-xs md:text-sm font-medium whitespace-nowrap">30min Avg Response</span>
+                </div>
+
+                {/* Coverage Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-white/20 transition-all group cursor-default animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                  <MapPinned className="w-3 h-3 md:w-4 md:h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs md:text-sm font-medium whitespace-nowrap">Ghana-wide Coverage</span>
+                </div>
+              </div>
             </div>
+            
             <div className="flex flex-wrap gap-3">
               <Button 
                 onClick={() => navigate('/get-help')} 
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
               >
                 Request Help Now
               </Button>
               <Button 
                 onClick={() => navigate('/track-rescue')} 
                 variant="outline"
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm hover:scale-105 transition-all"
               >
                 Track Rescue
               </Button>
