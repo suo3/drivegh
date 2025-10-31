@@ -80,41 +80,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-              <div className="absolute -inset-4 bg-gradient-to-r from-accent/30 to-secondary/30 rounded-3xl blur-2xl"></div>
-              <img 
-                src={heroTaxi} 
-                alt="Emergency Roadside Assistance Vehicle" 
-                className="relative w-full max-w-lg mx-auto drop-shadow-2xl animate-float" 
-              />
-              
-              {/* Floating info cards */}
-              <div className="absolute top-8 -left-4 glass p-4 rounded-xl animate-scale-in" style={{ animationDelay: '0.3s' }}>
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-500 rounded-full p-2">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm">Live Tracking</p>
-                    <p className="text-white/70 text-xs">Real-time updates</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute bottom-8 -right-4 glass p-4 rounded-xl animate-scale-in" style={{ animationDelay: '0.6s' }}>
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent rounded-full p-2">
-                    <Phone className="w-5 h-5 text-accent-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm">Mobile Money</p>
-                    <p className="text-white/70 text-xs">Easy payment</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Services Section - Compact grid on mobile */}
       <section id="services" className="py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative">

@@ -104,32 +104,6 @@ const Partnership = () => {
           <p className="text-white/80 text-sm">Join Ghana's largest roadside assistance network</p>
         </div>
       </section>
-              {[
-                { value: '50+', label: 'Partners' },
-                { value: '4.5K+', label: 'Jobs' },
-                { value: '10+', label: 'Cities' },
-              ].map((stat, index) => (
-                <div 
-                  key={index}
-                  className="text-center animate-scale-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="text-2xl lg:text-3xl xl:text-4xl font-bold text-accent mb-0.5 lg:mb-1">{stat.value}</div>
-                  <div className="text-[10px] lg:text-sm text-gray-300">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-            
-            <Button 
-              onClick={() => document.getElementById('application-form')?.scrollIntoView({ behavior: 'smooth' })}
-              size="lg"
-              className="bg-gradient-to-r from-accent to-yellow-400 text-accent-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 font-bold lg:text-lg px-8 lg:px-10 pulse-glow w-full sm:w-auto"
-            >
-              Apply Now
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Benefits Section - Simplified on mobile */}
       <section className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">

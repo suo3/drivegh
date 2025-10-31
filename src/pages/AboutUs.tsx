@@ -37,20 +37,6 @@ const AboutUs = () => {
           <p className="text-white/80 text-sm">Your trusted partner for emergency roadside services</p>
         </div>
       </section>
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="text-center glass p-4 lg:p-6 rounded-xl lg:rounded-2xl hover:bg-white/20 transition-all cursor-pointer hover-lift animate-scale-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <stat.icon className="w-6 h-6 lg:w-8 lg:h-8 text-accent mx-auto mb-2 lg:mb-3" />
-                <div className="text-xl lg:text-3xl font-bold text-white mb-0.5 lg:mb-1">{stat.value}</div>
-                <div className="text-[10px] lg:text-sm text-gray-300">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Our Story Section - Simplified on mobile */}
       <section className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
