@@ -42,8 +42,8 @@ export function MobileBottomNav() {
   const currentPath = location.pathname;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 shadow-lg">
-      <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_30px_rgba(0,0,0,0.1)]">
+      <div className="flex items-center justify-around px-2 py-2.5 safe-area-inset-bottom">
         {items.map((item) => {
           const isActive = currentPath === item.path;
           
@@ -52,23 +52,40 @@ export function MobileBottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[64px]",
+                "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group",
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
+                  ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                  : "text-foreground/60 hover:text-foreground hover:bg-accent/50 hover:scale-105 active:scale-95"
               )}
             >
+              {/* Active indicator line */}
+              {isActive && (
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
+              )}
+              
               <item.icon className={cn(
-                "h-5 w-5 transition-transform duration-200",
-                isActive && "scale-110"
+                "h-5 w-5 transition-all duration-300",
+                isActive && "scale-110 drop-shadow-lg",
+                !isActive && "group-hover:scale-110"
               )} />
-              <span className="text-[10px] font-medium truncate max-w-[60px]">
+              <span className={cn(
+                "text-[10px] font-semibold truncate max-w-[60px] transition-all duration-300",
+                isActive && "text-primary-foreground"
+              )}>
                 {item.title}
               </span>
+              
+              {/* Hover glow effect */}
+              {!isActive && (
+                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+              )}
             </button>
           );
         })}
       </div>
+      
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </nav>
   );
 }

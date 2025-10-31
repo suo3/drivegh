@@ -67,28 +67,46 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     const moreItems = role === 'admin' ? items.slice(4) : [];
 
     return (
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-sidebar/95 backdrop-blur-lg supports-[backdrop-filter]:bg-sidebar/90 shadow-lg">
-        <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
-          {primaryItems.map((item) => (
-            <button
-              key={item.view}
-              onClick={() => onViewChange(item.view)}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[64px]",
-                currentView === item.view
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-              )}
-            >
-              <item.icon className={cn(
-                "h-5 w-5 transition-transform duration-200",
-                currentView === item.view && "scale-110"
-              )} />
-              <span className="text-[10px] font-medium truncate max-w-[60px]">
-                {item.title.split(' ')[0]}
-              </span>
-            </button>
-          ))}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-sidebar-border/50 bg-gradient-to-t from-sidebar via-sidebar/95 to-sidebar/80 backdrop-blur-xl supports-[backdrop-filter]:bg-sidebar/80 shadow-[0_-4px_30px_rgba(0,0,0,0.2)]">
+        <div className="flex items-center justify-around px-2 py-2.5 safe-area-inset-bottom">
+          {primaryItems.map((item) => {
+            const isActive = currentView === item.view;
+            
+            return (
+              <button
+                key={item.view}
+                onClick={() => onViewChange(item.view)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group",
+                  isActive
+                    ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
+                )}
+              >
+                {/* Active indicator line */}
+                {isActive && (
+                  <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
+                )}
+                
+                <item.icon className={cn(
+                  "h-5 w-5 transition-all duration-300",
+                  isActive && "scale-110 drop-shadow-lg",
+                  !isActive && "group-hover:scale-110"
+                )} />
+                <span className={cn(
+                  "text-[10px] font-semibold truncate max-w-[60px] transition-all duration-300",
+                  isActive && "text-primary-foreground"
+                )}>
+                  {item.title.split(' ')[0]}
+                </span>
+                
+                {/* Hover glow effect */}
+                {!isActive && (
+                  <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                )}
+              </button>
+            );
+          })}
           
           {/* More menu for admin */}
           {moreItems.length > 0 && (
@@ -96,44 +114,59 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
               <SheetTrigger asChild>
                 <button
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[64px]",
+                    "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group",
                     moreItems.some(item => currentView === item.view)
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                      : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
                   )}
                 >
-                  <MoreHorizontal className="h-5 w-5" />
-                  <span className="text-[10px] font-medium">More</span>
+                  {moreItems.some(item => currentView === item.view) && (
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
+                  )}
+                  <MoreHorizontal className="h-5 w-5 transition-all duration-300 group-hover:scale-110" />
+                  <span className="text-[10px] font-semibold">More</span>
                 </button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="rounded-t-2xl">
+              <SheetContent side="bottom" className="rounded-t-2xl border-t-2 border-border/50 bg-gradient-to-b from-background to-background/95 backdrop-blur-xl">
                 <SheetHeader>
-                  <SheetTitle>More Options</SheetTitle>
+                  <SheetTitle className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    More Options
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="grid grid-cols-2 gap-3 mt-6 pb-6">
-                  {moreItems.map((item) => (
-                    <button
-                      key={item.view}
-                      onClick={() => {
-                        onViewChange(item.view);
-                        setMoreMenuOpen(false);
-                      }}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-200 border-2",
-                        currentView === item.view
-                          ? "bg-primary text-primary-foreground border-primary shadow-md"
-                          : "bg-background border-border hover:border-primary/50 hover:bg-accent"
-                      )}
-                    >
-                      <item.icon className="h-6 w-6" />
-                      <span className="text-xs font-medium text-center">{item.title}</span>
-                    </button>
-                  ))}
+                  {moreItems.map((item) => {
+                    const isActive = currentView === item.view;
+                    
+                    return (
+                      <button
+                        key={item.view}
+                        onClick={() => {
+                          onViewChange(item.view);
+                          setMoreMenuOpen(false);
+                        }}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl transition-all duration-300 border-2 group",
+                          isActive
+                            ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground border-transparent shadow-lg shadow-primary/20 scale-105"
+                            : "bg-background border-border hover:border-primary/50 hover:bg-accent hover:scale-105 active:scale-95"
+                        )}
+                      >
+                        <item.icon className={cn(
+                          "h-7 w-7 transition-all duration-300",
+                          isActive ? "drop-shadow-lg" : "group-hover:scale-110"
+                        )} />
+                        <span className="text-xs font-semibold text-center">{item.title}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </SheetContent>
             </Sheet>
           )}
         </div>
+        
+        {/* Bottom accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </nav>
     );
   }
