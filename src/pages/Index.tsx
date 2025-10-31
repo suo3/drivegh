@@ -2,15 +2,38 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader2, Truck, Wrench, Battery, Key, Fuel, Settings, Phone, MapPin, CreditCard, Star, MapPinned } from 'lucide-react';
+import { Loader2, Phone, MapPin, CreditCard, Star, MapPinned, Key } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import heroTaxi from '@/assets/hero-taxi.png';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
+  const [services, setServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (data) setServices(data);
+  };
+
+  const getIconComponent = (iconName: string) => {
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || LucideIcons.Settings;
+  };
 
   if (loading) {
     return (
@@ -19,15 +42,6 @@ const Index = () => {
       </div>
     );
   }
-
-  const services = [
-    { icon: Truck, title: 'Towing Services', desc: 'Vehicle towing for relocations, accidents, or mechanical issues. We\'ll get you off the road quickly.' },
-    { icon: Wrench, title: 'Flat Tire Change', desc: 'Quick roadside tire change service. We\'ll replace your flat tire with a spare in no time.' },
-    { icon: Battery, title: 'Battery Jump Start', desc: 'Dead battery? Our technicians will jump-start your vehicle and get you back on the road quickly.' },
-    { icon: Key, title: 'Lockout Services', desc: 'Locked your keys in your car? We provide quick and damage-free vehicle entry services.' },
-    { icon: Fuel, title: 'Fuel Delivery', desc: 'Run out of fuel? We deliver enough fuel to get you to the nearest fuel station.' },
-    { icon: Settings, title: 'Minor Repairs', desc: 'On-the-spot minor maintenance to get you moving again without a trip to the workshop.' },
-  ];
 
   const howItWorks = [
     { icon: Phone, title: 'Request Assistance', desc: 'Use our app or website to submit help. Provide your location and describe your emergency.' },
@@ -99,19 +113,23 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
-            {services.map((service, index) => (
-              <Card 
-                key={index} 
-                className="p-4 lg:p-8 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="bg-primary/10 rounded-xl lg:rounded-2xl w-10 h-10 lg:w-16 lg:h-16 flex items-center justify-center mb-3 lg:mb-6 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300 mx-auto lg:mx-0">
-                  <service.icon className="h-5 w-5 lg:h-8 lg:w-8 text-primary" />
-                </div>
-                <h3 className="text-sm lg:text-xl font-bold mb-2 lg:mb-3 group-hover:text-primary transition-colors text-center lg:text-left">{service.title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-xs lg:text-base hidden lg:block">{service.desc}</p>
-              </Card>
-            ))}
+            {services.map((service, index) => {
+              const Icon = getIconComponent(service.icon);
+              return (
+                <Card 
+                  key={service.id} 
+                  className="p-4 lg:p-8 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                >
+                  <div className="bg-primary/10 rounded-xl lg:rounded-2xl w-10 h-10 lg:w-16 lg:h-16 flex items-center justify-center mb-3 lg:mb-6 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300 mx-auto lg:mx-0">
+                    <Icon className="h-5 w-5 lg:h-8 lg:w-8 text-primary" />
+                  </div>
+                  <h3 className="text-sm lg:text-xl font-bold mb-2 lg:mb-3 group-hover:text-primary transition-colors text-center lg:text-left">{service.name}</h3>
+                  <p className="text-muted-foreground leading-relaxed text-xs lg:text-base hidden lg:block">{service.description}</p>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
