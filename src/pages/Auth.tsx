@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Mail, Lock, User, Phone, ArrowRight, CheckCircle } from 'lucide-react';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
@@ -81,91 +82,184 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{isLogin ? 'Login' : 'Sign Up'}</CardTitle>
-          <CardDescription>
-            {isLogin ? 'Welcome back to DriveGH' : 'Create your DriveGH account'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    maxLength={100}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    required
-                    maxLength={20}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">I am a</Label>
-                  <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="customer">Customer</SelectItem>
-                      <SelectItem value="provider">Service Provider</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                maxLength={255}
-              />
+    <div className="min-h-screen flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTEydi0xMmgxMnYxMnptMTItMTJoLTEyVjZoMTJ2MTJ6TTEyIDQySDBoLTEydjEyaDEyVjQyem0yNCAxMkgyNHYtMTJoMTJ2MTJ6TTM2IDZIMjRWLTZoMTJWNnpNMTIgMThoMTJWNkgxMnYxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
+        
+        <div className="relative z-10 animate-fade-in">
+          <h1 className="text-5xl font-bold text-white mb-4">DriveGH</h1>
+          <p className="text-xl text-white/90">Ghana's Premier Auto Rescue Service</p>
+        </div>
+
+        <div className="relative z-10 space-y-6 animate-fade-in">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
+              <CheckCircle className="h-6 w-6 text-white" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">24/7 Emergency Support</h3>
+              <p className="text-white/80">Round-the-clock assistance when you need it most</p>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Please wait...' : isLogin ? 'Login' : 'Sign Up'}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Login'}
-            </button>
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
+              <CheckCircle className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">Verified Professionals</h3>
+              <p className="text-white/80">Trusted and certified service providers</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
+              <CheckCircle className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">Quick Response Time</h3>
+              <p className="text-white/80">Fast dispatch to your location</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 text-white/60 text-sm">
+          © 2025 DriveGH. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right Side - Auth Form */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-primary/5">
+        <Card className="w-full max-w-md shadow-2xl border-primary/10 animate-scale-in">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="flex items-center justify-between mb-2">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                {isLogin ? 'Welcome Back' : 'Get Started'}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-base">
+              {isLogin 
+                ? 'Sign in to access your dashboard' 
+                : 'Create your account to get started'}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        maxLength={100}
+                        className="pl-10"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        required
+                        maxLength={20}
+                        className="pl-10"
+                        placeholder="+233 XX XXX XXXX"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="role" className="text-sm font-medium">I am a</Label>
+                    <Select value={role} onValueChange={setRole}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="provider">Service Provider</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    maxLength={255}
+                    className="pl-10"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="pl-10"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-11 text-base font-medium hover-scale group" 
+                disabled={loading}
+              >
+                {loading ? (
+                  'Please wait...'
+                ) : (
+                  <>
+                    {isLogin ? 'Sign In' : 'Create Account'}
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </Button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors story-link"
+              >
+                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
