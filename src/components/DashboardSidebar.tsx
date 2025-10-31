@@ -1,4 +1,5 @@
-import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare } from 'lucide-react';
+import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +12,7 @@ import {
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +26,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const isMobile = useIsMobile();
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   const customerItems = [
     { title: 'Service Requests', view: 'requests', icon: ClipboardList },
@@ -59,10 +62,14 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
 
   // Mobile: Horizontal bottom navigation
   if (isMobile) {
+    // For admin, show first 4 items + More menu
+    const primaryItems = role === 'admin' ? items.slice(0, 4) : items.slice(0, 5);
+    const moreItems = role === 'admin' ? items.slice(4) : [];
+
     return (
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-sidebar/95 backdrop-blur-lg supports-[backdrop-filter]:bg-sidebar/90 shadow-lg">
         <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
-          {items.slice(0, 5).map((item) => (
+          {primaryItems.map((item) => (
             <button
               key={item.view}
               onClick={() => onViewChange(item.view)}
@@ -82,6 +89,50 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
               </span>
             </button>
           ))}
+          
+          {/* More menu for admin */}
+          {moreItems.length > 0 && (
+            <Sheet open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[64px]",
+                    moreItems.some(item => currentView === item.view)
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  )}
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                  <span className="text-[10px] font-medium">More</span>
+                </button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="rounded-t-2xl">
+                <SheetHeader>
+                  <SheetTitle>More Options</SheetTitle>
+                </SheetHeader>
+                <div className="grid grid-cols-2 gap-3 mt-6 pb-6">
+                  {moreItems.map((item) => (
+                    <button
+                      key={item.view}
+                      onClick={() => {
+                        onViewChange(item.view);
+                        setMoreMenuOpen(false);
+                      }}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-200 border-2",
+                        currentView === item.view
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-background border-border hover:border-primary/50 hover:bg-accent"
+                      )}
+                    >
+                      <item.icon className="h-6 w-6" />
+                      <span className="text-xs font-medium text-center">{item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </nav>
     );
