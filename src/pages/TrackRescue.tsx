@@ -358,47 +358,89 @@ const TrackRescue = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="bg-primary text-white pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Track Your Rescue</h1>
-          <p className="text-xl text-gray-200 max-w-3xl">
-            Enter your phone number to view all your service requests and track their status
-          </p>
+      {/* Hero Section - Modern gradient with floating elements */}
+      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
+        {/* Animated gradient orbs */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-10 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
+            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
+              <Navigation className="w-4 h-4" />
+              <span className="font-medium">Live Tracking</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+              <span className="block">Track Your</span>
+              <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
+                Rescue Status
+              </span>
+            </h1>
+            
+            <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+              Real-time updates on your service requests. Monitor your rescue team's progress from assignment to completion.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
+        <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-6 relative">
           <div className="w-full">
             {serviceRequests.length === 0 && (
-              <Card className="p-8 mb-8 max-w-2xl mx-auto">
-                <form onSubmit={handleTrack} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Search by Phone Number</Label>
+              <Card className="p-12 mb-12 max-w-2xl mx-auto shadow-2xl border-2 hover-lift animate-scale-in bg-gradient-to-br from-white to-gray-50/50">
+                <div className="text-center mb-8">
+                  <div className="bg-gradient-to-br from-primary to-secondary rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                    <Navigation className="h-10 w-10 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold mb-3">Find Your Requests</h2>
+                  <p className="text-muted-foreground text-lg">
+                    {user 
+                      ? "Search for requests by phone number" 
+                      : "Enter your phone number to track all your service requests"
+                    }
+                  </p>
+                </div>
+                
+                <form onSubmit={handleTrack} className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="phoneNumber" className="text-base font-semibold">Phone Number</Label>
                     <Input
                       id="phoneNumber"
                       type="tel"
-                      placeholder="e.g., 8142221617 or +233 814 222 1617"
+                      placeholder="e.g., 024 123 4567 or +233 24 123 4567"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                       disabled={loading}
+                      className="h-14 text-lg"
                     />
                     <p className="text-sm text-muted-foreground">
-                      {user 
-                        ? "Search for requests by phone number (including requests made without login)" 
-                        : "Enter your phone number (with or without formatting)"
-                      }
+                      Enter your phone number with or without formatting
                     </p>
                   </div>
-                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold text-lg h-14" 
+                    disabled={loading}
+                  >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                         Searching...
                       </>
                     ) : (
-                      'Track My Requests'
+                      <>
+                        <Navigation className="mr-2 h-5 w-5" />
+                        Track My Requests
+                      </>
                     )}
                   </Button>
                 </form>
@@ -406,39 +448,52 @@ const TrackRescue = () => {
             )}
 
             {user && loading && (
-              <Card className="p-8 mb-8 text-center max-w-2xl mx-auto">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                <p className="text-muted-foreground">Loading your requests...</p>
+              <Card className="p-16 mb-12 text-center max-w-2xl mx-auto shadow-xl animate-scale-in">
+                <Loader2 className="h-16 w-16 animate-spin mx-auto mb-6 text-primary" />
+                <p className="text-muted-foreground text-lg">Loading your requests...</p>
               </Card>
             )}
 
             {searched && serviceRequests.length === 0 && (
-              <Card className="p-8 text-center max-w-2xl mx-auto">
-                <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No Service Requests Found</h3>
-                <p className="text-muted-foreground mb-4">
+              <Card className="p-16 text-center max-w-2xl mx-auto shadow-xl border-2 animate-scale-in">
+                <div className="bg-muted rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">No Service Requests Found</h3>
+                <p className="text-muted-foreground text-lg mb-4">
                   We couldn't find any service requests for this phone number.
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-6">
                   Make sure you're using the same phone number you provided when requesting assistance.
                 </p>
+                <Button 
+                  onClick={() => navigate('/get-help')}
+                  className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold"
+                >
+                  Request New Service
+                </Button>
               </Card>
             )}
 
             {serviceRequests.length > 0 && (
               <>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10 animate-fade-in">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-2xl font-bold">Your Service Requests</h2>
-                    <Badge variant="outline" className="text-lg px-4 py-2">
-                      {filteredAndSortedRequests.length} of {serviceRequests.length}
-                    </Badge>
+                    <div className="bg-primary/10 rounded-2xl p-4">
+                      <Car className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold">Your Service Requests</h2>
+                      <p className="text-muted-foreground">
+                        Showing {filteredAndSortedRequests.length} of {serviceRequests.length} requests
+                      </p>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-3 glass-dark p-3 rounded-xl">
+                    <Filter className="h-5 w-5 text-muted-foreground" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[200px] border-0 bg-transparent focus:ring-0">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -456,57 +511,74 @@ const TrackRescue = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredAndSortedRequests.map((request) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAndSortedRequests.map((request, index) => (
                   <Card 
                     key={request.id} 
-                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                    className="overflow-hidden cursor-pointer hover-lift transition-all border-2 hover:border-primary/30 animate-scale-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
                     onClick={() => navigate(`/track/${request.tracking_code || request.id}`)}
                   >
-                    {/* Status Banner */}
-                    <div className={`${getStatusColor(request.status)} text-white p-4`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(request.status)}
+                    {/* Status Banner - Enhanced gradient */}
+                    <div className={`${getStatusColor(request.status)} text-white p-6 relative overflow-hidden`}>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                      <div className="relative flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                            {getStatusIcon(request.status)}
+                          </div>
                           <div>
-                            <h3 className="font-semibold text-lg">
+                            <h3 className="font-bold text-xl">
                               {getStatusLabel(request.status)}
                             </h3>
-                            <p className="text-sm opacity-90 capitalize">
+                            <p className="text-sm opacity-90 capitalize mt-1">
                               {request.service_type.replace('_', ' ')} Service
                             </p>
                           </div>
                         </div>
-                        <div className="text-right text-sm opacity-90">
-                          {new Date(request.created_at).toLocaleDateString()}
-                        </div>
+                      </div>
+                      <div className="text-sm opacity-90 mt-3 text-right">
+                        {new Date(request.created_at).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
                       </div>
                     </div>
 
-                    {/* Request Details */}
-                    <div className="p-6 space-y-4">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    {/* Request Details - Enhanced spacing and icons */}
+                    <div className="p-6 space-y-5">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </div>
                         <div className="flex-1">
-                          <p className="font-medium">Location</p>
-                          <p className="text-sm text-muted-foreground">{request.location}</p>
+                          <p className="font-semibold mb-1">Location</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                         </div>
                       </div>
 
                       {request.description && (
-                        <div className="pl-8">
-                          <p className="font-medium">Description</p>
-                          <p className="text-sm text-muted-foreground">{request.description}</p>
+                        <div className="flex items-start gap-4">
+                          <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold mb-1">Description</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{request.description}</p>
+                          </div>
                         </div>
                       )}
 
                       {/* Vehicle Information */}
                       {(request.vehicle_make || request.vehicle_model) && (
-                        <div className="flex items-start gap-3">
-                          <Car className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-4">
+                          <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                            <Car className="h-5 w-5 text-primary" />
+                          </div>
                           <div className="flex-1">
-                            <p className="font-medium">Vehicle</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-semibold mb-1">Vehicle</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
                               {request.vehicle_make} {request.vehicle_model}
                               {request.vehicle_year && ` (${request.vehicle_year})`}
                               {request.vehicle_plate && ` - ${request.vehicle_plate}`}
@@ -517,16 +589,18 @@ const TrackRescue = () => {
 
                       {request.profiles && (
                         <>
-                          <div className="flex items-start gap-3">
-                            <User className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="flex items-start gap-4">
+                            <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
                             <div className="flex-1">
-                              <p className="font-medium">Service Provider</p>
-                              <div className="flex items-center gap-2">
+                              <p className="font-semibold mb-1">Service Provider</p>
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-sm text-muted-foreground">{request.profiles.full_name}</p>
                                 {request.provider_id && getProviderRating(request.provider_id) && (
-                                  <div className="flex items-center gap-1">
-                                    <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                                    <span className="text-xs font-medium">
+                                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-md">
+                                    <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                                    <span className="text-xs font-bold text-yellow-900">
                                       {getProviderRating(request.provider_id)?.avgRating}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
@@ -539,13 +613,16 @@ const TrackRescue = () => {
                           </div>
 
                           {request.profiles.phone_number && (
-                            <div className="flex items-start gap-3">
-                              <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-4">
+                              <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                                <Phone className="h-5 w-5 text-primary" />
+                              </div>
                               <div className="flex-1">
-                                <p className="font-medium">Provider Contact</p>
+                                <p className="font-semibold mb-1">Provider Contact</p>
                                 <a 
                                   href={`tel:${request.profiles.phone_number}`}
-                                  className="text-sm text-primary hover:underline"
+                                  className="text-sm text-primary hover:underline font-medium"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {request.profiles.phone_number}
                                 </a>
@@ -643,12 +720,13 @@ const TrackRescue = () => {
                       )}
                     </div>
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons - Enhanced */}
                       {['pending', 'assigned', 'accepted'].includes(request.status) && (
-                        <div className="px-6 pb-4 border-t pt-4">
+                        <div className="px-6 pb-6 border-t pt-6">
                           <Button 
                             variant="destructive"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               if (confirm('Are you sure you want to cancel this request?')) {
                                 const { error } = await supabase
                                   .from('service_requests')
@@ -673,19 +751,20 @@ const TrackRescue = () => {
                                 }
                               }
                             }}
-                            className="w-full"
+                            className="w-full font-semibold"
                           >
                             Cancel Request
                           </Button>
                         </div>
                       )}
 
-                      {/* Rate Service Button */}
+                      {/* Rate Service Button - Enhanced */}
                       {request.status === 'completed' && user && request.customer_id === user.id && (
-                        <div className="px-6 pb-4 border-t pt-4">
+                        <div className="px-6 pb-6 border-t pt-6">
                           <Button
                             variant={getRequestRating(request.id) ? "outline" : "default"}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const existingRating = getRequestRating(request.id);
                               if (existingRating) {
                                 setCurrentRating(existingRating.rating);
@@ -693,19 +772,37 @@ const TrackRescue = () => {
                               }
                               setRatingDialogOpen(request.id);
                             }}
-                            className="w-full"
+                            className="w-full font-semibold gap-2"
                           >
-                            <Star className="h-4 w-4 mr-2" />
+                            <Star className="h-4 w-4" />
                             {getRequestRating(request.id) ? 'Update Rating' : 'Rate Service'}
                           </Button>
                         </div>
                       )}
 
-                      {/* Timestamps */}
-                    <div className="px-6 pb-4 border-t pt-4 flex justify-between text-xs text-muted-foreground">
-                      <span>Requested: {new Date(request.created_at).toLocaleString()}</span>
+                      {/* Timestamps - Enhanced */}
+                    <div className="px-6 pb-4 border-t pt-4 flex flex-col gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3 w-3" />
+                        <span>Requested: {new Date(request.created_at).toLocaleString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</span>
+                      </div>
                       {request.completed_at && (
-                        <span>Completed: {new Date(request.completed_at).toLocaleString()}</span>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>Completed: {new Date(request.completed_at).toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                        </div>
                       )}
                     </div>
                   </Card>
