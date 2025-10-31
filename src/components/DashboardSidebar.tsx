@@ -11,6 +11,8 @@ import {
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface DashboardSidebarProps {
   role: 'customer' | 'provider' | 'admin';
@@ -21,6 +23,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ role, currentView, onViewChange }: DashboardSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
+  const isMobile = useIsMobile();
 
   const customerItems = [
     { title: 'Service Requests', view: 'requests', icon: ClipboardList },
@@ -54,6 +57,37 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     return 'Admin Portal';
   };
 
+  // Mobile: Horizontal bottom navigation
+  if (isMobile) {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-sidebar/95 backdrop-blur-lg supports-[backdrop-filter]:bg-sidebar/90 shadow-lg">
+        <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
+          {items.slice(0, 5).map((item) => (
+            <button
+              key={item.view}
+              onClick={() => onViewChange(item.view)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[64px]",
+                currentView === item.view
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+              )}
+            >
+              <item.icon className={cn(
+                "h-5 w-5 transition-transform duration-200",
+                currentView === item.view && "scale-110"
+              )} />
+              <span className="text-[10px] font-medium truncate max-w-[60px]">
+                {item.title.split(' ')[0]}
+              </span>
+            </button>
+          ))}
+        </div>
+      </nav>
+    );
+  }
+
+  // Desktop: Vertical sidebar
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-4">

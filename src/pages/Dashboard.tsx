@@ -693,7 +693,8 @@ const Dashboard = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm">
+            {/* Compact mobile header */}
+            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-4 lg:px-6 lg:py-5">
                 <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
                 <div className="flex-1 min-w-0">
@@ -705,8 +706,27 @@ const Dashboard = () => {
               </div>
             </header>
 
-            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5">
-              <div className="flex justify-end">
+            {/* Mobile: compact greeting */}
+            <div className="lg:hidden sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
+              <h1 className="text-lg font-bold text-primary-foreground truncate">
+                Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
+              </h1>
+            </div>
+
+            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
+              {/* Mobile: Single CTA button at top */}
+              <div className="lg:hidden">
+                <Button 
+                  onClick={() => navigate('/request-service')}
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
+                  size="lg"
+                >
+                  New Service Request
+                </Button>
+              </div>
+
+              {/* Desktop: Stats and CTA */}
+              <div className="hidden lg:flex justify-end">
                 <Button 
                   onClick={() => navigate('/request-service')}
                   className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
@@ -716,47 +736,48 @@ const Dashboard = () => {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Compact stats on mobile, full on desktop */}
+              <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 lg:gap-6">
                 <Card className="hover-lift bg-gradient-to-br from-blue-50 to-cyan-50/50 border-2 hover:border-blue-200 animate-scale-in">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Total Requests</CardTitle>
-                      <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-2">
-                        <ClipboardList className="h-5 w-5 text-white" />
+                  <CardHeader className="p-3 lg:p-6">
+                    <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-2">
+                      <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Total</CardTitle>
+                      <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                        <ClipboardList className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold text-primary">{requests.length}</p>
-                    <p className="text-sm text-muted-foreground mt-1">All time</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-2xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.length}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">All time</p>
                   </CardContent>
                 </Card>
                 <Card className="hover-lift bg-gradient-to-br from-purple-50 to-pink-50/50 border-2 hover:border-purple-200 animate-scale-in" style={{ animationDelay: '0.1s' }}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Active Requests</CardTitle>
-                      <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-2">
-                        <Loader2 className="h-5 w-5 text-white" />
+                  <CardHeader className="p-3 lg:p-6">
+                    <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-2">
+                      <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Active</CardTitle>
+                      <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                        <Loader2 className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold text-primary">{requests.filter(r => ['pending', 'assigned', 'in_progress'].includes(r.status)).length}</p>
-                    <p className="text-sm text-muted-foreground mt-1">In progress</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-2xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.filter(r => ['pending', 'assigned', 'in_progress'].includes(r.status)).length}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">In progress</p>
                   </CardContent>
                 </Card>
                 <Card className="hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Completed</CardTitle>
-                      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-2">
-                        <UserCheck className="h-5 w-5 text-white" />
+                  <CardHeader className="p-3 lg:p-6">
+                    <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-2">
+                      <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Done</CardTitle>
+                      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                        <UserCheck className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold text-primary">{requests.filter(r => r.status === 'completed').length}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Successfully done</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-2xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.filter(r => r.status === 'completed').length}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">Successfully done</p>
                   </CardContent>
                 </Card>
               </div>
@@ -1029,7 +1050,8 @@ const Dashboard = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm">
+            {/* Desktop header */}
+            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-6 lg:py-5">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
@@ -1041,48 +1063,62 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 glass-dark px-4 py-2 rounded-xl">
-                  <Label className="text-sm hidden sm:inline font-semibold">Available</Label>
+                  <Label className="text-sm font-semibold">Available</Label>
                   <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} />
                 </div>
               </div>
             </header>
 
-            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Mobile header */}
+            <div className="lg:hidden sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-bold text-primary-foreground truncate">
+                  Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 💼
+                </h1>
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                  <span className="text-xs font-semibold text-primary-foreground">Available</span>
+                  <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} className="scale-75" />
+                </div>
+              </div>
+            </div>
+
+            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
+              {/* Compact stats on mobile, full on desktop */}
+              <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 lg:gap-6">
           <Card className="hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Total Earnings</CardTitle>
-              <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-2">
-                <DollarSign className="h-5 w-5 text-white" />
+            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Earnings</CardTitle>
+              <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                <DollarSign className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold text-primary">${earnings.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground mt-1">From completed jobs</p>
+            <CardContent className="p-3 pt-0 lg:p-6">
+              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">${earnings.toFixed(0)}</p>
+              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">From completed jobs</p>
             </CardContent>
           </Card>
           <Card className="hover-lift bg-gradient-to-br from-yellow-50 to-orange-50/50 border-2 hover:border-yellow-200 animate-scale-in" style={{ animationDelay: '0.1s' }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Average Rating</CardTitle>
-              <div className="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl p-2">
-                <Star className="h-5 w-5 text-white" />
+            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Rating</CardTitle>
+              <div className="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                <Star className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold text-primary">{avgRating.toFixed(1)}/5</p>
-              <p className="text-sm text-muted-foreground mt-1">Customer satisfaction</p>
+            <CardContent className="p-3 pt-0 lg:p-6">
+              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{avgRating.toFixed(1)}</p>
+              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">Customer satisfaction</p>
             </CardContent>
           </Card>
           <Card className="hover-lift bg-gradient-to-br from-blue-50 to-cyan-50/50 border-2 hover:border-blue-200 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Total Jobs</CardTitle>
-              <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-2">
-                <ClipboardList className="h-5 w-5 text-white" />
+            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Jobs</CardTitle>
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                <ClipboardList className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold text-primary">{requests.length}</p>
-              <p className="text-sm text-muted-foreground mt-1">All time</p>
+            <CardContent className="p-3 pt-0 lg:p-6">
+              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.length}</p>
+              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">All time</p>
             </CardContent>
           </Card>
         </div>
@@ -1220,7 +1256,8 @@ const Dashboard = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
             
-            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {/* Desktop header */}
+            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
                 <SidebarTrigger className="-ml-2" />
                 <div className="flex-1 min-w-0">
@@ -1229,38 +1266,46 @@ const Dashboard = () => {
               </div>
             </header>
 
-            <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-auto">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Mobile header */}
+            <div className="lg:hidden sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
+              <h1 className="text-lg font-bold text-primary-foreground truncate">
+                Admin Dashboard 🛡️
+              </h1>
+            </div>
+
+            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto pb-20 lg:pb-6">
+              {/* Compact stats on mobile, full on desktop */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Total Revenue</CardTitle>
+                  <CardHeader className="p-3 lg:p-6">
+                    <CardTitle className="text-xs lg:text-base">Revenue</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">${allTransactions.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(2)}</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-3xl font-bold">${allTransactions.reduce((sum, t) => sum + Number(t.amount), 0).toFixed(0)}</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Pending Requests</CardTitle>
+                  <CardHeader className="p-3 lg:p-6">
+                    <CardTitle className="text-xs lg:text-base">Pending</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{allRequests.filter(r => r.status === 'pending').length}</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-3xl font-bold">{allRequests.filter(r => r.status === 'pending').length}</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Active Providers</CardTitle>
+                  <CardHeader className="p-3 lg:p-6">
+                    <CardTitle className="text-xs lg:text-base">Providers</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{providers.length}</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-3xl font-bold">{providers.length}</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Total Customers</CardTitle>
+                  <CardHeader className="p-3 lg:p-6">
+                    <CardTitle className="text-xs lg:text-base">Customers</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{customers.length}</p>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-3xl font-bold">{customers.length}</p>
                   </CardContent>
                 </Card>
               </div>

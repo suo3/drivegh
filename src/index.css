@@ -156,4 +156,13 @@ All colors MUST be HSL.
       box-shadow: 0 0 40px hsl(45 100% 51% / 0.6);
     }
   }
+
+  /* Safe area insets for mobile */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
 }
