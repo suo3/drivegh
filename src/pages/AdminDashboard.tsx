@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, FileText, Building } from 'lucide-react';
+import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, FileText, Building, Mail, MessageSquare, Archive, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ServiceManager from '@/components/ServiceManager';
@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const [providers, setProviders] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignDialog, setAssignDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
@@ -39,7 +40,7 @@ const AdminDashboard = () => {
   }, [user]);
 
   const fetchData = async () => {
-    const [requestsData, providersData, transactionsData, applicationsData] = await Promise.all([
+    const [requestsData, providersData, transactionsData, applicationsData, contactMessagesData] = await Promise.all([
       supabase
         .from('service_requests')
         .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number), provider:profiles!service_requests_provider_id_fkey(full_name)')
@@ -56,12 +57,17 @@ const AdminDashboard = () => {
         .from('partnership_applications')
         .select('*')
         .order('created_at', { ascending: false }),
+      supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false }),
     ]);
 
     if (requestsData.data) setRequests(requestsData.data);
     if (providersData.data) setProviders(providersData.data);
     if (transactionsData.data) setTransactions(transactionsData.data);
     if (applicationsData.data) setApplications(applicationsData.data);
+    if (contactMessagesData.data) setContactMessages(contactMessagesData.data);
     setLoading(false);
   };
 
@@ -139,6 +145,34 @@ const AdminDashboard = () => {
       toast.error('Failed to update application status');
     } else {
       toast.success(`Application ${status}`);
+      fetchData();
+    }
+  };
+
+  const updateContactMessageStatus = async (id: string, status: 'new' | 'read' | 'archived') => {
+    const { error } = await supabase
+      .from('contact_messages')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update message status');
+    } else {
+      toast.success(`Message marked as ${status}`);
+      fetchData();
+    }
+  };
+
+  const deleteContactMessage = async (id: string) => {
+    const { error } = await supabase
+      .from('contact_messages')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to delete message');
+    } else {
+      toast.success('Message deleted');
       fetchData();
     }
   };
@@ -231,6 +265,15 @@ const AdminDashboard = () => {
             <TabsTrigger value="applications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building className="h-4 w-4 mr-2" />
               Partnership Applications
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Contact Messages
+              {contactMessages.filter(m => m.status === 'new').length > 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
+                  {contactMessages.filter(m => m.status === 'new').length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <DollarSign className="h-4 w-4 mr-2" />
@@ -469,6 +512,117 @@ const AdminDashboard = () => {
 
           <TabsContent value="services">
             <ServiceManager />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">Contact Messages</CardTitle>
+                    <CardDescription>Messages from the contact form</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {contactMessages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">No contact messages yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {contactMessages.map((message) => (
+                      <Card key={message.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Mail className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-lg">{message.name}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Mail className="h-4 w-4" />
+                                  {message.email}
+                                </div>
+                                {message.phone && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="h-4 w-4" />
+                                    {message.phone}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <Badge variant={
+                              message.status === 'new' ? 'destructive' : 
+                              message.status === 'read' ? 'default' : 
+                              'secondary'
+                            } className="capitalize">
+                              {message.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <p className="font-semibold mb-2 flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-primary" />
+                              Subject: {message.subject}
+                            </p>
+                            <div className="p-4 bg-muted/30 rounded-lg">
+                              <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {new Date(message.created_at).toLocaleString()}
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              {message.status === 'new' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => updateContactMessageStatus(message.id, 'read')}
+                                  className="hover-scale"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Mark as Read
+                                </Button>
+                              )}
+                              {message.status === 'read' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => updateContactMessageStatus(message.id, 'archived')}
+                                  className="hover-scale"
+                                >
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => deleteContactMessage(message.id)}
+                                className="hover-scale"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

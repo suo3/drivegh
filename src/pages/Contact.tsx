@@ -9,6 +9,7 @@ import { MapPin, Phone, Mail, Clock, Send, User, MessageSquare, FileText } from 
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
@@ -27,11 +28,30 @@ const Contact = () => {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      // Validate form data
       contactSchema.parse(formData);
+      
+      // Save to database
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone?.trim() || null,
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        });
+
+      if (error) {
+        console.error('Error saving contact message:', error);
+        toast.error('Failed to send message. Please try again.');
+        return;
+      }
+
       toast.success('Thank you for contacting us! We\'ll get back to you within 24 hours.');
       setFormData({
         name: '',
@@ -43,6 +63,8 @@ const Contact = () => {
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
       }
     }
   };
