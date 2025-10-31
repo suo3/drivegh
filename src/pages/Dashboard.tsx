@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
 
@@ -191,7 +192,7 @@ const Dashboard = () => {
 
   const fetchAdminData = async () => {
     // Fetch IDs by role first to avoid relying on PostgREST relationship inference
-    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, allProfilesRes, allUserRolesRes, ratingsRes] = await Promise.all([
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, contactMessagesRes, allProfilesRes, allUserRolesRes, ratingsRes] = await Promise.all([
       supabase
         .from('service_requests')
         .select(`
@@ -210,6 +211,7 @@ const Dashboard = () => {
         .eq('role', 'customer'),
       supabase.from('transactions').select('*').order('created_at', { ascending: false }),
       supabase.from('partnership_applications').select('*').order('created_at', { ascending: false }),
+      supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
       supabase.from('ratings').select('*'),
@@ -247,6 +249,7 @@ const Dashboard = () => {
     if (customersRes.data) setCustomers(customersRes.data);
     if (transactionsRes.data) setAllTransactions(transactionsRes.data);
     if (appsRes.data) setApplications(appsRes.data);
+    if (contactMessagesRes.data) setContactMessages(contactMessagesRes.data);
     
     // Combine profiles with their roles
     if (allProfilesRes.data && allUserRolesRes.data) {
@@ -553,6 +556,40 @@ const Dashboard = () => {
     }
 
     toast.success('Application deleted successfully');
+    fetchData();
+  };
+
+  const handleUpdateContactMessageStatus = async (messageId: string, status: 'new' | 'read' | 'archived') => {
+    const { error } = await supabase
+      .from('contact_messages')
+      .update({ status })
+      .eq('id', messageId);
+
+    if (error) {
+      toast.error('Failed to update message status');
+      return;
+    }
+
+    toast.success(`Message marked as ${status}`);
+    fetchData();
+  };
+
+  const handleDeleteContactMessage = async (messageId: string) => {
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('contact_messages')
+      .delete()
+      .eq('id', messageId);
+
+    if (error) {
+      toast.error('Failed to delete message');
+      return;
+    }
+
+    toast.success('Message deleted successfully');
     fetchData();
   };
 
@@ -2290,6 +2327,106 @@ const Dashboard = () => {
                     {applications.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No partnership applications yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {currentView === 'messages' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contact Messages</CardTitle>
+                    <CardDescription>Messages from the contact form</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {contactMessages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">No contact messages yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {contactMessages.map((message) => (
+                          <Card key={message.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                            <CardContent className="p-6">
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3 flex-1">
+                                  <div className="p-2 rounded-lg bg-primary/10">
+                                    <Mail className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-lg">{message.name}</p>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <Mail className="h-4 w-4" />
+                                      {message.email}
+                                    </div>
+                                    {message.phone && (
+                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Users className="h-4 w-4" />
+                                        {message.phone}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <Badge 
+                                  variant={
+                                    message.status === 'new' ? 'default' : 
+                                    message.status === 'read' ? 'secondary' : 
+                                    'outline'
+                                  }
+                                >
+                                  {message.status}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-2 mb-4">
+                                <div>
+                                  <Label className="text-muted-foreground">Subject</Label>
+                                  <p className="font-medium">{message.subject}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-muted-foreground">Message</Label>
+                                  <p className="whitespace-pre-wrap">{message.message}</p>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Received: {new Date(message.created_at).toLocaleString()}
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2">
+                                {message.status === 'new' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleUpdateContactMessageStatus(message.id, 'read')}
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Mark as Read
+                                  </Button>
+                                )}
+                                {message.status !== 'archived' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleUpdateContactMessageStatus(message.id, 'archived')}
+                                  >
+                                    <Archive className="h-4 w-4 mr-2" />
+                                    Archive
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteContactMessage(message.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
                     )}
                   </CardContent>

@@ -1,4 +1,4 @@
-import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings } from 'lucide-react';
+import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +41,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     { title: 'Users', view: 'users', icon: User },
     { title: 'Payments', view: 'payments', icon: DollarSign },
     { title: 'Partnership Applications', view: 'applications', icon: UserCheck },
+    { title: 'Contact Messages', view: 'messages', icon: MessageSquare },
     { title: 'Services', view: 'services', icon: Settings },
     { title: 'Profile', view: 'profile', icon: User },
   ];
