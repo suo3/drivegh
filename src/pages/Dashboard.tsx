@@ -694,7 +694,7 @@ const Dashboard = () => {
                 <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
-                    Customer Dashboard
+                    Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
                   </h1>
                   <p className="text-sm text-muted-foreground">Manage your service requests</p>
                 </div>
@@ -956,7 +956,7 @@ const Dashboard = () => {
                   <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
-                      Provider Dashboard
+                      Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 💼
                     </h1>
                     <p className="text-sm text-muted-foreground">Manage your service assignments</p>
                   </div>
