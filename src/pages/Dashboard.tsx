@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -47,6 +47,10 @@ const Dashboard = () => {
   const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
+  
+  // Contact messages filters
+  const [messageStatusFilter, setMessageStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
 
   useEffect(() => {
     console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
@@ -2334,103 +2338,273 @@ const Dashboard = () => {
               )}
 
               {currentView === 'messages' && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Contact Messages</CardTitle>
-                    <CardDescription>Messages from the contact form</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {contactMessages.length === 0 ? (
-                      <div className="text-center py-12">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                        <p className="text-muted-foreground">No contact messages yet</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {contactMessages.map((message) => (
-                          <Card key={message.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
-                            <CardContent className="p-6">
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3 flex-1">
-                                  <div className="p-2 rounded-lg bg-primary/10">
-                                    <Mail className="h-5 w-5 text-primary" />
-                                  </div>
-                                  <div>
-                                    <p className="font-bold text-lg">{message.name}</p>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Mail className="h-4 w-4" />
-                                      {message.email}
-                                    </div>
-                                    {message.phone && (
-                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Users className="h-4 w-4" />
-                                        {message.phone}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <Badge 
-                                  variant={
-                                    message.status === 'new' ? 'default' : 
-                                    message.status === 'read' ? 'secondary' : 
-                                    'outline'
-                                  }
-                                >
-                                  {message.status}
-                                </Badge>
-                              </div>
-                              
-                              <div className="space-y-2 mb-4">
-                                <div>
-                                  <Label className="text-muted-foreground">Subject</Label>
-                                  <p className="font-medium">{message.subject}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-muted-foreground">Message</Label>
-                                  <p className="whitespace-pre-wrap">{message.message}</p>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  Received: {new Date(message.created_at).toLocaleString()}
-                                </div>
-                              </div>
+                <div className="space-y-6">
+                  {/* Stats Cards */}
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Total Messages</p>
+                            <p className="text-3xl font-bold">{contactMessages.length}</p>
+                          </div>
+                          <MessageSquare className="h-8 w-8 text-primary" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">New</p>
+                            <p className="text-3xl font-bold">{contactMessages.filter(m => m.status === 'new').length}</p>
+                          </div>
+                          <Mail className="h-8 w-8 text-blue-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-500/10">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Read</p>
+                            <p className="text-3xl font-bold">{contactMessages.filter(m => m.status === 'read').length}</p>
+                          </div>
+                          <Eye className="h-8 w-8 text-green-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Archived</p>
+                            <p className="text-3xl font-bold">{contactMessages.filter(m => m.status === 'archived').length}</p>
+                          </div>
+                          <Archive className="h-8 w-8 text-orange-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                              <div className="flex gap-2">
-                                {message.status === 'new' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleUpdateContactMessageStatus(message.id, 'read')}
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Mark as Read
-                                  </Button>
-                                )}
-                                {message.status !== 'archived' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleUpdateContactMessageStatus(message.id, 'archived')}
-                                  >
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteContactMessage(message.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                  {/* Filters and Search */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5" />
+                            Contact Messages
+                          </CardTitle>
+                          <CardDescription>Manage messages from the contact form</CardDescription>
+                        </div>
+                        
+                        {/* Search Input */}
+                        <div className="relative w-full md:w-80">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Search by name, email, or subject..."
+                            value={messageSearchQuery}
+                            onChange={(e) => setMessageSearchQuery(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      
+                      {/* Status Filter Tabs */}
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <Button
+                          size="sm"
+                          variant={messageStatusFilter === 'all' ? 'default' : 'outline'}
+                          onClick={() => setMessageStatusFilter('all')}
+                          className="gap-2"
+                        >
+                          <Filter className="h-4 w-4" />
+                          All ({contactMessages.length})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={messageStatusFilter === 'new' ? 'default' : 'outline'}
+                          onClick={() => setMessageStatusFilter('new')}
+                          className="gap-2"
+                        >
+                          <Mail className="h-4 w-4" />
+                          New ({contactMessages.filter(m => m.status === 'new').length})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={messageStatusFilter === 'read' ? 'default' : 'outline'}
+                          onClick={() => setMessageStatusFilter('read')}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Read ({contactMessages.filter(m => m.status === 'read').length})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={messageStatusFilter === 'archived' ? 'default' : 'outline'}
+                          onClick={() => setMessageStatusFilter('archived')}
+                          className="gap-2"
+                        >
+                          <Archive className="h-4 w-4" />
+                          Archived ({contactMessages.filter(m => m.status === 'archived').length})
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      {(() => {
+                        const filteredMessages = contactMessages
+                          .filter(message => {
+                            // Status filter
+                            if (messageStatusFilter !== 'all' && message.status !== messageStatusFilter) {
+                              return false;
+                            }
+                            
+                            // Search filter
+                            if (messageSearchQuery) {
+                              const query = messageSearchQuery.toLowerCase();
+                              return (
+                                message.name.toLowerCase().includes(query) ||
+                                message.email.toLowerCase().includes(query) ||
+                                message.subject.toLowerCase().includes(query) ||
+                                (message.phone && message.phone.includes(query))
+                              );
+                            }
+                            
+                            return true;
+                          })
+                          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                        if (filteredMessages.length === 0) {
+                          return (
+                            <div className="text-center py-12">
+                              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                              <p className="text-muted-foreground">
+                                {messageSearchQuery || messageStatusFilter !== 'all' 
+                                  ? 'No messages match your filters'
+                                  : 'No contact messages yet'}
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-4">
+                            {filteredMessages.map((message) => (
+                              <Card 
+                                key={message.id} 
+                                className={`transition-all hover:shadow-md ${
+                                  message.status === 'new' 
+                                    ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10' 
+                                    : message.status === 'read'
+                                    ? 'border-green-500/20 bg-gradient-to-br from-green-500/5 to-card'
+                                    : 'border-border/50 bg-card/50'
+                                }`}
+                              >
+                                <CardContent className="p-6">
+                                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                                    <div className="flex items-start gap-3 flex-1">
+                                      <div className={`p-3 rounded-xl ${
+                                        message.status === 'new' 
+                                          ? 'bg-blue-500/10 text-blue-500' 
+                                          : message.status === 'read'
+                                          ? 'bg-green-500/10 text-green-500'
+                                          : 'bg-muted text-muted-foreground'
+                                      }`}>
+                                        <Mail className="h-5 w-5" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <p className="font-bold text-lg truncate">{message.name}</p>
+                                          <Badge 
+                                            variant={
+                                              message.status === 'new' ? 'default' : 
+                                              message.status === 'read' ? 'secondary' : 
+                                              'outline'
+                                            }
+                                            className="shrink-0"
+                                          >
+                                            {message.status}
+                                          </Badge>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <Mail className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="truncate">{message.email}</span>
+                                          </div>
+                                          {message.phone && (
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                              <Phone className="h-3.5 w-3.5 shrink-0" />
+                                              <span>{message.phone}</span>
+                                            </div>
+                                          )}
+                                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                            <span>📅 {new Date(message.created_at).toLocaleDateString()}</span>
+                                            <span>•</span>
+                                            <span>🕐 {new Date(message.created_at).toLocaleTimeString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="space-y-3 mb-4 pl-14">
+                                    <div>
+                                      <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Subject</Label>
+                                      <p className="font-semibold text-foreground">{message.subject}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Message</Label>
+                                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">{message.message}</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-wrap gap-2 pl-14">
+                                    {message.status === 'new' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleUpdateContactMessageStatus(message.id, 'read')}
+                                        className="gap-2"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                        Mark as Read
+                                      </Button>
+                                    )}
+                                    {message.status !== 'archived' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleUpdateContactMessageStatus(message.id, 'archived')}
+                                        className="gap-2"
+                                      >
+                                        <Archive className="h-4 w-4" />
+                                        Archive
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleDeleteContactMessage(message.id)}
+                                      className="gap-2"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                      Delete
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {currentView === 'services' && (
