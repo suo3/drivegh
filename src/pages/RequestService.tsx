@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { ArrowLeft, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin, Phone, Copy, Share2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin, Phone, Copy, Share2, ExternalLink, CheckCircle2, AlertCircle, Car } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -126,64 +126,119 @@ const RequestService = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="bg-primary text-white pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          {user && (
-            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 text-white hover:text-accent">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          )}
-          <h1 className="text-5xl font-bold mb-4">Request Roadside Assistance</h1>
-          <p className="text-xl text-gray-200 max-w-3xl">
-            {user ? 'Submit your request and we\'ll assign a professional service provider to help you' : 'Get help now - no account required'}
-          </p>
+      {/* Hero Section - Modern gradient with floating elements */}
+      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
+        {/* Animated gradient orbs */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-10 w-80 h-80 bg-red-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+            {user && (
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/dashboard')} 
+                className="glass border border-white/20 text-white hover:bg-white/20 mb-6"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            )}
+            
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
+                <AlertCircle className="w-4 h-4" />
+                <span className="font-medium">Emergency Assistance</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                <span className="block">Request Roadside</span>
+                <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
+                  Assistance Now
+                </span>
+              </h1>
+              
+              <p className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+                {user ? 'Submit your request and we\'ll assign a professional service provider immediately' : 'Get help now - no account required, just fill out the form below'}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-8 mb-8 bg-accent/10 border-accent">
-              <div className="flex items-center gap-4">
-                <Phone className="h-12 w-12 text-primary flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-lg">Emergency? Call Us Directly</h3>
-                  <p className="text-2xl font-bold text-primary">+233 20 222 2244</p>
-                  <p className="text-sm text-muted-foreground">Available 24/7</p>
+      <section className="py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
+        <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-5xl mx-auto">
+            {/* Emergency Call Card - Enhanced */}
+            <Card className="p-8 mb-12 bg-gradient-to-br from-red-50 to-orange-50/50 border-2 border-red-200 hover-lift shadow-xl animate-scale-in">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl p-5 flex-shrink-0">
+                  <Phone className="h-12 w-12 text-white" />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="font-bold text-2xl mb-2">Emergency? Call Us Directly</h3>
+                  <a href="tel:+233202222244" className="text-3xl md:text-4xl font-bold text-primary hover:text-primary/80 transition-colors">
+                    +233 20 222 2244
+                  </a>
+                  <p className="text-muted-foreground mt-2 flex items-center justify-center md:justify-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    Available 24/7 for immediate assistance
+                  </p>
                 </div>
               </div>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Service Request Form</CardTitle>
-                <CardDescription>
-                  Fill out the details below and we'll get help to you as soon as possible
+            <Card className="shadow-2xl border-2 overflow-hidden animate-fade-in">
+              <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b-2">
+                <CardTitle className="text-3xl flex items-center gap-3">
+                  <div className="bg-primary rounded-xl p-2">
+                    <Car className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  Service Request Form
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Fill out the details below and we'll dispatch help to you as soon as possible
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label>What service do you need? *</Label>
-                    <div className="grid md:grid-cols-2 gap-3">
-                      {services.map((service) => {
+              <CardContent className="p-8">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Service Type Selection - Enhanced */}
+                  <div className="space-y-4">
+                    <Label className="text-lg font-bold flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-primary" />
+                      What service do you need? *
+                    </Label>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {services.map((service, index) => {
                         const Icon = getIconComponent(service.icon);
                         return (
                           <Card
                             key={service.id}
-                            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                              serviceType === service.slug ? 'border-primary bg-primary/5' : ''
+                            className={`p-6 cursor-pointer transition-all hover-lift border-2 animate-scale-in ${
+                              serviceType === service.slug 
+                                ? 'border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg' 
+                                : 'hover:border-primary/30'
                             }`}
+                            style={{ animationDelay: `${index * 0.05}s` }}
                             onClick={() => setServiceType(service.slug)}
                           >
-                            <div className="flex items-start gap-3">
-                              <Icon className={`h-6 w-6 mt-1 ${
-                                serviceType === service.slug ? 'text-primary' : 'text-muted-foreground'
-                              }`} />
-                              <div>
-                                <p className="font-semibold">{service.name}</p>
-                                <p className="text-sm text-muted-foreground">{service.description}</p>
+                            <div className="flex items-start gap-4">
+                              <div className={`rounded-xl p-3 ${
+                                serviceType === service.slug 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-primary/10 text-primary'
+                              }`}>
+                                <Icon className="h-6 w-6" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-lg mb-1">{service.name}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
                               </div>
                             </div>
                           </Card>
@@ -192,10 +247,11 @@ const RequestService = () => {
                     </div>
                   </div>
 
+                  {/* Phone Number - Enhanced (for non-logged in users) */}
                   {!user && (
-                    <div className="space-y-2">
-                      <Label htmlFor="phoneNumber">
-                        <Phone className="inline h-4 w-4 mr-1" />
+                    <div className="space-y-3 p-6 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                      <Label htmlFor="phoneNumber" className="text-base font-bold flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-primary" />
                         Your Phone Number *
                       </Label>
                       <Input
@@ -203,19 +259,22 @@ const RequestService = () => {
                         type="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="e.g., 0244123456 or +233244123456"
+                        placeholder="e.g., 024 123 4567 or +233 24 123 4567"
                         required
                         maxLength={20}
+                        className="h-14 text-lg"
                       />
-                      <p className="text-sm text-muted-foreground">
-                        We'll use this to contact you and you can track your request with it
+                      <p className="text-sm text-blue-900 flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        We'll use this to contact you and you can track your request with it later
                       </p>
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="location">
-                      <MapPin className="inline h-4 w-4 mr-1" />
+                  {/* Location - Enhanced */}
+                  <div className="space-y-3">
+                    <Label htmlFor="location" className="text-base font-bold flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-primary" />
                       Your Current Location *
                     </Label>
                     <Input
@@ -226,17 +285,23 @@ const RequestService = () => {
                       placeholder="e.g., Accra Mall, East Legon, Accra"
                       required
                       maxLength={200}
+                      className="h-14 text-lg"
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Be as specific as possible to help us find you quickly
+                    <p className="text-sm text-muted-foreground flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      Be as specific as possible to help us find you quickly (landmarks, street names, etc.)
                     </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label>Vehicle Information *</Label>
+                  {/* Vehicle Information - Enhanced */}
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 border-2 rounded-xl">
+                    <Label className="text-lg font-bold flex items-center gap-2">
+                      <Car className="h-5 w-5 text-primary" />
+                      Vehicle Information *
+                    </Label>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="vehicleMake">Make *</Label>
+                        <Label htmlFor="vehicleMake" className="font-semibold">Make *</Label>
                         <Input
                           id="vehicleMake"
                           type="text"
@@ -245,10 +310,11 @@ const RequestService = () => {
                           placeholder="e.g., Toyota, Honda"
                           required
                           maxLength={100}
+                          className="h-12"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="vehicleModel">Model *</Label>
+                        <Label htmlFor="vehicleModel" className="font-semibold">Model *</Label>
                         <Input
                           id="vehicleModel"
                           type="text"
@@ -257,10 +323,11 @@ const RequestService = () => {
                           placeholder="e.g., Camry, Accord"
                           required
                           maxLength={100}
+                          className="h-12"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="vehicleYear">Year (Optional)</Label>
+                        <Label htmlFor="vehicleYear" className="font-semibold">Year (Optional)</Label>
                         <Input
                           id="vehicleYear"
                           type="text"
@@ -268,10 +335,11 @@ const RequestService = () => {
                           onChange={(e) => setVehicleYear(e.target.value)}
                           placeholder="e.g., 2020"
                           maxLength={4}
+                          className="h-12"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="vehiclePlate">License Plate (Optional)</Label>
+                        <Label htmlFor="vehiclePlate" className="font-semibold">License Plate (Optional)</Label>
                         <Input
                           id="vehiclePlate"
                           type="text"
@@ -279,35 +347,77 @@ const RequestService = () => {
                           onChange={(e) => setVehiclePlate(e.target.value)}
                           placeholder="e.g., GR 1234-20"
                           maxLength={20}
+                          className="h-12"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Additional Details (Optional)</Label>
+                  {/* Additional Details - Enhanced */}
+                  <div className="space-y-3">
+                    <Label htmlFor="description" className="text-base font-bold">Additional Details (Optional)</Label>
                     <Textarea
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Tell us more about your situation... e.g., 'Car won't start after shopping' or 'Flat tire on highway'"
+                      placeholder="Tell us more about your situation... e.g., 'Car won't start after shopping' or 'Flat tire on highway near toll booth'"
                       maxLength={1000}
-                      rows={4}
+                      rows={5}
+                      className="resize-none"
                     />
-                    <p className="text-sm text-muted-foreground">
-                      {description.length}/1000 characters
-                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-muted-foreground">
+                        More details help us prepare better equipment
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {description.length}/1000
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-900">
-                      ℹ️ After submission, an admin will review and assign a service provider to your request. 
-                      You'll be able to track the provider's status from your dashboard.
-                    </p>
+                  {/* Info Banner - Enhanced */}
+                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-blue-200 rounded-full p-2 flex-shrink-0">
+                        <AlertCircle className="h-6 w-6 text-blue-700" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-blue-900 mb-2">What happens next?</h4>
+                        <ul className="space-y-2 text-sm text-blue-900">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>Admin reviews and assigns a qualified service provider</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>Provider contacts you and heads to your location</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>Track real-time updates from your dashboard</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
 
-                  <Button type="submit" className="w-full" size="lg" disabled={loading || !serviceType}>
-                    {loading ? 'Submitting Request...' : 'Submit Service Request'}
+                  {/* Submit Button - Enhanced */}
+                  <Button 
+                    type="submit" 
+                    className="w-full h-16 text-lg font-bold bg-gradient-to-r from-primary to-secondary hover:shadow-xl transition-all" 
+                    disabled={loading || !serviceType}
+                  >
+                    {loading ? (
+                      <>
+                        <AlertCircle className="mr-2 h-6 w-6 animate-spin" />
+                        Submitting Request...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-2 h-6 w-6" />
+                        Submit Service Request
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -318,32 +428,35 @@ const RequestService = () => {
 
       <Footer />
 
-      {/* Success Dialog */}
+      {/* Success Dialog - Enhanced */}
       <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Request Submitted Successfully! 🎉</DialogTitle>
-            <DialogDescription>
-              Your service request has been created. Save this tracking code to check your request status anytime.
+            <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
+            <DialogTitle className="text-3xl text-center">Request Submitted! 🎉</DialogTitle>
+            <DialogDescription className="text-center text-base">
+              Your service request has been created successfully. Save this tracking code to monitor your request status anytime.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">Tracking Code:</p>
-              <p className="text-2xl font-bold text-center py-2 tracking-wider">
+          <div className="space-y-6 py-6">
+            <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-6 rounded-2xl border-2 border-primary/20">
+              <p className="text-sm font-semibold mb-3 text-center text-muted-foreground">Tracking Code</p>
+              <p className="text-4xl font-bold text-center py-3 tracking-wider text-primary">
                 {createdRequestId}
               </p>
             </div>
             
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm font-medium mb-2">Tracking Link:</p>
-              <p className="text-sm break-all text-muted-foreground">
+            <div className="bg-muted p-5 rounded-xl">
+              <p className="text-sm font-semibold mb-2">Tracking Link</p>
+              <p className="text-sm break-all text-muted-foreground font-mono">
                 {window.location.origin}/track/{createdRequestId}
               </p>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <Button
                 onClick={async () => {
                   const url = `${window.location.origin}/track/${createdRequestId}`;
@@ -355,9 +468,9 @@ const RequestService = () => {
                   }
                 }}
                 variant="outline"
-                className="w-full"
+                className="w-full h-12 font-semibold"
               >
-                <Copy className="h-4 w-4 mr-2" />
+                <Copy className="h-5 w-5 mr-2" />
                 Copy Link
               </Button>
 
@@ -385,9 +498,9 @@ const RequestService = () => {
                   }
                 }}
                 variant="outline"
-                className="w-full"
+                className="w-full h-12 font-semibold"
               >
-                <Share2 className="h-4 w-4 mr-2" />
+                <Share2 className="h-5 w-5 mr-2" />
                 Share Link
               </Button>
 
@@ -395,16 +508,19 @@ const RequestService = () => {
                 onClick={() => {
                   navigate(`/track/${createdRequestId}`);
                 }}
-                className="w-full"
+                className="w-full h-12 font-bold bg-gradient-to-r from-primary to-secondary hover:shadow-lg"
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
+                <ExternalLink className="h-5 w-5 mr-2" />
                 Track My Request
               </Button>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-sm text-yellow-900">
-                💡 <strong>Tip:</strong> Bookmark this link or save it to your notes so you can check your request status anytime!
+            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
+              <p className="text-sm text-yellow-900 flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-yellow-600" />
+                <span>
+                  <strong>Tip:</strong> Bookmark this link or screenshot this page so you can check your request status anytime!
+                </span>
               </p>
             </div>
           </div>
