@@ -102,7 +102,7 @@ const Billing = () => {
         <Navbar />
         
       {/* Compact Banner - Not logged in */}
-        <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+        <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
           <div className="container mx-auto px-4 py-6">
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Billing & Payments</h1>
             <p className="text-white/80 text-sm">View your transaction history</p>
@@ -140,7 +140,7 @@ const Billing = () => {
       <Navbar />
       
       {/* Compact Banner - Logged in */}
-      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Transaction History</h1>
           <p className="text-white/80 text-sm">Complete overview of your payments and transactions</p>

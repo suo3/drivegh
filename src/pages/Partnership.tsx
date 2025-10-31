@@ -98,7 +98,7 @@ const Partnership = () => {
       <Navbar />
       
       {/* Compact Banner */}
-      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20">
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Partner With Us</h1>
           <p className="text-white/80 text-sm">Join Ghana's largest roadside assistance network</p>
