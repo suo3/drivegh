@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { DollarSign, Users, TrendingUp, Clock } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, Clock, CheckCircle2, Handshake, Rocket, Shield, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,10 +32,17 @@ const Partnership = () => {
   });
 
   const benefits = [
-    { icon: DollarSign, title: 'Earn More Income', desc: 'Increase your revenue with consistent service requests' },
-    { icon: Users, title: 'Access to Customers', desc: 'Connect with thousands of drivers across Ghana' },
-    { icon: TrendingUp, title: 'Grow Your Business', desc: 'Expand your service area and customer base' },
-    { icon: Clock, title: 'Flexible Schedule', desc: 'Accept jobs when you\'re available' },
+    { icon: DollarSign, title: 'Earn More Income', desc: 'Increase your revenue with consistent service requests', gradient: 'from-green-500 to-emerald-600' },
+    { icon: Users, title: 'Access to Customers', desc: 'Connect with thousands of drivers across Ghana', gradient: 'from-blue-500 to-cyan-600' },
+    { icon: TrendingUp, title: 'Grow Your Business', desc: 'Expand your service area and customer base', gradient: 'from-purple-500 to-pink-600' },
+    { icon: Clock, title: 'Flexible Schedule', desc: 'Accept jobs when you\'re available', gradient: 'from-orange-500 to-red-600' },
+  ];
+
+  const steps = [
+    { number: 1, title: 'Apply', desc: 'Fill out our partnership application form' },
+    { number: 2, title: 'Review', desc: 'We review your application within 48 hours' },
+    { number: 3, title: 'Onboard', desc: 'Complete training and verification process' },
+    { number: 4, title: 'Start Earning', desc: 'Begin accepting service requests immediately' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,50 +97,219 @@ const Partnership = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="bg-primary text-white pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Become a Partner</h1>
-          <p className="text-xl text-gray-200 max-w-3xl">
-            Join Ghana's largest roadside assistance network and grow your business
-          </p>
+      {/* Hero Section - Bold gradient with floating elements */}
+      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white">
+        {/* Animated gradient orbs */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-10 w-80 h-80 bg-green-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-white/90 text-sm">
+              <Handshake className="w-4 h-4" />
+              <span className="font-medium">Join Our Network</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+              <span className="block">Partner with</span>
+              <span className="block bg-gradient-to-r from-accent to-yellow-300 bg-clip-text text-transparent">
+                DRIVE Ghana
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+              Join Ghana's largest roadside assistance network and grow your business with consistent work
+            </p>
+            
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto pt-8">
+              {[
+                { value: '50+', label: 'Active Partners' },
+                { value: '4,500+', label: 'Jobs Completed' },
+                { value: '10+', label: 'Cities' },
+              ].map((stat, index) => (
+                <div 
+                  key={index}
+                  className="text-center animate-scale-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="text-3xl md:text-4xl font-bold text-accent mb-1">{stat.value}</div>
+                  <div className="text-sm text-gray-300">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            
+            <Button 
+              onClick={() => document.getElementById('application-form')?.scrollIntoView({ behavior: 'smooth' })}
+              size="lg"
+              className="bg-gradient-to-r from-accent to-yellow-400 text-accent-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 font-bold text-lg px-10 pulse-glow"
+            >
+              Apply Now
+            </Button>
+          </div>
         </div>
       </section>
 
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Partner with DRIVE Ghana</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join our network and start growing your business today
+      {/* Benefits Section - Modern card grid */}
+      <section className="py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
+        <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
+              Partner Benefits
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Why Partner with DRIVE Ghana?</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Join our network and unlock new opportunities for your business
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-start">
-            {/* Benefits Column */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-2xl font-bold mb-6">Why Partner with Us?</h3>
-              </div>
-              {benefits.map((benefit, index) => (
-                <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
-                  <div className="flex gap-4">
-                    <benefit.icon className="h-12 w-12 text-primary flex-shrink-0" />
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2">{benefit.title}</h4>
-                      <p className="text-muted-foreground text-sm">{benefit.desc}</p>
-                    </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-16">
+            {benefits.map((benefit, index) => (
+              <Card 
+                key={index} 
+                className="p-8 hover-lift cursor-pointer group border-2 hover:border-primary/30 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex gap-6">
+                  <div className={`bg-gradient-to-br ${benefit.gradient} rounded-2xl p-4 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                    <benefit.icon className="h-8 w-8 text-white" />
                   </div>
-                </Card>
-              ))}
+                  <div className="flex-1">
+                    <h4 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">{benefit.title}</h4>
+                    <p className="text-muted-foreground leading-relaxed">{benefit.desc}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Trust indicators */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              { icon: Shield, title: 'Verified Partners', desc: 'All partners are thoroughly vetted and certified' },
+              { icon: Rocket, title: 'Quick Onboarding', desc: 'Get started within 48 hours of approval' },
+              { icon: Star, title: 'Top Support', desc: '24/7 partner support and dedicated account manager' },
+            ].map((item, index) => (
+              <div 
+                key={index}
+                className="text-center animate-fade-in"
+                style={{ animationDelay: `${0.4 + index * 0.1}s` }}
+              >
+                <div className="bg-primary/10 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="h-8 w-8 text-primary" />
+                </div>
+                <h4 className="font-bold mb-2">{item.title}</h4>
+                <p className="text-sm text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section - Visual journey */}
+      <section className="py-24 bg-[hsl(var(--section-bg))] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="process-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="currentColor" className="text-primary" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#process-dots)" />
+          </svg>
+        </div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-block px-4 py-2 bg-accent/10 text-accent-foreground rounded-full text-sm font-semibold mb-4">
+              How It Works
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Simple 4-Step Process</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              From application to earning, we make it easy to join our network
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto relative">
+            {/* Connection line for desktop */}
+            <div className="hidden md:block absolute top-12 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-accent"></div>
+            
+            {steps.map((step, index) => (
+              <div 
+                key={index}
+                className="text-center relative animate-scale-in"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                <div className="relative mb-6">
+                  <div className="bg-gradient-to-br from-primary to-secondary rounded-2xl w-24 h-24 flex items-center justify-center mx-auto relative z-10 hover:scale-110 transition-transform cursor-pointer">
+                    <div className="text-4xl font-bold text-white">{step.number}</div>
+                  </div>
+                  <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl"></div>
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Application Form Section - Sticky form design */}
+      <section id="application-form" className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-start">
+            {/* Left: Additional info */}
+            <div className="space-y-8 animate-fade-in-left">
+              <div>
+                <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
+                  Application Form
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Join?</h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Fill out the application form and we'll review your submission within 48 hours. 
+                  Our team will contact you to discuss the next steps.
+                </p>
+              </div>
+
+              <Card className="p-8 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border-2 border-accent/20">
+                <h3 className="text-xl font-bold mb-4">What Happens Next?</h3>
+                <div className="space-y-4">
+                  {[
+                    'We review your application within 48 hours',
+                    'Our team contacts you for an interview',
+                    'Complete verification and training',
+                    'Start receiving service requests',
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-primary/5 border-primary/20">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Note:</strong> All partners must have valid business registration, 
+                  insurance, and necessary certifications for roadside assistance services.
+                </p>
+              </Card>
             </div>
 
-            {/* Form Column */}
-            <div className="lg:sticky lg:top-8">
-              <Card className="p-8">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold mb-2">Apply Now</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Fill out the form and we'll review your application
+            {/* Right: Application form */}
+            <div className="lg:sticky lg:top-8 animate-fade-in-right">
+              <Card className="p-8 shadow-2xl border-2">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold mb-2">Partner Application</h3>
+                  <p className="text-muted-foreground">
+                    Complete the form below to get started
                   </p>
                 </div>
                 
@@ -144,7 +320,9 @@ const Partnership = () => {
                       id="businessName"
                       value={formData.businessName}
                       onChange={(e) => setFormData({...formData, businessName: e.target.value})}
+                      placeholder="Your Business Name"
                       required
+                      className="h-12"
                     />
                   </div>
 
@@ -154,19 +332,23 @@ const Partnership = () => {
                       id="contactPerson"
                       value={formData.contactPerson}
                       onChange={(e) => setFormData({...formData, contactPerson: e.target.value})}
+                      placeholder="Your Full Name"
                       required
+                      className="h-12"
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email">Email Address *</Label>
                       <Input
                         id="email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        placeholder="you@example.com"
                         required
+                        className="h-12"
                       />
                     </div>
 
@@ -177,7 +359,9 @@ const Partnership = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        placeholder="024 000 0000"
                         required
+                        className="h-12"
                       />
                     </div>
                   </div>
@@ -188,24 +372,36 @@ const Partnership = () => {
                       id="city"
                       value={formData.city}
                       onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      placeholder="e.g., Accra, Kumasi, Tamale"
                       required
+                      className="h-12"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Tell us about your services</Label>
+                    <Label htmlFor="message">Tell Us About Your Services</Label>
                     <Textarea
                       id="message"
                       value={formData.message}
                       onChange={(e) => setFormData({...formData, message: e.target.value})}
                       rows={4}
-                      placeholder="What services do you offer? How many years of experience do you have?"
+                      placeholder="What services do you offer? How many years of experience do you have? What equipment do you have?"
+                      className="resize-none"
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold" 
+                    size="lg" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting Application...' : 'Submit Application'}
                   </Button>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    By submitting this form, you agree to our terms and conditions
+                  </p>
                 </form>
               </Card>
             </div>
