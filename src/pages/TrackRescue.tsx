@@ -559,20 +559,10 @@ const TrackRescue = () => {
 
                       {/* Map Display - Show if maps are enabled */}
 {mapsEnabled && (
-                          <div className="mt-4">
-                            <MapErrorBoundary>
-                              <Suspense fallback={<div className="w-full h-[300px] rounded-lg bg-muted" />}> 
-                                <TrackingMapLazy
-                                  customerLocation={{ lat: 25.276987, lng: 55.296249 }}
-                                  customerName="Your Location"
-                                />
-                              </Suspense>
-                            </MapErrorBoundary>
-                            <p className="text-xs text-muted-foreground mt-2 text-center">
-                              Map tracking is available for this request
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Open the request to view live map tracking.
+                        </p>
+                      )}
 
                       {request.description && (
                         <div className="flex items-start gap-3 lg:gap-4">
