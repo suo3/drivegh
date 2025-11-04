@@ -48,10 +48,11 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     { title: 'Payments', view: 'payments', icon: DollarSign },
     { title: 'Partnership Applications', view: 'applications', icon: UserCheck },
     { title: 'Contact Messages', view: 'messages', icon: MessageSquare },
-    { title: 'Services', view: 'services', icon: Settings },
+    { title: 'Services', view: 'services', icon: LayoutDashboard },
     { title: 'Cities', view: 'cities', icon: MapPin },
     { title: 'Testimonials', view: 'testimonials', icon: Star },
     { title: 'Homepage', view: 'homepage', icon: Layout },
+    { title: 'System Settings', view: 'settings', icon: Settings },
     { title: 'Profile', view: 'profile', icon: User },
   ];
 

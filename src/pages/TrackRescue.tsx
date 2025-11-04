@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
+import { TrackingMap } from '@/components/TrackingMap';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const TrackRescue = () => {
   const [currentRating, setCurrentRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [mapsEnabled, setMapsEnabled] = useState(true);
  
   // Robust phone normalization and matching across formats
   const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
@@ -189,6 +191,24 @@ const TrackRescue = () => {
 
     fetchUserRequests();
   }, [user]);
+
+  // Fetch map settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('key', 'maps_enabled')
+        .single();
+      
+      if (data) {
+        const settingsValue = data.value as { enabled?: boolean };
+        setMapsEnabled(settingsValue?.enabled ?? true);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // Set up real-time subscription for updates
   useEffect(() => {
@@ -535,6 +555,19 @@ const TrackRescue = () => {
                           <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                         </div>
                       </div>
+
+                      {/* Map Display - Show if maps are enabled */}
+                      {mapsEnabled && (
+                        <div className="mt-4">
+                          <TrackingMap
+                            customerLocation={{ lat: 25.276987, lng: 55.296249 }}
+                            customerName="Your Location"
+                          />
+                          <p className="text-xs text-muted-foreground mt-2 text-center">
+                            Map tracking is available for this request
+                          </p>
+                        </div>
+                      )}
 
                       {request.description && (
                         <div className="flex items-start gap-3 lg:gap-4">

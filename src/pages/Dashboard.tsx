@@ -50,6 +50,7 @@ const Dashboard = () => {
   const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
+  const [mapsEnabled, setMapsEnabled] = useState(true);
   
   // Admin filters
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
@@ -209,7 +210,7 @@ const Dashboard = () => {
 
   const fetchAdminData = async () => {
     // Fetch IDs by role first to avoid relying on PostgREST relationship inference
-    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, contactMessagesRes, allProfilesRes, allUserRolesRes, ratingsRes] = await Promise.all([
+    const [requestsRes, providerIdsRes, customerIdsRes, transactionsRes, appsRes, contactMessagesRes, allProfilesRes, allUserRolesRes, ratingsRes, settingsRes] = await Promise.all([
       supabase
         .from('service_requests')
         .select(`
@@ -232,6 +233,7 @@ const Dashboard = () => {
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
       supabase.from('ratings').select('*'),
+      supabase.from('settings').select('*').eq('key', 'maps_enabled').single(),
     ]);
 
     const providerIds = providerIdsRes.data?.map((r: any) => r.user_id) || [];
@@ -267,6 +269,10 @@ const Dashboard = () => {
     if (transactionsRes.data) setAllTransactions(transactionsRes.data);
     if (appsRes.data) setApplications(appsRes.data);
     if (contactMessagesRes.data) setContactMessages(contactMessagesRes.data);
+    if (settingsRes.data) {
+      const settingsValue = settingsRes.data.value as { enabled?: boolean };
+      setMapsEnabled(settingsValue?.enabled ?? true);
+    }
     
     // Combine profiles with their roles
     if (allProfilesRes.data && allUserRolesRes.data) {
@@ -356,6 +362,20 @@ const Dashboard = () => {
     } else {
       toast.success('Profile deleted successfully');
       fetchData();
+    }
+  };
+
+  const handleToggleMaps = async (enabled: boolean) => {
+    const { error } = await supabase
+      .from('settings')
+      .update({ value: { enabled } })
+      .eq('key', 'maps_enabled');
+
+    if (error) {
+      toast.error('Failed to update map settings');
+    } else {
+      toast.success(`Maps ${enabled ? 'enabled' : 'disabled'} successfully`);
+      setMapsEnabled(enabled);
     }
   };
 
@@ -2861,6 +2881,32 @@ const Dashboard = () => {
 
               {currentView === 'homepage' && (
                 <HomepageSectionsManager />
+              )}
+
+              {currentView === 'settings' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>System Settings</CardTitle>
+                    <CardDescription>Configure application-wide settings</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="maps-toggle" className="text-base font-medium">
+                          Map Tracking
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Enable or disable live map tracking on Track Rescue page
+                        </p>
+                      </div>
+                      <Switch
+                        id="maps-toggle"
+                        checked={mapsEnabled}
+                        onCheckedChange={handleToggleMaps}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'profile' && (
