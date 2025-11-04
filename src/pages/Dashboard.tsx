@@ -713,7 +713,7 @@ const Dashboard = () => {
               </h1>
             </div>
 
-            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
+            <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
               {/* Mobile: Single CTA button at top */}
               <div className="lg:hidden">
                 <Button 
@@ -1082,7 +1082,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
+            <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-20 lg:pb-6">
               {/* Compact stats on mobile, full on desktop */}
               <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 lg:gap-6">
           <Card className="hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
@@ -1273,7 +1273,7 @@ const Dashboard = () => {
               </h1>
             </div>
 
-            <main className="flex-1 p-3 lg:p-6 space-y-3 lg:space-y-6 overflow-auto pb-20 lg:pb-6">
+            <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto pb-20 lg:pb-6">
               {/* Compact stats on mobile, full on desktop */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
                 <Card>
