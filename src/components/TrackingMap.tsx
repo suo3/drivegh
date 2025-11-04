@@ -18,6 +18,12 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
+  // Debug mount/unmount to isolate crashes
+  useEffect(() => {
+    console.log('[TrackingMap] mount', { customerLocation, providerLocation });
+    return () => console.log('[TrackingMap] unmount');
+  }, [customerLocation, providerLocation]);
+
   // Default to a central location if no coordinates provided
   const defaultCenter: [number, number] = [25.276987, 55.296249]; // Dubai
   const center: [number, number] = customerLocation

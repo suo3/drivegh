@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter, Star } from 'lucide-react';
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import MapErrorBoundary from '@/components/MapErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -557,19 +558,21 @@ const TrackRescue = () => {
                       </div>
 
                       {/* Map Display - Show if maps are enabled */}
-                      {mapsEnabled && (
-                        <div className="mt-4">
-                          <Suspense fallback={<div className="w-full h-[300px] rounded-lg bg-muted" />}> 
-                            <TrackingMapLazy
-                              customerLocation={{ lat: 25.276987, lng: 55.296249 }}
-                              customerName="Your Location"
-                            />
-                          </Suspense>
-                          <p className="text-xs text-muted-foreground mt-2 text-center">
-                            Map tracking is available for this request
-                          </p>
-                        </div>
-                      )}
+{mapsEnabled && (
+                          <div className="mt-4">
+                            <MapErrorBoundary>
+                              <Suspense fallback={<div className="w-full h-[300px] rounded-lg bg-muted" />}> 
+                                <TrackingMapLazy
+                                  customerLocation={{ lat: 25.276987, lng: 55.296249 }}
+                                  customerName="Your Location"
+                                />
+                              </Suspense>
+                            </MapErrorBoundary>
+                            <p className="text-xs text-muted-foreground mt-2 text-center">
+                              Map tracking is available for this request
+                            </p>
+                          </div>
+                        )}
 
                       {request.description && (
                         <div className="flex items-start gap-3 lg:gap-4">
