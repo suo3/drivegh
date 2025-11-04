@@ -24,11 +24,32 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
   useEffect(() => {
     if (!isClient) return;
     let mounted = true;
-    import('react-leaflet')
-      .then((m) => {
-        if (mounted) setRl(m);
+
+    // Load react-leaflet and leaflet together and fix default marker icons
+    Promise.all([import('react-leaflet'), import('leaflet')])
+      .then(([rlMod, Lmod]) => {
+        try {
+          const L = (Lmod as any).default ?? (Lmod as any);
+          // Ensure marker icons load correctly under Vite
+          // See: https://github.com/Leaflet/Leaflet/issues/4968
+          // and Vite asset handling with import.meta.url
+          // @ts-ignore
+          delete L.Icon.Default.prototype._getIconUrl;
+          L.Icon.Default.mergeOptions({
+            iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).toString(),
+            iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).toString(),
+            shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).toString(),
+          });
+        } catch (e) {
+          console.warn('[TrackingMap] Leaflet icon setup failed', e);
+        }
+        if (mounted) setRl(rlMod);
       })
-      .catch((e) => console.error('[TrackingMap] failed to load react-leaflet', e));
+      .catch((e) => {
+        console.error('[TrackingMap] failed to load leaflet/react-leaflet', e);
+        if (mounted) setRl(null);
+      });
+
     return () => {
       mounted = false;
     };
