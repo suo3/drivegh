@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -15,16 +15,23 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
   customerName = 'Your Location',
   providerName = 'Provider Location',
 }) => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
   // Default to a central location if no coordinates provided
   const defaultCenter: [number, number] = [25.276987, 55.296249]; // Dubai
-  const center: [number, number] = customerLocation 
+  const center: [number, number] = customerLocation
     ? [customerLocation.lat, customerLocation.lng]
-    : providerLocation 
+    : providerLocation
     ? [providerLocation.lat, providerLocation.lng]
     : defaultCenter;
 
+  if (!isClient) {
+    return <div className="w-full h-[300px] rounded-lg bg-muted" />;
+  }
+
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
+    <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-lg">
       <MapContainer
         center={center}
         zoom={13}
@@ -35,7 +42,7 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
+
         {customerLocation && (
           <Marker position={[customerLocation.lat, customerLocation.lng]}>
             <Popup>
@@ -47,7 +54,7 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
             </Popup>
           </Marker>
         )}
-        
+
         {providerLocation && (
           <Marker position={[providerLocation.lat, providerLocation.lng]}>
             <Popup>
