@@ -55,6 +55,7 @@ const Dashboard = () => {
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
   const [adminCustomerFilter, setAdminCustomerFilter] = useState('');
   const [adminProviderFilter, setAdminProviderFilter] = useState('');
+  const [adminApplicationFilter, setAdminApplicationFilter] = useState('');
   
   // Contact messages filters
   const [messageStatusFilter, setMessageStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
@@ -2346,6 +2347,23 @@ const Dashboard = () => {
                   <CardHeader>
                     <CardTitle>Partnership Applications</CardTitle>
                     <CardDescription>Review and manage partnership applications</CardDescription>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Input
+                        placeholder="Search by business name, contact person, email, phone, city, or status..."
+                        value={adminApplicationFilter}
+                        onChange={(e) => setAdminApplicationFilter(e.target.value)}
+                        className="max-w-2xl"
+                      />
+                      {adminApplicationFilter && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setAdminApplicationFilter('')}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -2362,7 +2380,17 @@ const Dashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {applications.map((app) => (
+                        {applications.filter(app => {
+                          const searchLower = adminApplicationFilter.toLowerCase();
+                          return (
+                            app.business_name?.toLowerCase().includes(searchLower) ||
+                            app.contact_person?.toLowerCase().includes(searchLower) ||
+                            app.email?.toLowerCase().includes(searchLower) ||
+                            app.phone?.toLowerCase().includes(searchLower) ||
+                            app.city?.toLowerCase().includes(searchLower) ||
+                            app.status?.toLowerCase().includes(searchLower)
+                          );
+                        }).map((app) => (
                           <TableRow key={app.id}>
                             <TableCell className="font-medium">{app.business_name}</TableCell>
                             <TableCell>{app.contact_person}</TableCell>
