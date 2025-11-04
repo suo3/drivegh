@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+// react-leaflet is dynamically imported to avoid runtime issues
+// import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface TrackingMapProps {
@@ -18,6 +19,21 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
+  // Dynamically load react-leaflet only on client to avoid runtime issues
+  const [rl, setRl] = useState<any | null>(null);
+  useEffect(() => {
+    if (!isClient) return;
+    let mounted = true;
+    import('react-leaflet')
+      .then((m) => {
+        if (mounted) setRl(m);
+      })
+      .catch((e) => console.error('[TrackingMap] failed to load react-leaflet', e));
+    return () => {
+      mounted = false;
+    };
+  }, [isClient]);
+
   // Debug mount/unmount to isolate crashes
   useEffect(() => {
     console.log('[TrackingMap] mount', { customerLocation, providerLocation });
@@ -32,47 +48,50 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
     ? [providerLocation.lat, providerLocation.lng]
     : defaultCenter;
 
-  if (!isClient) {
+  if (!isClient || !rl) {
     return <div className="w-full h-[300px] rounded-lg bg-muted" />;
   }
 
+  // Destructure dynamically loaded components
+  const { MapContainer: RLMapContainer, TileLayer: RLTileLayer, Marker: RLMarker, Popup: RLPopup } = rl;
+
   return (
     <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-lg">
-      <MapContainer
+      <RLMapContainer
         center={center}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
       >
-        <TileLayer
+        <RLTileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {customerLocation && (
-          <Marker position={[customerLocation.lat, customerLocation.lng]}>
-            <Popup>
+          <RLMarker position={[customerLocation.lat, customerLocation.lng]}>
+            <RLPopup>
               <div className="text-sm">
                 <strong>{customerName}</strong>
                 <br />
                 Customer Location
               </div>
-            </Popup>
-          </Marker>
+            </RLPopup>
+          </RLMarker>
         )}
 
         {providerLocation && (
-          <Marker position={[providerLocation.lat, providerLocation.lng]}>
-            <Popup>
+          <RLMarker position={[providerLocation.lat, providerLocation.lng]}>
+            <RLPopup>
               <div className="text-sm">
                 <strong>{providerName}</strong>
                 <br />
                 Provider Location
               </div>
-            </Popup>
-          </Marker>
+            </RLPopup>
+          </RLMarker>
         )}
-      </MapContainer>
+      </RLMapContainer>
     </div>
   );
 };
