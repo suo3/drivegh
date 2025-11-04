@@ -368,6 +368,7 @@ const Index = () => {
             {cities.slice(0, 6).map((city, index) => (
               <div 
                 key={index} 
+                onClick={() => navigate('/request-service')}
                 className="flex items-center gap-2 lg:gap-3 p-3 lg:p-5 border-2 rounded-xl lg:rounded-2xl hover:border-primary transition-all cursor-pointer group hover-lift bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
@@ -378,7 +379,12 @@ const Index = () => {
           </div>
 
           <div className="text-center">
-            <Button variant="outline" size="lg" className="font-semibold border-2 hover:border-primary text-sm lg:text-base">
+            <Button 
+              onClick={() => navigate('/request-service')}
+              variant="outline" 
+              size="lg" 
+              className="font-semibold border-2 hover:border-primary text-sm lg:text-base"
+            >
               +{cities.length - 6} More Cities
             </Button>
           </div>
