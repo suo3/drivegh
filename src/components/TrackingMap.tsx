@@ -1,36 +1,12 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-
-// Fix for default marker icons in React-Leaflet
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 interface TrackingMapProps {
   customerLocation?: { lat: number; lng: number };
   providerLocation?: { lat: number; lng: number };
   customerName?: string;
   providerName?: string;
-}
-
-function MapUpdater({ center }: { center: [number, number] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView(center, 13);
-  }, [center, map]);
-  
-  return null;
 }
 
 export const TrackingMap: React.FC<TrackingMapProps> = ({
@@ -55,7 +31,6 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
       >
-        <MapUpdater center={center} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
