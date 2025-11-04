@@ -20,6 +20,7 @@ import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
 import CitiesManager from '@/components/CitiesManager';
+import HomepageSectionsManager from '@/components/HomepageSectionsManager';
 import { z } from 'zod';
 
 const Dashboard = () => {
@@ -2738,6 +2739,10 @@ const Dashboard = () => {
 
               {currentView === 'cities' && (
                 <CitiesManager />
+              )}
+
+              {currentView === 'homepage' && (
+                <HomepageSectionsManager />
               )}
 
               {currentView === 'profile' && (

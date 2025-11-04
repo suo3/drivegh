@@ -18,11 +18,13 @@ const Index = () => {
   const [showAllCities, setShowAllCities] = useState(false);
   const [cities, setCities] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [sections, setSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchServices();
     fetchCities();
     fetchTestimonials();
+    fetchSections();
   }, []);
 
   const fetchServices = async () => {
@@ -63,6 +65,20 @@ const Index = () => {
       .limit(6);
     
     if (data) setTestimonials(data);
+  };
+
+  const fetchSections = async () => {
+    const { data } = await supabase
+      .from('homepage_sections')
+      .select('name, is_active');
+    
+    if (data) {
+      const sectionsMap: Record<string, boolean> = {};
+      data.forEach(section => {
+        sectionsMap[section.name] = section.is_active;
+      });
+      setSections(sectionsMap);
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -142,6 +158,7 @@ const Index = () => {
       </section>
 
       {/* Services Section - Compact grid on mobile */}
+      {sections.services && (
       <section id="services" className="py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative">
         {/* Decorative elements - hidden on mobile */}
         <div className="hidden lg:block absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
@@ -179,8 +196,10 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* How It Works Section - Simplified on mobile */}
+      {sections.how_it_works && (
       <section id="how-it-works" className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative overflow-hidden">
         {/* Connection lines decoration - hidden on mobile */}
         <div className="absolute inset-0 opacity-10 hidden lg:block">
@@ -228,8 +247,10 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Mobile Money Section - Simplified on mobile */}
+      {sections.mobile_money && (
       <section className="py-12 lg:py-24 bg-gradient-to-br from-accent via-yellow-400 to-accent relative overflow-hidden">
         {/* Animated background pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -316,9 +337,10 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Testimonials Section - Show only 1 on mobile, 3 on desktop */}
-      {testimonials.length > 0 && (
+      {sections.testimonials && testimonials.length > 0 && (
         <section className="py-12 lg:py-24 bg-gradient-to-b from-[hsl(var(--section-bg))] to-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-8 lg:mb-16 animate-fade-in">
@@ -384,6 +406,7 @@ const Index = () => {
       )}
 
       {/* Cities Section - Compact on mobile */}
+      {sections.cities && (
       <section className="py-12 lg:py-24 bg-background relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 lg:mb-16 animate-fade-in">
@@ -424,8 +447,10 @@ const Index = () => {
           )}
         </div>
       </section>
+      )}
 
       {/* CTA Section - Compact on mobile */}
+      {sections.cta && (
       <section className="py-12 lg:py-24 bg-gradient-to-br from-primary via-[hsl(217,91%,25%)] to-secondary text-white relative overflow-hidden">
         {/* Animated gradient orbs - hidden on mobile */}
         <div className="hidden lg:block absolute top-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float"></div>
@@ -483,6 +508,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       <Footer />
     </div>
