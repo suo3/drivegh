@@ -26,6 +26,7 @@ const AdminDashboard = () => {
   const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [customerFilter, setCustomerFilter] = useState('');
+  const [providerFilter, setProviderFilter] = useState('');
   const [assignDialog, setAssignDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -212,6 +213,16 @@ const AdminDashboard = () => {
     );
   });
 
+  const filteredProviders = providers.filter(provider => {
+    const searchLower = providerFilter.toLowerCase();
+    return (
+      provider.full_name?.toLowerCase().includes(searchLower) ||
+      provider.email?.toLowerCase().includes(searchLower) ||
+      provider.phone_number?.toLowerCase().includes(searchLower) ||
+      provider.location?.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
       <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
@@ -283,6 +294,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="customers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Users className="h-4 w-4 mr-2" />
               Customers
+            </TabsTrigger>
+            <TabsTrigger value="providers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Users className="h-4 w-4 mr-2" />
+              Providers
             </TabsTrigger>
             <TabsTrigger value="applications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building className="h-4 w-4 mr-2" />
@@ -606,6 +621,101 @@ const AdminDashboard = () => {
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                                   <Clock className="h-3 w-3" />
                                   Joined {new Date(customer.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="providers">
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">Provider Management</CardTitle>
+                    <CardDescription>View and manage service providers</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Search by name, email, phone, or location..."
+                    value={providerFilter}
+                    onChange={(e) => setProviderFilter(e.target.value)}
+                    className="max-w-md bg-background/50 border-primary/20"
+                  />
+                  {providerFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setProviderFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {filteredProviders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      {providerFilter ? 'No providers match your search' : 'No providers registered yet'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      Showing {filteredProviders.length} of {providers.length} providers
+                    </div>
+                    {filteredProviders.map((provider) => (
+                      <Card key={provider.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-3 rounded-full bg-primary/10">
+                                <User className="h-6 w-6 text-primary" />
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-bold text-lg">{provider.full_name || 'Unnamed Provider'}</p>
+                                  <Badge variant={provider.is_available ? 'default' : 'secondary'}>
+                                    {provider.is_available ? 'Available' : 'Unavailable'}
+                                  </Badge>
+                                </div>
+                                {provider.email && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Mail className="h-4 w-4" />
+                                    {provider.email}
+                                  </div>
+                                )}
+                                {provider.phone_number && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="h-4 w-4" />
+                                    {provider.phone_number}
+                                  </div>
+                                )}
+                                {provider.location && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <MapPin className="h-4 w-4" />
+                                    {provider.location}
+                                  </div>
+                                )}
+                                {provider.bio && (
+                                  <p className="text-sm text-muted-foreground mt-2">{provider.bio}</p>
+                                )}
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                                  <Clock className="h-3 w-3" />
+                                  Joined {new Date(provider.created_at).toLocaleDateString()}
                                 </div>
                               </div>
                             </div>
