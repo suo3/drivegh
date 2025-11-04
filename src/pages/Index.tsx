@@ -55,9 +55,14 @@ const Index = () => {
     { name: 'Ama', city: 'Cape Coast, Ghana', rating: 5, text: 'I locked my keys in my car at the mall. The DRIVE Ghana team helped me out fast and my car had no damage. Fast and skilled service!' },
   ];
 
+  const [showAllCities, setShowAllCities] = useState(false);
+  
   const cities = [
     'Accra', 'Kumasi', 'Tamale', 'Tema', 'Takoradi', 'Obuasi', 
-    'Cape Coast', 'Sunyani', 'Koforidua', 'Sekondi'
+    'Cape Coast', 'Sunyani', 'Koforidua', 'Sekondi',
+    'Ho', 'Techiman', 'Wa', 'Bolgatanga', 'Tarkwa',
+    'Nkawkaw', 'Winneba', 'Kasoa', 'Medina', 'Madina',
+    'Ashaiman', 'Berekum', 'Asamankese', 'Nsawam', 'Suhum'
   ];
 
   return (
@@ -365,7 +370,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-4 max-w-6xl mx-auto mb-6 lg:mb-8">
-            {cities.slice(0, 6).map((city, index) => (
+            {(showAllCities ? cities : cities.slice(0, 10)).map((city, index) => (
               <div 
                 key={index} 
                 onClick={() => navigate('/request-service')}
@@ -378,16 +383,18 @@ const Index = () => {
             ))}
           </div>
 
-          <div className="text-center">
-            <Button 
-              onClick={() => navigate('/request-service')}
-              variant="outline" 
-              size="lg" 
-              className="font-semibold border-2 hover:border-primary text-sm lg:text-base"
-            >
-              +{cities.length - 6} More Cities
-            </Button>
-          </div>
+          {!showAllCities && (
+            <div className="text-center">
+              <Button 
+                onClick={() => setShowAllCities(true)}
+                variant="outline" 
+                size="lg" 
+                className="font-semibold border-2 hover:border-primary text-sm lg:text-base"
+              >
+                +{cities.length - 10} More Cities
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
