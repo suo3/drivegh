@@ -21,6 +21,7 @@ import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
 import CitiesManager from '@/components/CitiesManager';
 import HomepageSectionsManager from '@/components/HomepageSectionsManager';
+import TestimonialsManager from '@/components/TestimonialsManager';
 import { z } from 'zod';
 
 const Dashboard = () => {
@@ -2739,6 +2740,10 @@ const Dashboard = () => {
 
               {currentView === 'cities' && (
                 <CitiesManager />
+              )}
+
+              {currentView === 'testimonials' && (
+                <TestimonialsManager />
               )}
 
               {currentView === 'homepage' && (

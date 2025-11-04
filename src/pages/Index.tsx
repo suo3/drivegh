@@ -56,9 +56,11 @@ const Index = () => {
         review,
         created_at,
         customer_id,
+        featured,
         profiles!ratings_customer_id_fkey(full_name),
         service_requests!inner(service_type, location)
       `)
+      .eq('featured', true)
       .gte('rating', 4)
       .not('review', 'is', null)
       .order('created_at', { ascending: false })

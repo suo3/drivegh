@@ -1,4 +1,4 @@
-import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal, MapPin, Layout } from 'lucide-react';
+import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal, MapPin, Layout, Star } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar,
@@ -50,6 +50,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
     { title: 'Contact Messages', view: 'messages', icon: MessageSquare },
     { title: 'Services', view: 'services', icon: Settings },
     { title: 'Cities', view: 'cities', icon: MapPin },
+    { title: 'Testimonials', view: 'testimonials', icon: Star },
     { title: 'Homepage', view: 'homepage', icon: Layout },
     { title: 'Profile', view: 'profile', icon: User },
   ];

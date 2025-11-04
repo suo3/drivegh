@@ -192,6 +192,7 @@ export type Database = {
         Row: {
           created_at: string | null
           customer_id: string
+          featured: boolean
           id: string
           provider_id: string
           rating: number
@@ -201,6 +202,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           customer_id: string
+          featured?: boolean
           id?: string
           provider_id: string
           rating: number
@@ -210,6 +212,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           customer_id?: string
+          featured?: boolean
           id?: string
           provider_id?: string
           rating?: number
