@@ -694,7 +694,7 @@ const Dashboard = () => {
             <Navbar />
             
             {/* Compact mobile header */}
-            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
+            <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-4 lg:px-6 lg:py-5">
                 <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
                 <div className="flex-1 min-w-0">
@@ -1051,7 +1051,7 @@ const Dashboard = () => {
             <Navbar />
             
             {/* Desktop header */}
-            <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
+            <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-6 lg:py-5">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <SidebarTrigger className="-ml-2 hover:bg-primary/10 transition-colors" />
@@ -1257,7 +1257,7 @@ const Dashboard = () => {
             <Navbar />
             
             {/* Desktop header */}
-            <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:block hidden">
+            <header className="sticky top-16 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
                 <SidebarTrigger className="-ml-2" />
                 <div className="flex-1 min-w-0">

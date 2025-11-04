@@ -256,7 +256,7 @@ const ProviderDashboard = () => {
                     <SelectTrigger className="w-[160px]">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 bg-background">
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="assigned">Assigned</SelectItem>
                       <SelectItem value="accepted">Accepted</SelectItem>
@@ -271,7 +271,7 @@ const ProviderDashboard = () => {
                     <SelectTrigger className="w-[160px]">
                       <SelectValue placeholder="Service Type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 bg-background">
                       <SelectItem value="all">All Services</SelectItem>
                       <SelectItem value="towing">Towing</SelectItem>
                       <SelectItem value="tire_change">Tire Change</SelectItem>
