@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -17,6 +18,8 @@ const ProviderDashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
 
   useEffect(() => {
     if (user) {
@@ -132,6 +135,17 @@ const ProviderDashboard = () => {
 
   const totalEarnings = earnings.reduce((acc, t) => acc + parseFloat(t.provider_amount || 0), 0);
 
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+    const matchesServiceType = serviceTypeFilter === 'all' || request.service_type === serviceTypeFilter;
+    return matchesStatus && matchesServiceType;
+  });
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setServiceTypeFilter('all');
+  };
+
   return (
     <div className="min-h-screen">
       <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/80 text-white py-20 px-6">
@@ -221,27 +235,79 @@ const ProviderDashboard = () => {
 
           <Card className="border-2 shadow-lg">
             <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Briefcase className="h-6 w-6 text-primary" />
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <Briefcase className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">Assigned Jobs</CardTitle>
+                    <CardDescription className="text-base mt-1">Manage your service requests</CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-2xl">Assigned Jobs</CardTitle>
-                  <CardDescription className="text-base mt-1">Manage your service requests</CardDescription>
+                
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+                  </div>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="assigned">Assigned</SelectItem>
+                      <SelectItem value="accepted">Accepted</SelectItem>
+                      <SelectItem value="en_route">En Route</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder="Service Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Services</SelectItem>
+                      <SelectItem value="towing">Towing</SelectItem>
+                      <SelectItem value="tire_change">Tire Change</SelectItem>
+                      <SelectItem value="fuel_delivery">Fuel Delivery</SelectItem>
+                      <SelectItem value="jump_start">Jump Start</SelectItem>
+                      <SelectItem value="lockout">Lockout</SelectItem>
+                      <SelectItem value="minor_repair">Minor Repair</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {(statusFilter !== 'all' || serviceTypeFilter !== 'all') && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={clearFilters}
+                      className="text-xs"
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              {requests.length === 0 ? (
+              {filteredRequests.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="p-4 rounded-full bg-muted/50 w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <Briefcase className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <p className="text-muted-foreground">No jobs assigned yet</p>
+                  <p className="text-muted-foreground">
+                    {requests.length === 0 ? 'No jobs assigned yet' : 'No jobs match the selected filters'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {requests.map((request) => (
+                  {filteredRequests.map((request) => (
                     <Card key={request.id} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 hover:-translate-y-1">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
