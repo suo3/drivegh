@@ -147,7 +147,7 @@ const ProviderDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-16">
       <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/80 text-white py-20 px-6">
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
         <div className="absolute top-20 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse" />
