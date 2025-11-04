@@ -5,8 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter, Star } from 'lucide-react';
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import MapErrorBoundary from '@/components/MapErrorBoundary';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-const TrackingMapLazy = lazy(() => import('@/components/TrackingMap').then(m => ({ default: m.TrackingMap })));
 
 const TrackRescue = () => {
   const { user } = useAuth();
