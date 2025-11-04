@@ -51,6 +51,11 @@ const Dashboard = () => {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
   
+  // Admin filters
+  const [adminRequestFilter, setAdminRequestFilter] = useState('');
+  const [adminCustomerFilter, setAdminCustomerFilter] = useState('');
+  const [adminProviderFilter, setAdminProviderFilter] = useState('');
+  
   // Contact messages filters
   const [messageStatusFilter, setMessageStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
@@ -1318,6 +1323,23 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle>All Service Requests</CardTitle>
                 <CardDescription>Manage all service requests across the platform</CardDescription>
+                <div className="flex items-center gap-2 mt-4">
+                  <Input
+                    placeholder="Search by service, customer, location, provider, or status..."
+                    value={adminRequestFilter}
+                    onChange={(e) => setAdminRequestFilter(e.target.value)}
+                    className="max-w-2xl"
+                  />
+                  {adminRequestFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setAdminRequestFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -1334,7 +1356,20 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allRequests.map((request) => {
+                    {allRequests.filter(request => {
+                      const searchLower = adminRequestFilter.toLowerCase();
+                      const provider = providers.find(p => p.id === request.provider_id);
+                      return (
+                        request.service_type?.toLowerCase().includes(searchLower) ||
+                        request.location?.toLowerCase().includes(searchLower) ||
+                        request.status?.toLowerCase().includes(searchLower) ||
+                        request.tracking_code?.toLowerCase().includes(searchLower) ||
+                        request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+                        provider?.full_name?.toLowerCase().includes(searchLower) ||
+                        request.vehicle_make?.toLowerCase().includes(searchLower) ||
+                        request.vehicle_model?.toLowerCase().includes(searchLower)
+                      );
+                    }).map((request) => {
                       const provider = providers.find(p => p.id === request.provider_id);
                       
                       return (
@@ -1624,6 +1659,23 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle>Provider Management</CardTitle>
                 <CardDescription>Manage service providers and their details</CardDescription>
+                <div className="flex items-center gap-2 mt-4">
+                  <Input
+                    placeholder="Search by name, email, phone, or location..."
+                    value={adminProviderFilter}
+                    onChange={(e) => setAdminProviderFilter(e.target.value)}
+                    className="max-w-md"
+                  />
+                  {adminProviderFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setAdminProviderFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -1639,7 +1691,15 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {providers.map((provider) => {
+                    {providers.filter(provider => {
+                      const searchLower = adminProviderFilter.toLowerCase();
+                      return (
+                        provider.full_name?.toLowerCase().includes(searchLower) ||
+                        provider.email?.toLowerCase().includes(searchLower) ||
+                        provider.phone_number?.toLowerCase().includes(searchLower) ||
+                        provider.location?.toLowerCase().includes(searchLower)
+                      );
+                    }).map((provider) => {
                       const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
                       const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
                       
@@ -1830,6 +1890,23 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle>Customer Management</CardTitle>
                 <CardDescription>Manage customers and their service history</CardDescription>
+                <div className="flex items-center gap-2 mt-4">
+                  <Input
+                    placeholder="Search by name, email, phone, or location..."
+                    value={adminCustomerFilter}
+                    onChange={(e) => setAdminCustomerFilter(e.target.value)}
+                    className="max-w-md"
+                  />
+                  {adminCustomerFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setAdminCustomerFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -1845,7 +1922,15 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {customers.map((customer) => {
+                    {customers.filter(customer => {
+                      const searchLower = adminCustomerFilter.toLowerCase();
+                      return (
+                        customer.full_name?.toLowerCase().includes(searchLower) ||
+                        customer.email?.toLowerCase().includes(searchLower) ||
+                        customer.phone_number?.toLowerCase().includes(searchLower) ||
+                        customer.location?.toLowerCase().includes(searchLower)
+                      );
+                    }).map((customer) => {
                       const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
                       const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
                       const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
