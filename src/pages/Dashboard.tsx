@@ -19,6 +19,7 @@ import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
+import CitiesManager from '@/components/CitiesManager';
 import { z } from 'zod';
 
 const Dashboard = () => {
@@ -2733,6 +2734,10 @@ const Dashboard = () => {
 
               {currentView === 'services' && (
                 <ServiceManager />
+              )}
+
+              {currentView === 'cities' && (
+                <CitiesManager />
               )}
 
               {currentView === 'profile' && (

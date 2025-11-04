@@ -16,9 +16,11 @@ const Index = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState<any[]>([]);
   const [showAllCities, setShowAllCities] = useState(false);
+  const [cities, setCities] = useState<any[]>([]);
 
   useEffect(() => {
     fetchServices();
+    fetchCities();
   }, []);
 
   const fetchServices = async () => {
@@ -29,6 +31,16 @@ const Index = () => {
       .order('display_order', { ascending: true });
     
     if (data) setServices(data);
+  };
+
+  const fetchCities = async () => {
+    const { data } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (data) setCities(data);
   };
 
   const getIconComponent = (iconName: string) => {
@@ -54,14 +66,6 @@ const Index = () => {
     { name: 'Christine', city: 'Accra, Ghana', rating: 5, text: 'My car battery died and I was stuck on the road. The DRIVE Ghana team came in less than 30 minutes and got me back on the road quickly.' },
     { name: 'Kofi', city: 'Kumasi, Ghana', rating: 5, text: 'I had a flat tire on the Kumasi-Accra Highway. I used the app and help arrived within 40 minutes. The technician was professional and friendly.' },
     { name: 'Ama', city: 'Cape Coast, Ghana', rating: 5, text: 'I locked my keys in my car at the mall. The DRIVE Ghana team helped me out fast and my car had no damage. Fast and skilled service!' },
-  ];
-  
-  const cities = [
-    'Accra', 'Kumasi', 'Tamale', 'Tema', 'Takoradi', 'Obuasi', 
-    'Cape Coast', 'Sunyani', 'Koforidua', 'Sekondi',
-    'Ho', 'Techiman', 'Wa', 'Bolgatanga', 'Tarkwa',
-    'Nkawkaw', 'Winneba', 'Kasoa', 'Medina', 'Madina',
-    'Ashaiman', 'Berekum', 'Asamankese', 'Nsawam', 'Suhum'
   ];
 
   return (
@@ -371,13 +375,13 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-4 max-w-6xl mx-auto mb-6 lg:mb-8">
             {(showAllCities ? cities : cities.slice(0, 10)).map((city, index) => (
               <div 
-                key={index} 
+                key={city.id} 
                 onClick={() => navigate('/request-service')}
                 className="flex items-center gap-2 lg:gap-3 p-3 lg:p-5 border-2 rounded-xl lg:rounded-2xl hover:border-primary transition-all cursor-pointer group hover-lift bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <MapPinned className="h-4 w-4 lg:h-6 lg:w-6 text-primary group-hover:scale-125 transition-transform shrink-0" />
-                <span className="font-semibold group-hover:text-primary transition-colors text-xs lg:text-base">{city}</span>
+                <span className="font-semibold group-hover:text-primary transition-colors text-xs lg:text-base">{city.name}</span>
               </div>
             ))}
           </div>
