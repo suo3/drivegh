@@ -15,6 +15,7 @@ const Index = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
   const [services, setServices] = useState<any[]>([]);
+  const [showAllCities, setShowAllCities] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -54,8 +55,6 @@ const Index = () => {
     { name: 'Kofi', city: 'Kumasi, Ghana', rating: 5, text: 'I had a flat tire on the Kumasi-Accra Highway. I used the app and help arrived within 40 minutes. The technician was professional and friendly.' },
     { name: 'Ama', city: 'Cape Coast, Ghana', rating: 5, text: 'I locked my keys in my car at the mall. The DRIVE Ghana team helped me out fast and my car had no damage. Fast and skilled service!' },
   ];
-
-  const [showAllCities, setShowAllCities] = useState(false);
   
   const cities = [
     'Accra', 'Kumasi', 'Tamale', 'Tema', 'Takoradi', 'Obuasi', 
