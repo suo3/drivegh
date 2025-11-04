@@ -20,10 +20,12 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<any[]>([]);
   const [providers, setProviders] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [contactMessages, setContactMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customerFilter, setCustomerFilter] = useState('');
   const [assignDialog, setAssignDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -40,7 +42,7 @@ const AdminDashboard = () => {
   }, [user]);
 
   const fetchData = async () => {
-    const [requestsData, providersData, transactionsData, applicationsData, contactMessagesData] = await Promise.all([
+    const [requestsData, providersData, customersData, transactionsData, applicationsData, contactMessagesData] = await Promise.all([
       supabase
         .from('service_requests')
         .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number), provider:profiles!service_requests_provider_id_fkey(full_name)')
@@ -49,6 +51,11 @@ const AdminDashboard = () => {
         .from('profiles')
         .select('*, user_roles!inner(role)')
         .eq('user_roles.role', 'provider'),
+      supabase
+        .from('profiles')
+        .select('*, user_roles!inner(role)')
+        .eq('user_roles.role', 'customer')
+        .order('created_at', { ascending: false }),
       supabase
         .from('transactions')
         .select('*, service_requests(service_type, status, profiles!service_requests_customer_id_fkey(full_name))')
@@ -65,6 +72,7 @@ const AdminDashboard = () => {
 
     if (requestsData.data) setRequests(requestsData.data);
     if (providersData.data) setProviders(providersData.data);
+    if (customersData.data) setCustomers(customersData.data);
     if (transactionsData.data) setTransactions(transactionsData.data);
     if (applicationsData.data) setApplications(applicationsData.data);
     if (contactMessagesData.data) setContactMessages(contactMessagesData.data);
@@ -194,6 +202,16 @@ const AdminDashboard = () => {
     .filter(t => t.transaction_type === 'customer_to_business')
     .reduce((acc, t) => acc + parseFloat(t.amount), 0);
 
+  const filteredCustomers = customers.filter(customer => {
+    const searchLower = customerFilter.toLowerCase();
+    return (
+      customer.full_name?.toLowerCase().includes(searchLower) ||
+      customer.email?.toLowerCase().includes(searchLower) ||
+      customer.phone_number?.toLowerCase().includes(searchLower) ||
+      customer.location?.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
       <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
@@ -261,6 +279,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="requests" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Briefcase className="h-4 w-4 mr-2" />
               Service Requests
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Users className="h-4 w-4 mr-2" />
+              Customers
             </TabsTrigger>
             <TabsTrigger value="applications" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building className="h-4 w-4 mr-2" />
@@ -506,6 +528,93 @@ const AdminDashboard = () => {
                     </Card>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="customers">
+            <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">Customer Management</CardTitle>
+                    <CardDescription>View and manage registered customers</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Search by name, email, phone, or location..."
+                    value={customerFilter}
+                    onChange={(e) => setCustomerFilter(e.target.value)}
+                    className="max-w-md bg-background/50 border-primary/20"
+                  />
+                  {customerFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setCustomerFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {filteredCustomers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      {customerFilter ? 'No customers match your search' : 'No customers registered yet'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      Showing {filteredCustomers.length} of {customers.length} customers
+                    </div>
+                    {filteredCustomers.map((customer) => (
+                      <Card key={customer.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-3 rounded-full bg-primary/10">
+                                <User className="h-6 w-6 text-primary" />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="font-bold text-lg">{customer.full_name || 'Unnamed Customer'}</p>
+                                {customer.email && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Mail className="h-4 w-4" />
+                                    {customer.email}
+                                  </div>
+                                )}
+                                {customer.phone_number && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="h-4 w-4" />
+                                    {customer.phone_number}
+                                  </div>
+                                )}
+                                {customer.location && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <MapPin className="h-4 w-4" />
+                                    {customer.location}
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                                  <Clock className="h-3 w-3" />
+                                  Joined {new Date(customer.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
