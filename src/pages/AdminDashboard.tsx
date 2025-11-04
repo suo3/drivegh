@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [customerFilter, setCustomerFilter] = useState('');
   const [providerFilter, setProviderFilter] = useState('');
+  const [requestFilter, setRequestFilter] = useState('');
   const [assignDialog, setAssignDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -223,6 +224,20 @@ const AdminDashboard = () => {
     );
   });
 
+  const filteredRequests = requests.filter(request => {
+    const searchLower = requestFilter.toLowerCase();
+    return (
+      request.service_type?.toLowerCase().includes(searchLower) ||
+      request.location?.toLowerCase().includes(searchLower) ||
+      request.status?.toLowerCase().includes(searchLower) ||
+      request.tracking_code?.toLowerCase().includes(searchLower) ||
+      request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+      request.provider?.full_name?.toLowerCase().includes(searchLower) ||
+      request.vehicle_make?.toLowerCase().includes(searchLower) ||
+      request.vehicle_model?.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
       <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
@@ -325,19 +340,47 @@ const AdminDashboard = () => {
           <TabsContent value="requests">
             <Card className="backdrop-blur-sm bg-card/50 border-primary/10">
               <CardHeader>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 rounded-lg bg-primary/20">
                     <Briefcase className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="text-2xl">Service Requests</CardTitle>
                     <CardDescription>Manage and assign service requests</CardDescription>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Search by service type, location, status, tracking code, customer, or provider..."
+                    value={requestFilter}
+                    onChange={(e) => setRequestFilter(e.target.value)}
+                    className="max-w-2xl bg-background/50 border-primary/20"
+                  />
+                  {requestFilter && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setRequestFilter('')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {requests.map((request) => (
+                {filteredRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      {requestFilter ? 'No requests match your search' : 'No service requests yet'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      Showing {filteredRequests.length} of {requests.length} requests
+                    </div>
+                    {filteredRequests.map((request) => (
                     <Card key={request.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
@@ -412,7 +455,8 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                   ))}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
