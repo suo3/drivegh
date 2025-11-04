@@ -318,15 +318,16 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section - Show only 1 on mobile, 3 on desktop */}
-      <section className="py-12 lg:py-24 bg-gradient-to-b from-[hsl(var(--section-bg))] to-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8 lg:mb-16 animate-fade-in">
-            <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-primary/10 text-primary rounded-full text-xs lg:text-sm font-semibold mb-3 lg:mb-4">
-              Customer Stories
+      {testimonials.length > 0 && (
+        <section className="py-12 lg:py-24 bg-gradient-to-b from-[hsl(var(--section-bg))] to-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8 lg:mb-16 animate-fade-in">
+              <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-primary/10 text-primary rounded-full text-xs lg:text-sm font-semibold mb-3 lg:mb-4">
+                Customer Stories
+              </div>
+              <h2 className="text-2xl lg:text-4xl xl:text-5xl font-bold mb-2 lg:mb-4">What Our Customers Say</h2>
+              <p className="text-muted-foreground text-sm lg:text-lg px-4">Real experiences from drivers across Ghana</p>
             </div>
-            <h2 className="text-2xl lg:text-4xl xl:text-5xl font-bold mb-2 lg:mb-4">What Our Customers Say</h2>
-            <p className="text-muted-foreground text-sm lg:text-lg px-4">Real experiences from drivers across Ghana</p>
-          </div>
 
           <div className="grid md:grid-cols-3 gap-4 lg:gap-8 max-w-6xl mx-auto">
             {testimonials.length === 0 ? (
@@ -380,6 +381,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Cities Section - Compact on mobile */}
       <section className="py-12 lg:py-24 bg-background relative">
