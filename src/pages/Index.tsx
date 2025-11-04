@@ -17,10 +17,12 @@ const Index = () => {
   const [services, setServices] = useState<any[]>([]);
   const [showAllCities, setShowAllCities] = useState(false);
   const [cities, setCities] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
 
   useEffect(() => {
     fetchServices();
     fetchCities();
+    fetchTestimonials();
   }, []);
 
   const fetchServices = async () => {
@@ -43,6 +45,26 @@ const Index = () => {
     if (data) setCities(data);
   };
 
+  const fetchTestimonials = async () => {
+    const { data } = await supabase
+      .from('ratings')
+      .select(`
+        id,
+        rating,
+        review,
+        created_at,
+        customer_id,
+        profiles!ratings_customer_id_fkey(full_name),
+        service_requests!inner(service_type, location)
+      `)
+      .gte('rating', 4)
+      .not('review', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(6);
+    
+    if (data) setTestimonials(data);
+  };
+
   const getIconComponent = (iconName: string) => {
     const Icon = (LucideIcons as any)[iconName];
     return Icon || LucideIcons.Settings;
@@ -60,12 +82,6 @@ const Index = () => {
     { icon: Phone, title: 'Request Assistance', desc: 'Use our app or website to submit help. Provide your location and describe your emergency.' },
     { icon: MapPin, title: 'Track Your Rescue', desc: 'Monitor the arrival of your rescue team in real time. Know exactly when help will arrive.' },
     { icon: CreditCard, title: 'Pay with Mobile Money', desc: 'Once service is complete, easily pay using any Ghana mobile money provider (MTN, Vodafone, or AirtelTigo).' },
-  ];
-
-  const testimonials = [
-    { name: 'Christine', city: 'Accra, Ghana', rating: 5, text: 'My car battery died and I was stuck on the road. The DRIVE Ghana team came in less than 30 minutes and got me back on the road quickly.' },
-    { name: 'Kofi', city: 'Kumasi, Ghana', rating: 5, text: 'I had a flat tire on the Kumasi-Accra Highway. I used the app and help arrived within 40 minutes. The technician was professional and friendly.' },
-    { name: 'Ama', city: 'Cape Coast, Ghana', rating: 5, text: 'I locked my keys in my car at the mall. The DRIVE Ghana team helped me out fast and my car had no damage. Fast and skilled service!' },
   ];
 
   return (
@@ -313,42 +329,48 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-4 lg:gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card 
-                key={index} 
-                className={cn(
-                  "p-6 lg:p-8 hover-lift relative overflow-hidden group bg-gradient-to-br from-white to-gray-50/50 animate-scale-in",
-                  index > 0 && "hidden md:block"
-                )}
-                style={{ animationDelay: `${index * 0.15}s` }}
-              >
-                {/* Decorative quote mark */}
-                <div className="absolute top-4 right-4 text-6xl text-primary/5 font-serif group-hover:text-primary/10 transition-colors">"</div>
-                
-                <div className="flex gap-1 mb-4 lg:mb-6">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 lg:h-5 lg:w-5 text-accent fill-accent" />
-                  ))}
-                </div>
-                
-                <p className="text-muted-foreground mb-4 lg:mb-6 leading-relaxed relative z-10 italic text-sm lg:text-base">
-                  "{testimonial.text}"
-                </p>
-                
-                <div className="flex items-center gap-3 lg:gap-4 pt-3 lg:pt-4 border-t">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center font-bold text-base lg:text-lg">
-                    {testimonial.name[0]}
+            {testimonials.length === 0 ? (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-muted-foreground">No customer reviews yet</p>
+              </div>
+            ) : (
+              testimonials.slice(0, 3).map((testimonial, index) => (
+                <Card 
+                  key={testimonial.id} 
+                  className={cn(
+                    "p-6 lg:p-8 hover-lift relative overflow-hidden group bg-gradient-to-br from-white to-gray-50/50 animate-scale-in",
+                    index > 0 && "hidden md:block"
+                  )}
+                  style={{ animationDelay: `${index * 0.15}s` }}
+                >
+                  {/* Decorative quote mark */}
+                  <div className="absolute top-4 right-4 text-6xl text-primary/5 font-serif group-hover:text-primary/10 transition-colors">"</div>
+                  
+                  <div className="flex gap-1 mb-4 lg:mb-6">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 lg:h-5 lg:w-5 text-accent fill-accent" />
+                    ))}
                   </div>
-                  <div>
-                    <p className="font-bold text-sm lg:text-base">{testimonial.name}</p>
-                    <p className="text-xs lg:text-sm text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {testimonial.city}
-                    </p>
+                  
+                  <p className="text-muted-foreground mb-4 lg:mb-6 leading-relaxed relative z-10 italic text-sm lg:text-base line-clamp-4">
+                    "{testimonial.review}"
+                  </p>
+                  
+                  <div className="flex items-center gap-3 lg:gap-4 pt-3 lg:pt-4 border-t">
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center font-bold text-base lg:text-lg">
+                      {testimonial.profiles?.full_name?.[0] || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm lg:text-base">{testimonial.profiles?.full_name || 'Anonymous'}</p>
+                      <p className="text-xs lg:text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {testimonial.service_requests?.location || 'Ghana'}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
           
           <div className="text-center mt-6 md:hidden">
