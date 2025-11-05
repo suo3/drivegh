@@ -226,10 +226,13 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Mobile: Two rows */}
+          {/* Mobile: Two rows with last item centered */}
           <div className="grid grid-cols-2 md:hidden gap-x-4 gap-y-6 max-w-md mx-auto">
             {howItWorks.map((step, index) => (
-              <div key={index} className="text-center relative animate-scale-in" style={{ animationDelay: `${index * 0.2}s` }}>
+              <div key={index} className={cn(
+                "text-center relative animate-scale-in",
+                index === howItWorks.length - 1 && "col-span-2"
+              )} style={{ animationDelay: `${index * 0.2}s` }}>
                 {/* Step number */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-10">
                   {index + 1}
