@@ -55,11 +55,31 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">POPULAR CITIES</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Accra</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Kumasi</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Tamale</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Takoradi</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Cape Coast</a></li>
+              <li>
+                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                  Accra
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                  Kumasi
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                  Tamale
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                  Takoradi
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                  Cape Coast
+                </button>
+              </li>
             </ul>
           </div>
 
