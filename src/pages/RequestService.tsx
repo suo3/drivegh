@@ -329,11 +329,11 @@ const RequestService = () => {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground mb-6">
-                  <span>Service</span>
-                  <span>Location</span>
-                  <span>Vehicle</span>
-                  <span>Review</span>
+                <div className="flex justify-between text-xs text-muted-foreground mb-6 px-1">
+                  <span className="text-center" style={{ width: '10%' }}>Service</span>
+                  <span className="text-center" style={{ width: '10%' }}>Location</span>
+                  <span className="text-center" style={{ width: '10%' }}>Vehicle</span>
+                  <span className="text-center" style={{ width: '10%' }}>Review</span>
                 </div>
               </div>
 
