@@ -226,10 +226,10 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Mobile: Horizontal scroll */}
-          <div className="flex md:hidden gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+          {/* Mobile: Two rows */}
+          <div className="grid grid-cols-2 md:hidden gap-x-4 gap-y-6 max-w-md mx-auto">
             {howItWorks.map((step, index) => (
-              <div key={index} className="flex-shrink-0 w-[70vw] max-w-[280px] text-center relative animate-scale-in snap-center" style={{ animationDelay: `${index * 0.2}s` }}>
+              <div key={index} className="text-center relative animate-scale-in" style={{ animationDelay: `${index * 0.2}s` }}>
                 {/* Step number */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-10">
                   {index + 1}
@@ -239,7 +239,7 @@ const Index = () => {
                   <step.icon className="h-6 w-6 text-primary relative z-10" />
                 </div>
                 
-                <h3 className="text-base font-bold mb-1">{step.title}</h3>
+                <h3 className="text-sm font-bold mb-1">{step.title}</h3>
               </div>
             ))}
           </div>
