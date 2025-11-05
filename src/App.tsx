@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <MobileBottomNav />
+          <InstallPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
