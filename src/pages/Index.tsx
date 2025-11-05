@@ -251,7 +251,7 @@ const Index = () => {
       </section>
       )}
 
-      {/* Mobile Money Section - Simplified on mobile */}
+      {/* Mobile Money Section - Compact collapsible on mobile */}
       {sections.mobile_money && (
       <section className="py-12 lg:py-24 bg-gradient-to-br from-accent via-yellow-400 to-accent relative overflow-hidden">
         {/* Animated background pattern */}
@@ -273,7 +273,7 @@ const Index = () => {
               </p>
               
               {/* Mobile money providers - compact on mobile */}
-              <div className="space-y-3 lg:space-y-4 mb-6 lg:mb-8 max-w-md mx-auto lg:mx-0">
+              <div className="space-y-2 lg:space-y-4 mb-6 lg:mb-8 max-w-md mx-auto lg:mx-0">
                 {[
                   { name: 'MTN Money', color: 'bg-yellow-500' },
                   { name: 'Vodafone', color: 'bg-red-500' },
@@ -281,10 +281,10 @@ const Index = () => {
                 ].map((provider, index) => (
                   <div 
                     key={index}
-                    className="flex items-center gap-3 lg:gap-4 p-3 lg:p-4 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-all cursor-pointer animate-fade-in-left group"
+                    className="flex items-center gap-2 lg:gap-4 p-2.5 lg:p-4 bg-white/20 backdrop-blur-sm rounded-lg lg:rounded-xl hover:bg-white/30 transition-all cursor-pointer animate-fade-in-left group"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className={`${provider.color} rounded-full p-2 lg:p-3 group-hover:scale-110 transition-transform`}>
+                    <div className={`${provider.color} rounded-full p-1.5 lg:p-3 group-hover:scale-110 transition-transform`}>
                       <div className="w-2 h-2 lg:w-3 lg:h-3 bg-white rounded-full"></div>
                     </div>
                     <span className="text-accent-foreground font-semibold text-sm lg:text-base">{provider.name}</span>
@@ -295,12 +295,13 @@ const Index = () => {
               <Button 
                 onClick={() => navigate('/get-help')}
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold lg:text-lg px-6 lg:px-8 shadow-xl w-full sm:w-auto"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold lg:text-lg px-6 lg:px-8 shadow-xl w-full sm:w-auto mb-4 lg:mb-0"
               >
                 Request Help Now
               </Button>
             </div>
 
+            {/* Payment process - Desktop only */}
             <Card className="p-6 lg:p-10 bg-white shadow-2xl animate-fade-in-right hover-lift hidden lg:block">
               <div className="flex items-center gap-3 mb-8">
                 <div className="bg-primary/10 rounded-full p-3">
