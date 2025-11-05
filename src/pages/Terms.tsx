@@ -72,14 +72,14 @@ const Terms = () => {
             <article className="
               prose prose-base md:prose-lg max-w-none
               prose-headings:scroll-mt-20
-              prose-h1:text-3xl prose-h1:font-bold prose-h1:text-foreground prose-h1:mb-6 prose-h1:mt-8 prose-h1:border-b prose-h1:pb-4
-              prose-h2:text-2xl prose-h2:font-semibold prose-h2:text-foreground prose-h2:mb-4 prose-h2:mt-10
-              prose-h3:text-xl prose-h3:font-semibold prose-h3:text-foreground prose-h3:mb-3 prose-h3:mt-8
-              prose-p:text-base prose-p:text-foreground/80 prose-p:leading-7 prose-p:mb-4
-              prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
-              prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6
-              prose-li:text-base prose-li:text-foreground/80 prose-li:leading-7 prose-li:mb-2
-              prose-strong:text-foreground prose-strong:font-semibold
+              prose-h1:text-3xl prose-h1:font-extrabold prose-h1:text-foreground prose-h1:mb-8 prose-h1:mt-12 prose-h1:border-b prose-h1:pb-6
+              prose-h2:text-2xl prose-h2:font-bold prose-h2:text-foreground prose-h2:mb-6 prose-h2:mt-12
+              prose-h3:text-xl prose-h3:font-bold prose-h3:text-foreground prose-h3:mb-5 prose-h3:mt-10
+              prose-p:text-base prose-p:text-foreground/80 prose-p:leading-8 prose-p:mb-6
+              prose-ul:my-6 prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-3
+              prose-ol:my-6 prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-3
+              prose-li:text-base prose-li:text-foreground/80 prose-li:leading-8
+              prose-strong:text-foreground prose-strong:font-bold
               prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
               prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
               dark:prose-invert
