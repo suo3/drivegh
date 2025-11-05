@@ -52,6 +52,8 @@ const RequestService = () => {
 
   useEffect(() => {
     fetchServices();
+    // Auto-capture location on mount
+    getCurrentLocation();
   }, []);
 
   useEffect(() => {
@@ -116,6 +118,8 @@ const RequestService = () => {
   };
 
   const getCurrentLocation = () => {
+    if (gettingLocation) return; // Prevent multiple simultaneous requests
+    
     setGettingLocation(true);
     
     if (!navigator.geolocation) {
@@ -125,21 +129,53 @@ const RequestService = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCustomerLat(position.coords.latitude);
-        setCustomerLng(position.coords.longitude);
-        toast.success('Location captured successfully');
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        setCustomerLat(lat);
+        setCustomerLng(lng);
+        
+        // Reverse geocode to get address
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+            {
+              headers: {
+                'User-Agent': 'RoadsideAssistance/1.0'
+              }
+            }
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            const address = data.display_name || data.address?.road || '';
+            
+            if (address) {
+              setLocation(address);
+              toast.success('Location captured and auto-filled');
+            } else {
+              toast.success('GPS coordinates captured');
+            }
+          } else {
+            toast.success('GPS coordinates captured');
+          }
+        } catch (error) {
+          console.error('Reverse geocoding error:', error);
+          toast.success('GPS coordinates captured');
+        }
+        
         setGettingLocation(false);
       },
       (error) => {
         console.error('Geolocation error:', error);
-        toast.error('Failed to get your location. You can still submit without it.');
+        // Don't show error on auto-capture, only when manually triggered
         setGettingLocation(false);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 0
+        maximumAge: 60000 // Cache for 1 minute
       }
     );
   };
