@@ -407,7 +407,7 @@ const Index = () => {
       </section>
       )}
 
-      {/* Cities Section - Compact on mobile */}
+      {/* Cities Section - Compact collapsible on mobile */}
       {sections.cities && (
       <section className="py-12 lg:py-24 bg-background relative">
         <div className="container mx-auto px-4">
@@ -417,36 +417,68 @@ const Index = () => {
             </div>
             <h2 className="text-2xl lg:text-4xl xl:text-5xl font-bold mb-2 lg:mb-4">We're All Across Ghana</h2>
             <p className="text-muted-foreground text-sm lg:text-lg px-4">
-              Reliable roadside assistance in major cities
+              Available in {cities.length}+ cities nationwide
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-4 max-w-6xl mx-auto mb-6 lg:mb-8">
-            {(showAllCities ? cities : cities.slice(0, 10)).map((city, index) => (
+          {/* Mobile compact view */}
+          <div className="lg:hidden space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {cities.slice(0, 6).map((city, index) => (
+                <div 
+                  key={city.id} 
+                  onClick={() => navigate('/request-service')}
+                  className="flex items-center gap-2 p-2.5 border-2 rounded-lg hover:border-primary transition-all cursor-pointer bg-white animate-scale-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <MapPinned className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="font-semibold text-sm">{city.name}</span>
+                </div>
+              ))}
+            </div>
+            
+            {cities.length > 6 && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllCities(!showAllCities)}
+                  className="w-full text-sm font-semibold border-2 hover:border-primary"
+                >
+                  {showAllCities ? 'Show Less' : `View All ${cities.length} Cities`}
+                </Button>
+                
+                {showAllCities && (
+                  <div className="grid grid-cols-2 gap-2 animate-fade-in">
+                    {cities.slice(6).map((city) => (
+                      <div 
+                        key={city.id} 
+                        onClick={() => navigate('/request-service')}
+                        className="flex items-center gap-2 p-2.5 border-2 rounded-lg hover:border-primary transition-all cursor-pointer bg-white"
+                      >
+                        <MapPinned className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="font-semibold text-sm">{city.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Desktop grid view */}
+          <div className="hidden lg:grid grid-cols-5 gap-4 max-w-6xl mx-auto">
+            {cities.map((city, index) => (
               <div 
                 key={city.id} 
                 onClick={() => navigate('/request-service')}
-                className="flex items-center gap-2 lg:gap-3 p-3 lg:p-5 border-2 rounded-xl lg:rounded-2xl hover:border-primary transition-all cursor-pointer group hover-lift bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
+                className="flex items-center gap-3 p-5 border-2 rounded-2xl hover:border-primary transition-all cursor-pointer group hover-lift bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <MapPinned className="h-4 w-4 lg:h-6 lg:w-6 text-primary group-hover:scale-125 transition-transform shrink-0" />
-                <span className="font-semibold group-hover:text-primary transition-colors text-xs lg:text-base">{city.name}</span>
+                <MapPinned className="h-6 w-6 text-primary group-hover:scale-125 transition-transform shrink-0" />
+                <span className="font-semibold group-hover:text-primary transition-colors text-base">{city.name}</span>
               </div>
             ))}
           </div>
-
-          {!showAllCities && (
-            <div className="text-center">
-              <Button 
-                onClick={() => setShowAllCities(true)}
-                variant="outline" 
-                size="lg" 
-                className="font-semibold border-2 hover:border-primary text-sm lg:text-base"
-              >
-                +{cities.length - 10} More Cities
-              </Button>
-            </div>
-          )}
         </div>
       </section>
       )}
