@@ -42,8 +42,8 @@ export function MobileBottomNav() {
   const currentPath = location.pathname;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_30px_rgba(0,0,0,0.1)]">
-      <div className="flex items-center justify-around px-2 py-2.5 safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around px-2 py-2.5">
         {items.map((item) => {
           const isActive = currentPath === item.path;
           
@@ -52,10 +52,10 @@ export function MobileBottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group",
+                "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                 isActive
                   ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
-                  : "text-foreground/60 hover:text-foreground hover:bg-accent/50 hover:scale-105 active:scale-95"
+                  : "text-foreground/60 hover:text-foreground hover:bg-accent/50 hover:scale-105"
               )}
             >
               {/* Active indicator line */}

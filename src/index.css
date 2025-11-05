@@ -109,6 +109,19 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+  }
+  
+  input, textarea, select {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  button {
+    touch-action: manipulation;
   }
 }
 
