@@ -2,8 +2,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { calculateDistance, formatDistance } from '@/lib/distance';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +23,20 @@ const RequestDetails = () => {
   const [ratings, setRatings] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [currentRating, setCurrentRating] = useState(0);
-const [hoverRating, setHoverRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
 
-
+  const distance = useMemo(() => {
+    if (!request?.customer_lat || !request?.customer_lng || !request?.provider_lat || !request?.provider_lng) {
+      return null;
+    }
+    return calculateDistance(
+      request.customer_lat,
+      request.customer_lng,
+      request.provider_lat,
+      request.provider_lng
+    );
+  }, [request?.customer_lat, request?.customer_lng, request?.provider_lat, request?.provider_lng]);
 
   useEffect(() => {
     const fetchRequestDetails = async () => {
@@ -407,6 +418,14 @@ const [hoverRating, setHoverRating] = useState(0);
                           </div>
                         )}
                       </div>
+                      {distance !== null && (request.status === 'accepted' || request.status === 'en_route') && (
+                        <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+                          <Route className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium text-primary">
+                            {formatDistance(distance)} away
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -44,6 +44,9 @@ const RequestService = () => {
   const [loading, setLoading] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
+  const [customerLat, setCustomerLat] = useState<number | null>(null);
+  const [customerLng, setCustomerLng] = useState<number | null>(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   const totalSteps = 4;
 
@@ -112,6 +115,35 @@ const RequestService = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  const getCurrentLocation = () => {
+    setGettingLocation(true);
+    
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      setGettingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCustomerLat(position.coords.latitude);
+        setCustomerLng(position.coords.longitude);
+        toast.success('Location captured successfully');
+        setGettingLocation(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast.error('Failed to get your location. You can still submit without it.');
+        setGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -147,6 +179,8 @@ const RequestService = () => {
         vehicle_model: vehicleModel.trim(),
         vehicle_year: vehicleYear.trim() || null,
         vehicle_plate: vehiclePlate.trim() || null,
+        customer_lat: customerLat,
+        customer_lng: customerLng,
         status: 'pending' as const,
       }]).select().single();
 
@@ -340,18 +374,39 @@ const RequestService = () => {
                           <MapPin className="h-5 w-5 text-primary" />
                           Your Current Location *
                         </Label>
-                        <Input
-                          id="location"
-                          type="text"
-                          value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                          placeholder="e.g., Accra Mall, East Legon, Accra"
-                          maxLength={200}
-                          className="h-14 text-lg"
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="location"
+                            type="text"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            placeholder="e.g., Accra Mall, East Legon, Accra"
+                            maxLength={200}
+                            className="h-14 text-lg flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={getCurrentLocation}
+                            disabled={gettingLocation}
+                            className="h-14 px-4 flex-shrink-0"
+                          >
+                            {gettingLocation ? (
+                              <LucideIcons.Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <LucideIcons.Navigation className="h-5 w-5" />
+                            )}
+                          </Button>
+                        </div>
+                        {customerLat && customerLng && (
+                          <p className="text-sm text-green-600 flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4" />
+                            GPS coordinates captured for accurate tracking
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground flex items-start gap-2">
                           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          Be as specific as possible to help us find you quickly (landmarks, street names, etc.)
+                          Be as specific as possible. Click the location icon to capture your exact GPS coordinates.
                         </p>
                       </div>
                     </div>

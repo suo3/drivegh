@@ -251,11 +251,15 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           customer_id: string | null
+          customer_lat: number | null
+          customer_lng: number | null
           description: string | null
           id: string
           location: string
           phone_number: string | null
           provider_id: string | null
+          provider_lat: number | null
+          provider_lng: number | null
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["service_status"]
           tracking_code: string | null
@@ -272,11 +276,15 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           customer_id?: string | null
+          customer_lat?: number | null
+          customer_lng?: number | null
           description?: string | null
           id?: string
           location: string
           phone_number?: string | null
           provider_id?: string | null
+          provider_lat?: number | null
+          provider_lng?: number | null
           service_type: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null
@@ -293,11 +301,15 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           customer_id?: string | null
+          customer_lat?: number | null
+          customer_lng?: number | null
           description?: string | null
           id?: string
           location?: string
           phone_number?: string | null
           provider_id?: string | null
+          provider_lat?: number | null
+          provider_lng?: number | null
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null

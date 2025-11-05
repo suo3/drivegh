@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter } from 'lucide-react';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation } from 'lucide-react';
+import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ const ProviderDashboard = () => {
   const [averageRating, setAverageRating] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
+  const [updatingLocation, setUpdatingLocation] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -123,6 +125,60 @@ const ProviderDashboard = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const updateProviderLocation = async (requestId: string) => {
+    setUpdatingLocation(requestId);
+    
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      setUpdatingLocation(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        const { error } = await supabase
+          .from('service_requests')
+          .update({ 
+            provider_lat: latitude,
+            provider_lng: longitude
+          })
+          .eq('id', requestId);
+
+        if (error) {
+          toast.error('Failed to update location');
+        } else {
+          toast.success('Location updated successfully');
+          fetchData();
+        }
+        setUpdatingLocation(null);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast.error('Failed to get your location. Please enable location services.');
+        setUpdatingLocation(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  const getDistance = (request: any) => {
+    if (!request.customer_lat || !request.customer_lng || !request.provider_lat || !request.provider_lng) {
+      return null;
+    }
+    return calculateDistance(
+      request.customer_lat,
+      request.customer_lng,
+      request.provider_lat,
+      request.provider_lng
+    );
   };
 
   if (loading) {
@@ -334,6 +390,13 @@ const ProviderDashboard = () => {
                                   <Phone className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-medium">Phone:</span> {request.profiles.phone_number}
                                 </div>
+                                {getDistance(request) !== null && (
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Navigation className="h-4 w-4 text-primary" />
+                                    <span className="font-medium text-primary">Distance:</span>
+                                    <span className="text-primary font-semibold">{formatDistance(getDistance(request)!)}</span>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -360,14 +423,46 @@ const ProviderDashboard = () => {
                             </>
                           )}
                           {request.status === 'accepted' && (
-                            <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="shadow-md hover:shadow-lg transition-shadow">
-                              Mark En Route
-                            </Button>
+                            <>
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="shadow-md hover:shadow-lg transition-shadow">
+                                Mark En Route
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateProviderLocation(request.id)}
+                                disabled={updatingLocation === request.id}
+                                className="shadow-md hover:shadow-lg transition-shadow"
+                              >
+                                {updatingLocation === request.id ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Navigation className="h-4 w-4 mr-2" />
+                                )}
+                                Update Location
+                              </Button>
+                            </>
                           )}
                           {request.status === 'en_route' && (
-                            <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="shadow-md hover:shadow-lg transition-shadow">
-                              Start Service
-                            </Button>
+                            <>
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="shadow-md hover:shadow-lg transition-shadow">
+                                Start Service
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateProviderLocation(request.id)}
+                                disabled={updatingLocation === request.id}
+                                className="shadow-md hover:shadow-lg transition-shadow"
+                              >
+                                {updatingLocation === request.id ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Navigation className="h-4 w-4 mr-2" />
+                                )}
+                                Update Location
+                              </Button>
+                            </>
                           )}
                         </div>
                       </CardContent>
