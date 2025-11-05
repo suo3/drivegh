@@ -87,7 +87,7 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline" 
-                  className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                  className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
                   disabled={loading}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -112,7 +112,7 @@ const Navbar = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button onClick={() => navigate('/auth')} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-primary">
+            <Button onClick={() => navigate('/auth')} variant="outline" className="!bg-transparent border-white text-white hover:bg-white hover:text-primary">
               Login
             </Button>
           )}
