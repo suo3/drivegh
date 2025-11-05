@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Loader2, FileText, Calendar } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Card } from '@/components/ui/card';
 
 const Terms = () => {
   const [content, setContent] = useState('');
@@ -45,51 +44,48 @@ const Terms = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <section className="bg-gradient-to-r from-primary via-primary to-primary/90 text-white pt-32 pb-20">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm mb-4">
-              <FileText className="h-12 w-12" />
+      {/* Minimal Hero */}
+      <section className="border-b pt-24 pb-8 bg-muted/30">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{title}</h1>
+          {lastUpdated && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <p>Last updated: {lastUpdated}</p>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">{title}</h1>
-            {lastUpdated && (
-              <div className="flex items-center justify-center gap-2 text-white/90">
-                <Calendar className="h-5 w-5" />
-                <p className="text-lg">Last updated: {lastUpdated}</p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </section>
 
-      <section className="py-16 flex-1">
+      {/* Content */}
+      <section className="py-12 flex-1">
         <div className="container mx-auto px-4 max-w-4xl">
           {loading ? (
-            <Card className="p-20">
-              <div className="flex flex-col items-center justify-center gap-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground">Loading document...</p>
-              </div>
-            </Card>
+            <div className="flex flex-col items-center justify-center gap-4 py-20">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading document...</p>
+            </div>
           ) : (
-            <Card className="p-8 md:p-12 shadow-lg">
-              <div className="prose prose-lg prose-slate max-w-none
-                dark:prose-invert
-                prose-headings:font-bold prose-headings:text-foreground
-                prose-h1:text-4xl prose-h1:mb-8 prose-h1:pb-4 prose-h1:border-b
-                prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-primary
-                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-6
-                prose-ul:my-6 prose-ul:space-y-2
-                prose-li:text-muted-foreground prose-li:leading-relaxed
-                prose-strong:text-foreground prose-strong:font-semibold
-                prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
-                <ReactMarkdown>{content}</ReactMarkdown>
-              </div>
-            </Card>
+            <article className="
+              prose prose-base md:prose-lg max-w-none
+              prose-headings:scroll-mt-20
+              prose-h1:text-3xl prose-h1:font-bold prose-h1:text-foreground prose-h1:mb-6 prose-h1:mt-8 prose-h1:border-b prose-h1:pb-4
+              prose-h2:text-2xl prose-h2:font-semibold prose-h2:text-foreground prose-h2:mb-4 prose-h2:mt-10
+              prose-h3:text-xl prose-h3:font-semibold prose-h3:text-foreground prose-h3:mb-3 prose-h3:mt-8
+              prose-p:text-base prose-p:text-foreground/80 prose-p:leading-7 prose-p:mb-4
+              prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
+              prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6
+              prose-li:text-base prose-li:text-foreground/80 prose-li:leading-7 prose-li:mb-2
+              prose-strong:text-foreground prose-strong:font-semibold
+              prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+              prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+              dark:prose-invert
+            ">
+              <ReactMarkdown>{content}</ReactMarkdown>
+            </article>
           )}
         </div>
       </section>
