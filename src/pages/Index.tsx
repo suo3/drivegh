@@ -200,9 +200,9 @@ const Index = () => {
       </section>
       )}
 
-      {/* How It Works Section - Simplified on mobile */}
+      {/* How It Works Section - Compact on mobile */}
       {sections.how_it_works && (
-      <section id="how-it-works" className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative overflow-hidden">
+      <section id="how-it-works" className="py-8 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative overflow-hidden">
         {/* Connection lines decoration - hidden on mobile */}
         <div className="absolute inset-0 opacity-10 hidden lg:block">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -216,8 +216,8 @@ const Index = () => {
         </div>
         
         <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-8 lg:mb-16 animate-fade-in">
-            <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-accent/10 text-accent-foreground rounded-full text-xs lg:text-sm font-semibold mb-3 lg:mb-4">
+          <div className="text-center mb-6 lg:mb-16 animate-fade-in">
+            <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-accent/10 text-accent-foreground rounded-full text-xs lg:text-sm font-semibold mb-2 lg:mb-4">
               Simple Process
             </div>
             <h2 className="text-2xl lg:text-4xl xl:text-5xl font-bold mb-2 lg:mb-4">How It Works</h2>
@@ -226,24 +226,24 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-12 max-w-6xl mx-auto relative">
+          <div className="grid md:grid-cols-3 gap-4 lg:gap-12 max-w-6xl mx-auto relative">
             {/* Connection lines for desktop */}
             <div className="hidden md:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
             
             {howItWorks.map((step, index) => (
               <div key={index} className="text-center relative animate-scale-in" style={{ animationDelay: `${index * 0.2}s` }}>
                 {/* Step number */}
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-7 h-7 lg:w-8 lg:h-8 flex items-center justify-center text-xs lg:text-sm font-bold z-10">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-6 h-6 lg:w-8 lg:h-8 flex items-center justify-center text-xs lg:text-sm font-bold z-10">
                   {index + 1}
                 </div>
                 
-                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl lg:rounded-3xl w-16 h-16 lg:w-24 lg:h-24 flex items-center justify-center mx-auto mb-4 lg:mb-6 relative hover:scale-110 transition-transform duration-300 cursor-pointer group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-0 group-hover:opacity-10 rounded-2xl lg:rounded-3xl transition-opacity"></div>
-                  <step.icon className="h-8 w-8 lg:h-12 lg:w-12 text-primary relative z-10" />
+                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl lg:rounded-3xl w-12 h-12 lg:w-24 lg:h-24 flex items-center justify-center mx-auto mb-2 lg:mb-6 relative hover:scale-110 transition-transform duration-300 cursor-pointer group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-0 group-hover:opacity-10 rounded-xl lg:rounded-3xl transition-opacity"></div>
+                  <step.icon className="h-6 w-6 lg:h-12 lg:w-12 text-primary relative z-10" />
                 </div>
                 
-                <h3 className="text-lg lg:text-2xl font-bold mb-2 lg:mb-3">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-xs lg:text-base px-2">{step.desc}</p>
+                <h3 className="text-base lg:text-2xl font-bold mb-1 lg:mb-3">{step.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-xs lg:text-base px-2 hidden md:block">{step.desc}</p>
               </div>
             ))}
           </div>
