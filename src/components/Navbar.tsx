@@ -81,7 +81,8 @@ const Navbar = () => {
           <Link to="/track-rescue" className="hover:text-accent transition-colors">TRACK RESCUE</Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Desktop buttons */}
+        <div className="hidden md:flex items-center gap-3">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -117,6 +118,56 @@ const Navbar = () => {
             </Button>
           )}
           <Button onClick={() => navigate('/request-service')} className="bg-accent text-accent-foreground hover:bg-accent/90">
+            Get Help
+          </Button>
+        </div>
+
+        {/* Mobile buttons - Icon only */}
+        <div className="flex md:hidden items-center gap-2">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                  disabled={loading}
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleDashboardClick}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={async () => { 
+                    await signOut(); 
+                    navigate('/'); 
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              onClick={() => navigate('/auth')} 
+              variant="outline" 
+              size="icon"
+              className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
+            >
+              <User className="h-4 w-4" />
+            </Button>
+          )}
+          <Button 
+            onClick={() => navigate('/request-service')} 
+            size="sm"
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
             Get Help
           </Button>
         </div>
