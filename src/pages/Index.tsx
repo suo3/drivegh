@@ -200,7 +200,7 @@ const Index = () => {
       </section>
       )}
 
-      {/* How It Works Section - Compact on mobile */}
+      {/* How It Works Section - Horizontal scroll on mobile */}
       {sections.how_it_works && (
       <section id="how-it-works" className="py-8 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative overflow-hidden">
         {/* Connection lines decoration - hidden on mobile */}
@@ -226,24 +226,43 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4 lg:gap-12 max-w-6xl mx-auto relative">
+          {/* Mobile: Horizontal scroll */}
+          <div className="flex md:hidden gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+            {howItWorks.map((step, index) => (
+              <div key={index} className="flex-shrink-0 w-[70vw] max-w-[280px] text-center relative animate-scale-in snap-center" style={{ animationDelay: `${index * 0.2}s` }}>
+                {/* Step number */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-10">
+                  {index + 1}
+                </div>
+                
+                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl w-12 h-12 flex items-center justify-center mx-auto mb-2 relative">
+                  <step.icon className="h-6 w-6 text-primary relative z-10" />
+                </div>
+                
+                <h3 className="text-base font-bold mb-1">{step.title}</h3>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: Grid */}
+          <div className="hidden md:grid md:grid-cols-3 gap-12 max-w-6xl mx-auto relative">
             {/* Connection lines for desktop */}
-            <div className="hidden md:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+            <div className="absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
             
             {howItWorks.map((step, index) => (
               <div key={index} className="text-center relative animate-scale-in" style={{ animationDelay: `${index * 0.2}s` }}>
                 {/* Step number */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-6 h-6 lg:w-8 lg:h-8 flex items-center justify-center text-xs lg:text-sm font-bold z-10">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold z-10">
                   {index + 1}
                 </div>
                 
-                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl lg:rounded-3xl w-12 h-12 lg:w-24 lg:h-24 flex items-center justify-center mx-auto mb-2 lg:mb-6 relative hover:scale-110 transition-transform duration-300 cursor-pointer group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-0 group-hover:opacity-10 rounded-xl lg:rounded-3xl transition-opacity"></div>
-                  <step.icon className="h-6 w-6 lg:h-12 lg:w-12 text-primary relative z-10" />
+                <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl w-24 h-24 flex items-center justify-center mx-auto mb-6 relative hover:scale-110 transition-transform duration-300 cursor-pointer group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity"></div>
+                  <step.icon className="h-12 w-12 text-primary relative z-10" />
                 </div>
                 
-                <h3 className="text-base lg:text-2xl font-bold mb-1 lg:mb-3">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-xs lg:text-base px-2 hidden md:block">{step.desc}</p>
+                <h3 className="text-2xl font-bold mb-3">{step.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-base px-2">{step.desc}</p>
               </div>
             ))}
           </div>
