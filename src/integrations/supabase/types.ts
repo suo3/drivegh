@@ -107,6 +107,39 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_documents: {
+        Row: {
+          content: string
+          created_at: string | null
+          document_type: string
+          id: string
+          is_published: boolean
+          last_updated: string | null
+          title: string
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          document_type: string
+          id?: string
+          is_published?: boolean
+          last_updated?: string | null
+          title: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          document_type?: string
+          id?: string
+          is_published?: boolean
+          last_updated?: string | null
+          title?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       partnership_applications: {
         Row: {
           business_name: string

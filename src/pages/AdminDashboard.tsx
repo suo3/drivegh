@@ -14,6 +14,7 @@ import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ServiceManager from '@/components/ServiceManager';
+import LegalDocumentsManager from '@/components/LegalDocumentsManager';
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
@@ -334,6 +335,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="services" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <FileText className="h-4 w-4 mr-2" />
               Services
+            </TabsTrigger>
+            <TabsTrigger value="legal" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <FileText className="h-4 w-4 mr-2" />
+              Legal Docs
             </TabsTrigger>
           </TabsList>
 
@@ -775,6 +780,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="services">
             <ServiceManager />
+          </TabsContent>
+
+          <TabsContent value="legal">
+            <LegalDocumentsManager />
           </TabsContent>
 
           <TabsContent value="messages">

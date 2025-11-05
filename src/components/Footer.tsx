@@ -120,7 +120,11 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
-          <p>© 2025 DRIVE Ghana • All rights reserved • Terms & Conditions | Privacy Policy</p>
+          <p>
+            © 2025 DRIVE Ghana • All rights reserved • 
+            <Link to="/terms" className="hover:text-white transition-colors ml-1">Terms & Conditions</Link> | 
+            <Link to="/privacy" className="hover:text-white transition-colors ml-1">Privacy Policy</Link>
+          </p>
         </div>
       </div>
     </footer>
