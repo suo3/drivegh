@@ -1,8 +1,8 @@
-# DRIVE Ghana
+# DRIVEGh
 
 ## About
 
-DRIVE Ghana is a roadside assistance platform providing 24/7 help across Ghana for towing, tire changes, fuel delivery, battery jump starts, and more.
+A a roadside assistance platform providing 24/7 help for towing, tire changes, fuel delivery, battery jump starts, and more.
 
 ## Technologies
 
