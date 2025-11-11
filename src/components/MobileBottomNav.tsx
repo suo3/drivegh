@@ -35,14 +35,14 @@ export function MobileBottomNav() {
     { title: 'Services', path: '/request-service', icon: Search },
     { title: 'Dashboard', path: '/dashboard', icon: ClipboardList },
     { title: 'Track', path: '/track-rescue', icon: MapPin },
-    { title: 'Profile', path: '/dashboard', icon: User },
+    { title: 'My Account', path: '/dashboard', icon: User },
   ];
 
   const items = user ? authenticatedItems : guestItems;
   const currentPath = location.pathname;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10  backdrop-blur-xl  shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around px-2 py-2.5">
         {items.map((item) => {
           const isActive = currentPath === item.path;
@@ -64,12 +64,12 @@ export function MobileBottomNav() {
               )}
               
               <item.icon className={cn(
-                "h-5 w-5 transition-all duration-300",
+                "h-5 w-5 transition-all duration-300 text-white",
                 isActive && "scale-110 drop-shadow-lg",
                 !isActive && "group-hover:scale-110"
               )} />
               <span className={cn(
-                "text-[10px] font-semibold truncate max-w-[60px] transition-all duration-300",
+                "text-[10px] font-semibold text-white truncate max-w-[60px] transition-all duration-300",
                 isActive && "text-primary-foreground"
               )}>
                 {item.title}

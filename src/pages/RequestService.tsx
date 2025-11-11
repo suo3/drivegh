@@ -153,9 +153,11 @@ const RequestService = () => {
             
             if (address) {
               setLocation(address);
-              toast.success('Location captured and auto-filled');
+              //toast.success('Location captured and auto-filled');
+              console.log('Location captured and auto-filled');
             } else {
-              toast.success('GPS coordinates captured');
+              //toast.success('GPS coordinates captured');
+              console.log('GPS coordinates captured');
             }
           } else {
             toast.success('GPS coordinates captured');
