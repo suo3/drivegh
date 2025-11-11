@@ -69,7 +69,7 @@ const Privacy = () => {
               <p className="text-sm text-muted-foreground">Loading document...</p>
             </div>
           ) : (
-            <article className="
+            <article className="privacy-content 
               prose prose-base md:prose-lg max-w-none
               prose-headings:scroll-mt-20
               prose-h1:text-3xl prose-h1:font-extrabold prose-h1:text-foreground prose-h1:mb-8 prose-h1:mt-12 prose-h1:border-b prose-h1:pb-6

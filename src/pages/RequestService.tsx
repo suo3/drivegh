@@ -283,11 +283,11 @@ const RequestService = () => {
         </div>
       </section>
 
-      <section className="py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
+      <section className="sm:py-12 md:py-16  bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
         <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
         
-        <div className="container mx-auto px-4 relative">
+        <div className="sm:px-0 md:px-4container mx-auto  relative">
           <div className="max-w-5xl mx-auto">
             <Card className="shadow-2xl border-2 overflow-hidden animate-fade-in">
               <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b-2">
@@ -295,7 +295,7 @@ const RequestService = () => {
                   <div className="bg-primary rounded-xl p-2">
                     <Car className="h-6 w-6 text-primary-foreground" />
                   </div>
-                  Service Request Form
+                  Service Request
                 </CardTitle>
                 <CardDescription className="text-base">
                   Step {currentStep} of {totalSteps}: {

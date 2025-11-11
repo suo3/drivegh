@@ -58,26 +58,26 @@ const AboutUs = () => {
                 <p className="flex items-start gap-2 lg:gap-3">
                   <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-primary flex-shrink-0 mt-0.5 lg:mt-1" />
                   <span>
-                    Founded in 2020, DRIVE Ghana was born from a simple observation: drivers across Ghana needed reliable, 
+                   {/*  Founded in 2020, */} DRIVE Ghana was born from a simple observation: drivers across Ghana needed reliable, 
                     professional roadside assistance they could trust.
                   </span>
                 </p>
                 
-                <p className="flex items-start gap-2 lg:gap-3">
+                {/* <p className="flex items-start gap-2 lg:gap-3">
                   <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-primary flex-shrink-0 mt-0.5 lg:mt-1" />
                   <span>
                     What started as a small team in Accra has grown into a nationwide network of professional service providers 
                     covering 10+ major cities across Ghana.
                   </span>
-                </p>
-                
-                <p className="flex items-start gap-2 lg:gap-3 lg:block hidden">
-                  <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                </p> */}
+                  <p className="flex items-start gap-2 lg:gap-3">
+                  <CheckCircle2 className="w-5 h-5 lg:w-6 lg:h-6 text-primary flex-shrink-0 mt-0.5 lg:mt-1" />
                   <span>
                     Today, we serve thousands of customers, providing emergency roadside assistance 24/7. Our commitment to 
                     fast response times and professional service has made us Ghana's leading provider.
                   </span>
                 </p>
+               
               </div>
 
               {/* Mission statement card */}
@@ -131,7 +131,7 @@ const AboutUs = () => {
       </section>
 
       {/* Timeline Section - Simplified on mobile */}
-      <section className="py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative overflow-hidden">
+      <section hidden className="py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 hidden lg:block">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>

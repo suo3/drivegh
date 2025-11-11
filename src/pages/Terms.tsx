@@ -69,9 +69,9 @@ const Terms = () => {
               <p className="text-sm text-muted-foreground">Loading document...</p>
             </div>
           ) : (
-            <article className="
+            <article className="privacy-content
               prose prose-base md:prose-lg max-w-none
-              prose-headings:scroll-mt-20
+              prose-headings:scroll-mt-20 
               prose-h1:text-3xl prose-h1:font-extrabold prose-h1:text-foreground prose-h1:mb-8 prose-h1:mt-12 prose-h1:border-b prose-h1:pb-6
               prose-h2:text-2xl prose-h2:font-bold prose-h2:text-foreground prose-h2:mb-6 prose-h2:mt-12
               prose-h3:text-xl prose-h3:font-bold prose-h3:text-foreground prose-h3:mb-5 prose-h3:mt-10
@@ -82,7 +82,7 @@ const Terms = () => {
               prose-strong:text-foreground prose-strong:font-bold
               prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
               prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-              dark:prose-invert
+              dark:prose-invert 
             ">
               <ReactMarkdown>{content}</ReactMarkdown>
             </article>
