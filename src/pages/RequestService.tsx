@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { ArrowLeft, Truck, Wrench, Battery, Key, Fuel, Settings, MapPin, Phone, Copy, Share2, ExternalLink, CheckCircle2, AlertCircle, Car } from 'lucide-react';
@@ -48,7 +48,7 @@ const RequestService = () => {
   const [customerLng, setCustomerLng] = useState<number | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
 
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   useEffect(() => {
     fetchServices();
@@ -238,6 +238,19 @@ const RequestService = () => {
     }
   };
 
+  const stepData = [{
+    id: 1,
+    title: 'Service'
+  },{
+    id: 2,
+    title: 'Location'
+  },{
+    id: 3,
+    title: 'Vehicle'
+  },{
+    id: 4,
+    title: 'Review'
+  }]
 
   return (
     <div className="min-h-screen">
@@ -310,32 +323,40 @@ const RequestService = () => {
               {/* Progress Indicator */}
               <div className="px-8 pt-6">
                 <div className="flex items-center justify-between mb-2">
-                  {[1, 2, 3, 4].map((step) => (
-                    <div key={step} className="flex items-center flex-1">
+                  {stepData.map((step) => (
+                    <div key={step.id} className="flex items-center flex-1">
                       <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
-                        currentStep >= step 
+                        currentStep >= step.id 
                           ? 'bg-primary border-primary text-primary-foreground' 
                           : 'border-muted-foreground/30 text-muted-foreground'
                       }`}>
-                        {currentStep > step ? (
+                        {currentStep > step.id ? (
                           <CheckCircle2 className="w-5 h-5" />
                         ) : (
-                          <span className="font-semibold">{step}</span>
+                        
+                         <>
+                          <p className="font-semibold block">{step.id}</p>
+                          {/* <p className="text-xs text-center   mt-1">{step.title}</p> */}
+                          </>
+                         
                         )}
+                        
                       </div>
-                      {step < 4 && (
+                       
+                      {step.id < 4 && (
                         <div className={`flex-1 h-1 mx-2 transition-all ${
-                          currentStep > step ? 'bg-primary' : 'bg-muted-foreground/20'
+                          currentStep > step.id ? 'bg-primary' : 'bg-muted-foreground/20'
                         }`} />
                       )}
+                     
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mb-6 px-1">
-                  <span className="text-center" style={{ width: '10%' }}>Service</span>
+                  {/* <span className="text-center" style={{ width: '10%' }}>Service</span>
                   <span className="text-center" style={{ width: '10%' }}>Location</span>
                   <span className="text-center" style={{ width: '10%' }}>Vehicle</span>
-                  <span className="text-center" style={{ width: '10%' }}>Review</span>
+                  <span className="text-center" style={{ width: '10%' }}>Review</span> */}
                 </div>
               </div>
 
@@ -611,7 +632,7 @@ const RequestService = () => {
                         onClick={handleNext}
                         className={`h-12 font-semibold ${currentStep === 1 ? 'w-full' : 'flex-1'}`}
                       >
-                        Continue
+                        {currentStep === 4 ? "Submit" :"Continue"}
                         <CheckCircle2 className="ml-2 h-4 w-4" />
                       </Button>
                     ) : (
@@ -646,10 +667,11 @@ const RequestService = () => {
       {/* Success Dialog - Enhanced */}
       <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader >
             <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="h-10 w-10 text-green-600" />
             </div>
+           
             <DialogTitle className="text-3xl text-center">Request Submitted! 🎉</DialogTitle>
             <DialogDescription className="text-center text-base">
               Your service request has been created successfully. Save this tracking code to monitor your request status anytime.
