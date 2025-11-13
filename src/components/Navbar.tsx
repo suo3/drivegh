@@ -45,9 +45,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-primary backdrop-blur-sm border-b border-white/10 pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 cursor-pointer">
-          <div className="bg-white rounded-full p-2">
-            <Truck className="h-5 w-5 text-primary" />
-          </div>
+          <img src="/icon-192.png" alt="DRIVE Ghana" className="h-10 w-10 rounded-full" />
           <span className="text-white font-bold text-lg">DRIVE Ghana</span>
         </Link>
         
