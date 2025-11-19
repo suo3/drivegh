@@ -46,7 +46,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 cursor-pointer">
           <img src="/icon-192.png" alt="DRIVE Ghana" className="h-10 w-10 rounded-full" />
-          <span className="text-white font-bold text-lg">DRIVE <span className="text-accent2">GHANA</span></span>
+          <span className="text-white font-bold text-lg">DRIVE <span className="text-accent2">Ghana</span></span>
         </Link>
         
         <div className="hidden md:flex items-center gap-6 text-sm text-white">
