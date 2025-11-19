@@ -18,7 +18,12 @@ export function InstallPrompt() {
     const isDismissed = localStorage.getItem('installPromptDismissed');
     const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
 
-    if (isDismissed || isInstalled) {
+    // If app was uninstalled, clear the dismissed flag
+    if (!isInstalled && isDismissed) {
+      localStorage.removeItem('installPromptDismissed');
+    }
+
+    if (isDismissed && isInstalled) {
       return;
     }
 
