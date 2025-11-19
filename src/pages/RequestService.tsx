@@ -160,11 +160,13 @@ const RequestService = () => {
               console.log('GPS coordinates captured');
             }
           } else {
-            toast.success('GPS coordinates captured');
+            //toast.success('GPS coordinates captured');
+            console.log('GPS coordinates captured');
           }
         } catch (error) {
           console.error('Reverse geocoding error:', error);
-          toast.success('GPS coordinates captured');
+          //toast.success('GPS coordinates captured');
+          console.log('GPS coordinates captured');
         }
         
         setGettingLocation(false);
