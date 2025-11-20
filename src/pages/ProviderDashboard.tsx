@@ -181,6 +181,20 @@ const ProviderDashboard = () => {
     );
   };
 
+  const getStatusBorderColor = (status: string) => {
+    const colors: any = {
+      pending: 'border-l-yellow-500',
+      assigned: 'border-l-blue-500',
+      accepted: 'border-l-blue-600',
+      en_route: 'border-l-purple-500',
+      in_progress: 'border-l-purple-600',
+      completed: 'border-l-green-500',
+      cancelled: 'border-l-red-500',
+      denied: 'border-l-red-600'
+    };
+    return colors[status] || 'border-l-gray-500';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -364,7 +378,7 @@ const ProviderDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredRequests.map((request) => (
-                    <Card key={request.id} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/30 hover:-translate-y-1">
+                    <Card key={request.id} className={`group hover:shadow-xl transition-all duration-300 border-2 border-l-4 ${getStatusBorderColor(request.status)} hover:border-primary/30 hover:-translate-y-1`}>
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex-1">
