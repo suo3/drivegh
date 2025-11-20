@@ -16,6 +16,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState<any[]>([]);
   const [showAllCities, setShowAllCities] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const [cities, setCities] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [sections, setSections] = useState<Record<string, boolean>>({});
@@ -387,7 +388,7 @@ const Index = () => {
                   key={testimonial.id} 
                   className={cn(
                     "p-6 lg:p-8 hover-lift relative overflow-hidden group bg-gradient-to-br from-white to-gray-50/50 animate-scale-in",
-                    index > 0 && "hidden md:block"
+                    index > 0 && !showAllReviews && "hidden md:block"
                   )}
                   style={{ animationDelay: `${index * 0.15}s` }}
                 >
@@ -422,8 +423,13 @@ const Index = () => {
           </div>
           
           <div className="text-center mt-6 md:hidden">
-            <Button variant="outline" size="sm" className="font-semibold border-2">
-              View All Reviews
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="font-semibold border-2"
+              onClick={() => setShowAllReviews(!showAllReviews)}
+            >
+              {showAllReviews ? 'Show Less' : 'View All Reviews'}
             </Button>
           </div>
         </div>
