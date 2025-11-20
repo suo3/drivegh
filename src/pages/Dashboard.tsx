@@ -676,6 +676,20 @@ const Dashboard = () => {
     return colors[status] || 'bg-gray-500';
   };
 
+  const getStatusBorderColor = (status: string) => {
+    const colors: any = {
+      pending: 'border-l-yellow-500',
+      assigned: 'border-l-blue-500',
+      accepted: 'border-l-blue-600',
+      en_route: 'border-l-purple-500',
+      in_progress: 'border-l-purple-600',
+      completed: 'border-l-green-500',
+      cancelled: 'border-l-red-500',
+      denied: 'border-l-red-600'
+    };
+    return colors[status] || 'border-l-gray-500';
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/5">
@@ -1052,7 +1066,7 @@ const Dashboard = () => {
                               return matchesStatus && matchesSearch;
                             })
                             .map((request) => (
-                              <Card key={request.id} className="border-2">
+                              <Card key={request.id} className={`border-2 border-l-4 ${getStatusBorderColor(request.status)}`}>
                                 <CardContent className="p-4 space-y-3">
                                   <div className="flex justify-between items-start">
                                     <div className="space-y-1 flex-1">
