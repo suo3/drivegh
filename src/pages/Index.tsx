@@ -104,8 +104,37 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0">
-      <Navbar />
+    <div className="min-h-screen pb-20 lg:pb-0 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {/* Floating Gradient Orbs */}
+        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '0s', animationDuration: '8s' }} />
+        <div className="absolute top-1/3 right-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s', animationDuration: '10s' }} />
+        <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s', animationDuration: '12s' }} />
+        
+        {/* Animated Dots Grid */}
+        <div className="absolute inset-0 opacity-10">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
+              style={{
+                left: `${(i * 17 + 10) % 90}%`,
+                top: `${(i * 23 + 15) % 85}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${3 + (i % 4)}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Geometric Shapes */}
+        <div className="absolute top-1/4 left-1/3 w-32 h-32 border border-primary/10 rotate-45 animate-float" style={{ animationDelay: '1s', animationDuration: '15s' }} />
+        <div className="absolute bottom-1/3 right-1/4 w-24 h-24 border border-accent/10 rounded-full animate-float" style={{ animationDelay: '3s', animationDuration: '13s' }} />
+      </div>
+
+      <div className="relative z-10">
+        <Navbar />
 
       {/* Compact Banner */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16 relative overflow-hidden">
@@ -709,6 +738,7 @@ const Index = () => {
       )}
 
       <Footer />
+      </div>
     </div>
   );
 };
