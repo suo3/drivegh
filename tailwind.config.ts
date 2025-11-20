@@ -96,6 +96,18 @@ export default {
           "0%": { backgroundPosition: "-1000px 0" },
           "100%": { backgroundPosition: "1000px 0" },
         },
+        "float-truck": {
+          "0%, 100%": { transform: "translateY(0px) translateX(0px)" },
+          "50%": { transform: "translateY(-20px) translateX(10px)" },
+        },
+        "road-line": {
+          "0%": { strokeDashoffset: "0" },
+          "100%": { strokeDashoffset: "-100" },
+        },
+        "wheel-spin": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -106,6 +118,9 @@ export default {
         "scale-in": "scale-in 0.5s ease-out",
         "float": "float 6s ease-in-out infinite",
         "shimmer": "shimmer 3s linear infinite",
+        "float-truck": "float-truck 4s ease-in-out infinite",
+        "road-line": "road-line 2s linear infinite",
+        "wheel-spin": "wheel-spin 1s linear infinite",
       },
     },
   },
