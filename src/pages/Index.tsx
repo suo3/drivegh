@@ -110,7 +110,7 @@ const Index = () => {
       {/* Compact Banner */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16 relative overflow-hidden">
         {/* Animated Illustration Scene - Right Side */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none opacity-20">
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 lg:w-1/3 pointer-events-none opacity-10 lg:opacity-20">
           {/* Road/Path */}
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 200" fill="none">
             <path 
@@ -123,7 +123,7 @@ const Index = () => {
           </svg>
           
           {/* Tow Truck Illustration */}
-          <div className="absolute right-10 top-1/2 -translate-y-1/2 animate-float-truck">
+          <div className="absolute right-2 lg:right-10 top-1/2 -translate-y-1/2 animate-float-truck scale-50 lg:scale-100">
             <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
               {/* Truck Body */}
               <rect x="40" y="30" width="60" height="25" rx="3" fill="currentColor" className="text-white/80" />
@@ -153,16 +153,16 @@ const Index = () => {
           </div>
           
           {/* Floating Service Icons */}
-          <div className="absolute left-10 top-20 animate-float" style={{ animationDelay: '0s' }}>
-            <Key className="w-8 h-8 text-white/40" />
+          <div className="absolute left-2 lg:left-10 top-20 animate-float scale-75 lg:scale-100" style={{ animationDelay: '0s' }}>
+            <Key className="w-6 lg:w-8 h-6 lg:h-8 text-white/40" />
           </div>
-          <div className="absolute right-32 bottom-20 animate-float" style={{ animationDelay: '1s' }}>
-            <MapPin className="w-6 h-6 text-white/40" />
+          <div className="absolute right-20 lg:right-32 bottom-20 animate-float scale-75 lg:scale-100" style={{ animationDelay: '1s' }}>
+            <MapPin className="w-5 lg:w-6 h-5 lg:h-6 text-white/40" />
           </div>
         </div>
         
         {/* Animated Illustration Scene - Left Side */}
-        <div className="absolute left-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none opacity-20">
+        <div className="absolute left-0 top-0 bottom-0 w-1/2 lg:w-1/3 pointer-events-none opacity-10 lg:opacity-20">
           {/* Road/Path */}
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 200" fill="none">
             <path 
@@ -175,7 +175,7 @@ const Index = () => {
           </svg>
           
           {/* Service Van Illustration */}
-          <div className="absolute left-10 top-1/2 -translate-y-1/2 animate-float" style={{ animationDelay: '0.5s' }}>
+          <div className="absolute left-2 lg:left-10 top-1/2 -translate-y-1/2 animate-float scale-50 lg:scale-100" style={{ animationDelay: '0.5s' }}>
             <svg width="100" height="70" viewBox="0 0 100 70" fill="none">
               {/* Van Body */}
               <rect x="15" y="25" width="70" height="25" rx="3" fill="currentColor" className="text-white/80" />
@@ -208,39 +208,39 @@ const Index = () => {
           </div>
           
           {/* Floating Service Icons */}
-          <div className="absolute right-10 top-16 animate-float" style={{ animationDelay: '0.5s' }}>
-            <LucideIcons.Wrench className="w-7 h-7 text-white/40" />
+          <div className="absolute right-2 lg:right-10 top-16 animate-float scale-75 lg:scale-100" style={{ animationDelay: '0.5s' }}>
+            <LucideIcons.Wrench className="w-5 lg:w-7 h-5 lg:h-7 text-white/40" />
           </div>
-          <div className="absolute left-32 bottom-16 animate-float" style={{ animationDelay: '1.5s' }}>
-            <LucideIcons.Zap className="w-6 h-6 text-white/40" />
+          <div className="absolute left-20 lg:left-32 bottom-16 animate-float scale-75 lg:scale-100" style={{ animationDelay: '1.5s' }}>
+            <LucideIcons.Zap className="w-5 lg:w-6 h-5 lg:h-6 text-white/40" />
           </div>
-          <div className="absolute left-20 top-1/3 animate-float" style={{ animationDelay: '2s' }}>
-            <LucideIcons.Fuel className="w-5 h-5 text-white/40" />
+          <div className="absolute left-8 lg:left-20 top-1/3 animate-float scale-75 lg:scale-100" style={{ animationDelay: '2s' }}>
+            <LucideIcons.Fuel className="w-4 lg:w-5 h-4 lg:h-5 text-white/40" />
           </div>
         </div>
         
         {/* Animated Elements - Center/Middle Area */}
-        <div className="absolute inset-0 hidden lg:block pointer-events-none opacity-15">
+        <div className="absolute inset-0 pointer-events-none opacity-10 lg:opacity-15">
           {/* Top center floating icons */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-12 animate-float" style={{ animationDelay: '0.3s' }}>
-            <LucideIcons.CircleDot className="w-4 h-4 text-accent" />
+          <div className="absolute left-1/2 -translate-x-1/2 top-12 animate-float scale-75 lg:scale-100" style={{ animationDelay: '0.3s' }}>
+            <LucideIcons.CircleDot className="w-3 lg:w-4 h-3 lg:h-4 text-accent" />
           </div>
-          <div className="absolute left-1/3 top-16 animate-float" style={{ animationDelay: '1.2s' }}>
-            <LucideIcons.Gauge className="w-6 h-6 text-white/50" />
+          <div className="absolute left-1/3 top-16 animate-float scale-75 lg:scale-100" style={{ animationDelay: '1.2s' }}>
+            <LucideIcons.Gauge className="w-5 lg:w-6 h-5 lg:h-6 text-white/50" />
           </div>
-          <div className="absolute right-1/3 top-20 animate-float" style={{ animationDelay: '2.1s' }}>
-            <LucideIcons.Shield className="w-5 h-5 text-white/50" />
+          <div className="absolute right-1/3 top-20 animate-float scale-75 lg:scale-100" style={{ animationDelay: '2.1s' }}>
+            <LucideIcons.Shield className="w-4 lg:w-5 h-4 lg:h-5 text-white/50" />
           </div>
           
           {/* Bottom center floating icons */}
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-8 animate-float" style={{ animationDelay: '1.8s' }}>
-            <LucideIcons.Radio className="w-5 h-5 text-white/50" />
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-8 animate-float scale-75 lg:scale-100" style={{ animationDelay: '1.8s' }}>
+            <LucideIcons.Radio className="w-4 lg:w-5 h-4 lg:h-5 text-white/50" />
           </div>
-          <div className="absolute left-1/3 bottom-12 animate-float" style={{ animationDelay: '0.9s' }}>
-            <LucideIcons.Navigation className="w-4 h-4 text-accent/60" />
+          <div className="absolute left-1/3 bottom-12 animate-float scale-75 lg:scale-100" style={{ animationDelay: '0.9s' }}>
+            <LucideIcons.Navigation className="w-3 lg:w-4 h-3 lg:h-4 text-accent/60" />
           </div>
-          <div className="absolute right-1/3 bottom-16 animate-float" style={{ animationDelay: '1.5s' }}>
-            <LucideIcons.Timer className="w-6 h-6 text-white/50" />
+          <div className="absolute right-1/3 bottom-16 animate-float scale-75 lg:scale-100" style={{ animationDelay: '1.5s' }}>
+            <LucideIcons.Timer className="w-5 lg:w-6 h-5 lg:h-6 text-white/50" />
           </div>
         </div>
         
