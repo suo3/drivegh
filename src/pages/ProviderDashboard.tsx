@@ -379,34 +379,34 @@ const ProviderDashboard = () => {
                 <div className="space-y-4">
                   {filteredRequests.map((request) => (
                     <Card key={request.id} className={`group hover:shadow-xl transition-all duration-300 border-2 border-l-4 ${getStatusBorderColor(request.status)} hover:border-primary/30 hover:-translate-y-1`}>
-                      <CardContent className="p-6">
+                      <CardContent className="p-4 md:p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            <div className="flex items-center gap-2 md:gap-3 mb-3">
+                              <div className="hidden md:block p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                                 <Briefcase className="h-5 w-5 text-primary" />
                               </div>
-                              <div>
-                                <p className="font-bold text-xl capitalize bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">{request.service_type.replace('_', ' ')}</p>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <MapPin className="h-4 w-4" />
-                                  {request.location}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-lg md:text-xl capitalize bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text truncate">{request.service_type.replace('_', ' ')}</p>
+                                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground">
+                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                                  <span className="truncate">{request.location}</span>
                                 </div>
                               </div>
                             </div>
                             {request.profiles && (
-                              <div className="ml-14 space-y-2">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <User className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">Customer:</span> {request.profiles.full_name}
+                              <div className="md:ml-14 space-y-1.5 md:space-y-2">
+                                <div className="flex items-center gap-2 text-xs md:text-sm">
+                                  <User className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                                  <span className="font-medium">Customer:</span> <span className="truncate">{request.profiles.full_name}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Phone className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">Phone:</span> {request.profiles.phone_number}
+                                <div className="flex items-center gap-2 text-xs md:text-sm">
+                                  <Phone className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                                  <span className="font-medium">Phone:</span> <span className="truncate">{request.profiles.phone_number}</span>
                                 </div>
                                 {getDistance(request) !== null && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Navigation className="h-4 w-4 text-primary" />
+                                  <div className="flex items-center gap-2 text-xs md:text-sm">
+                                    <Navigation className="h-3 w-3 md:h-4 md:w-4 text-primary flex-shrink-0" />
                                     <span className="font-medium text-primary">Distance:</span>
                                     <span className="text-primary font-semibold">{formatDistance(getDistance(request)!)}</span>
                                   </div>
@@ -414,23 +414,23 @@ const ProviderDashboard = () => {
                               </div>
                             )}
                           </div>
-                          <Badge className="capitalize shadow-sm">{request.status.replace('_', ' ')}</Badge>
+                          <Badge className="capitalize shadow-sm text-xs flex-shrink-0 ml-2">{request.status.replace('_', ' ')}</Badge>
                         </div>
                         
                         {request.description && (
-                          <div className="ml-14 mb-4 p-4 rounded-xl bg-muted/50 border border-muted">
-                            <p className="text-sm">{request.description}</p>
+                          <div className="md:ml-14 mb-4 p-3 md:p-4 rounded-xl bg-muted/50 border border-muted">
+                            <p className="text-xs md:text-sm break-words">{request.description}</p>
                           </div>
                         )}
 
-                        <div className="ml-14 flex flex-wrap gap-2">
+                        <div className="md:ml-14 flex flex-col md:flex-row flex-wrap gap-2">
                           {request.status === 'assigned' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'accepted')} className="shadow-md hover:shadow-lg transition-shadow">
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'accepted')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Accept
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={() => rejectRequest(request.id)} className="shadow-md hover:shadow-lg transition-shadow">
+                              <Button size="sm" variant="destructive" onClick={() => rejectRequest(request.id)} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Reject
                               </Button>
@@ -438,7 +438,7 @@ const ProviderDashboard = () => {
                           )}
                           {request.status === 'accepted' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="shadow-md hover:shadow-lg transition-shadow">
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
                                 Mark En Route
                               </Button>
                               <Button 
@@ -446,7 +446,7 @@ const ProviderDashboard = () => {
                                 variant="outline"
                                 onClick={() => updateProviderLocation(request.id)}
                                 disabled={updatingLocation === request.id}
-                                className="shadow-md hover:shadow-lg transition-shadow"
+                                className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
                               >
                                 {updatingLocation === request.id ? (
                                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -459,7 +459,7 @@ const ProviderDashboard = () => {
                           )}
                           {request.status === 'en_route' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="shadow-md hover:shadow-lg transition-shadow">
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
                                 Start Service
                               </Button>
                               <Button 
@@ -467,7 +467,7 @@ const ProviderDashboard = () => {
                                 variant="outline"
                                 onClick={() => updateProviderLocation(request.id)}
                                 disabled={updatingLocation === request.id}
-                                className="shadow-md hover:shadow-lg transition-shadow"
+                                className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
                               >
                                 {updatingLocation === request.id ? (
                                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -477,6 +477,11 @@ const ProviderDashboard = () => {
                                 Update Location
                               </Button>
                             </>
+                          )}
+                          {request.status === 'in_progress' && (
+                            <Button size="sm" onClick={() => updateStatus(request.id, 'completed')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
+                              Complete Job
+                            </Button>
                           )}
                         </div>
                       </CardContent>
