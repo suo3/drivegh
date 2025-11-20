@@ -109,7 +109,7 @@ const Index = () => {
 
       {/* Compact Banner */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16 relative overflow-hidden">
-        {/* Animated Illustration Scene */}
+        {/* Animated Illustration Scene - Right Side */}
         <div className="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none opacity-20">
           {/* Road/Path */}
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 200" fill="none">
@@ -158,6 +158,64 @@ const Index = () => {
           </div>
           <div className="absolute right-32 bottom-20 animate-float" style={{ animationDelay: '1s' }}>
             <MapPin className="w-6 h-6 text-white/40" />
+          </div>
+        </div>
+        
+        {/* Animated Illustration Scene - Left Side */}
+        <div className="absolute left-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none opacity-20">
+          {/* Road/Path */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 200" fill="none">
+            <path 
+              d="M 250 100 Q 150 150 50 100" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeDasharray="10 5"
+              className="text-white/30 animate-road-line"
+            />
+          </svg>
+          
+          {/* Service Van Illustration */}
+          <div className="absolute left-10 top-1/2 -translate-y-1/2 animate-float" style={{ animationDelay: '0.5s' }}>
+            <svg width="100" height="70" viewBox="0 0 100 70" fill="none">
+              {/* Van Body */}
+              <rect x="15" y="25" width="70" height="25" rx="3" fill="currentColor" className="text-white/80" />
+              
+              {/* Van Front */}
+              <path d="M 15 35 L 10 40 L 10 48 L 15 50 Z" fill="currentColor" className="text-white/80" />
+              
+              {/* Windows */}
+              <rect x="20" y="28" width="12" height="10" rx="1" fill="currentColor" className="text-primary/40" />
+              <rect x="35" y="28" width="20" height="10" rx="1" fill="currentColor" className="text-primary/40" />
+              <rect x="58" y="28" width="20" height="10" rx="1" fill="currentColor" className="text-primary/40" />
+              
+              {/* Service Icon/Logo */}
+              <circle cx="65" cy="40" r="6" stroke="currentColor" strokeWidth="1.5" className="text-accent" fill="none" />
+              <path d="M 62 40 L 68 40 M 65 37 L 65 43" stroke="currentColor" strokeWidth="1.5" className="text-accent" />
+              
+              {/* Wheels */}
+              <g className="animate-wheel-spin origin-center" style={{ transformBox: 'fill-box' }}>
+                <circle cx="30" cy="52" r="6" fill="currentColor" className="text-white/60" />
+                <circle cx="30" cy="52" r="3" fill="currentColor" className="text-white/90" />
+              </g>
+              <g className="animate-wheel-spin origin-center" style={{ transformBox: 'fill-box' }}>
+                <circle cx="70" cy="52" r="6" fill="currentColor" className="text-white/60" />
+                <circle cx="70" cy="52" r="3" fill="currentColor" className="text-white/90" />
+              </g>
+              
+              {/* Headlight */}
+              <circle cx="8" cy="42" r="1.5" fill="currentColor" className="text-yellow-300 animate-pulse" />
+            </svg>
+          </div>
+          
+          {/* Floating Service Icons */}
+          <div className="absolute right-10 top-16 animate-float" style={{ animationDelay: '0.5s' }}>
+            <LucideIcons.Wrench className="w-7 h-7 text-white/40" />
+          </div>
+          <div className="absolute left-32 bottom-16 animate-float" style={{ animationDelay: '1.5s' }}>
+            <LucideIcons.Zap className="w-6 h-6 text-white/40" />
+          </div>
+          <div className="absolute left-20 top-1/3 animate-float" style={{ animationDelay: '2s' }}>
+            <LucideIcons.Fuel className="w-5 h-5 text-white/40" />
           </div>
         </div>
         
