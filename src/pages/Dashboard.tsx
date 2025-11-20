@@ -1334,55 +1334,59 @@ const Dashboard = () => {
                     <CardTitle>Assigned Jobs</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').map((request) => (
-                          <TableRow key={request.id}>
-                            <TableCell>{request.service_type}</TableCell>
-                            <TableCell>
-                              <div>{request.profiles?.full_name}</div>
-                              <div className="text-sm text-muted-foreground">{request.profiles?.phone_number}</div>
-                            </TableCell>
-                            <TableCell>{request.location}</TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                {request.status === 'assigned' && (
-                                  <>
-                                    <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
-                                      Accept
-                                    </Button>
-                                    <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
-                                      Deny
-                                    </Button>
-                                  </>
-                                )}
-                                {request.status === 'in_progress' && (
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button size="sm">Complete</Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Complete Service</DialogTitle>
-                                        <DialogDescription>
-                                          Ask customer to send payment to business mobile money number
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
-                                        <p className="text-sm text-muted-foreground">
+                    {/* Desktop table (hidden on mobile) */}
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Service</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {requests
+                            .filter(r => r.status !== 'completed' && r.status !== 'cancelled')
+                            .map((request) => (
+                              <TableRow key={request.id}>
+                                <TableCell>{request.service_type}</TableCell>
+                                <TableCell>
+                                  <div>{request.profiles?.full_name}</div>
+                                  <div className="text-sm text-muted-foreground">{request.profiles?.phone_number}</div>
+                                </TableCell>
+                                <TableCell>{request.location}</TableCell>
+                                <TableCell>
+                                  <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    {request.status === 'assigned' && (
+                                      <>
+                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                          Accept
+                                        </Button>
+                                        <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
+                                          Deny
+                                        </Button>
+                                      </>
+                                    )}
+                                    {request.status === 'in_progress' && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button size="sm">Complete</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Complete Service</DialogTitle>
+                                            <DialogDescription>
+                                              Ask customer to send payment to business mobile money number
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <div className="space-y-4">
+                                            <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                            <p className="text-sm text-muted-foreground">
                                           Once you receive payment confirmation, the admin will complete the transaction.
                                         </p>
                                         <Button onClick={() => {
@@ -1398,9 +1402,89 @@ const Dashboard = () => {
                               </div>
                             </TableCell>
                           </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile cards (shown on mobile only) */}
+                    <div className="md:hidden space-y-4 mt-4">
+                      {requests
+                        .filter(r => r.status !== 'completed' && r.status !== 'cancelled')
+                        .map((request) => (
+                          <Card key={request.id} className={`border-2 border-l-4 ${getStatusBorderColor(request.status)} shadow-sm`}>
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex justify-between items-start gap-3">
+                                <div className="space-y-1 flex-1 min-w-0">
+                                  <p className="font-semibold text-sm capitalize truncate">{request.service_type}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{request.location}</p>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {request.profiles?.full_name} 
+                                    {request.profiles?.phone_number && (
+                                      <span className="ml-1 text-[11px]">({request.profiles.phone_number})</span>
+                                    )}
+                                  </p>
+                                </div>
+                                <Badge className={`capitalize text-xs ${getStatusColor(request.status)}`}>
+                                  {request.status.replace('_', ' ')}
+                                </Badge>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t mt-2">
+                                {request.status === 'assigned' && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      className="w-full sm:w-auto"
+                                      onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}
+                                    >
+                                      Accept
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="w-full sm:w-auto"
+                                      onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}
+                                    >
+                                      Deny
+                                    </Button>
+                                  </>
+                                )}
+
+                                {request.status === 'in_progress' && (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button size="sm" className="w-full sm:w-auto">Complete</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Complete Service</DialogTitle>
+                                        <DialogDescription>
+                                          Ask customer to send payment to business mobile money number
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-4">
+                                        <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                        <p className="text-sm text-muted-foreground">
+                                          Once you receive payment confirmation, the admin will complete the transaction.
+                                        </p>
+                                        <Button
+                                          onClick={() => {
+                                            toast.success('Customer notified to send payment');
+                                            handleUpdateRequestStatus(request.id, 'completed');
+                                          }}
+                                        >
+                                          Mark as Awaiting Payment
+                                        </Button>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
                         ))}
-                      </TableBody>
-                    </Table>
+                    </div>
                   </CardContent>
                 </Card>
               )}
