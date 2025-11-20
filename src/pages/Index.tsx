@@ -108,8 +108,60 @@ const Index = () => {
       <Navbar />
 
       {/* Compact Banner */}
-      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
-        <div className="container mx-auto px-4 py-6">
+      <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16 relative overflow-hidden">
+        {/* Animated Illustration Scene */}
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none opacity-20">
+          {/* Road/Path */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 200" fill="none">
+            <path 
+              d="M 50 100 Q 150 50 250 100" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeDasharray="10 5"
+              className="text-white/30 animate-road-line"
+            />
+          </svg>
+          
+          {/* Tow Truck Illustration */}
+          <div className="absolute right-10 top-1/2 -translate-y-1/2 animate-float-truck">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
+              {/* Truck Body */}
+              <rect x="40" y="30" width="60" height="25" rx="3" fill="currentColor" className="text-white/80" />
+              <rect x="20" y="35" width="25" height="20" rx="2" fill="currentColor" className="text-white/80" />
+              
+              {/* Tow Crane */}
+              <line x1="95" y1="30" x2="110" y2="15" stroke="currentColor" strokeWidth="3" className="text-accent" />
+              <line x1="110" y1="15" x2="110" y2="45" stroke="currentColor" strokeWidth="2" className="text-accent/60" strokeDasharray="2 2" />
+              
+              {/* Windows */}
+              <rect x="22" y="37" width="8" height="8" rx="1" fill="currentColor" className="text-primary/40" />
+              <rect x="32" y="37" width="10" height="8" rx="1" fill="currentColor" className="text-primary/40" />
+              
+              {/* Wheels */}
+              <g className="animate-wheel-spin origin-center" style={{ transformBox: 'fill-box' }}>
+                <circle cx="35" cy="58" r="8" fill="currentColor" className="text-white/60" />
+                <circle cx="35" cy="58" r="4" fill="currentColor" className="text-white/90" />
+              </g>
+              <g className="animate-wheel-spin origin-center" style={{ transformBox: 'fill-box' }}>
+                <circle cx="85" cy="58" r="8" fill="currentColor" className="text-white/60" />
+                <circle cx="85" cy="58" r="4" fill="currentColor" className="text-white/90" />
+              </g>
+              
+              {/* Lights */}
+              <circle cx="102" cy="45" r="2" fill="currentColor" className="text-yellow-300 animate-pulse" />
+            </svg>
+          </div>
+          
+          {/* Floating Service Icons */}
+          <div className="absolute left-10 top-20 animate-float" style={{ animationDelay: '0s' }}>
+            <Key className="w-8 h-8 text-white/40" />
+          </div>
+          <div className="absolute right-32 bottom-20 animate-float" style={{ animationDelay: '1s' }}>
+            <MapPin className="w-6 h-6 text-white/40" />
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
