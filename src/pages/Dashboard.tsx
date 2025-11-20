@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -863,62 +863,64 @@ const Dashboard = () => {
                       </div>
                     )}
 
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Provider</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {requests
-                          .filter(request => {
-                            const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                            const matchesSearch = !requestSearchQuery || 
-                              request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                              request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                              request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
-                            return matchesStatus && matchesSearch;
-                          })
-                          .length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={7} className="text-center py-8">
-                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                  <ClipboardList className="h-8 w-8" />
-                                  <p>No requests found matching your filters</p>
-                                </div>
+                    {/* Desktop Table View - Hidden on Mobile */}
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Service</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Provider</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {requests
+                            .filter(request => {
+                              const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                              const matchesSearch = !requestSearchQuery || 
+                                request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                              return matchesStatus && matchesSearch;
+                            })
+                            .length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={7} className="text-center py-8">
+                                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                    <ClipboardList className="h-8 w-8" />
+                                    <p>No requests found matching your filters</p>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              requests
+                                .filter(request => {
+                                  const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                                  const matchesSearch = !requestSearchQuery || 
+                                    request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                    request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                    request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                                  return matchesStatus && matchesSearch;
+                                })
+                                .map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell>{request.service_type}</TableCell>
+                              <TableCell>{request.location}</TableCell>
+                              <TableCell>{request.profiles?.full_name || 'Unassigned'}</TableCell>
+                              <TableCell>
+                                <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                               </TableCell>
-                            </TableRow>
-                          ) : (
-                            requests
-                              .filter(request => {
-                                const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                                const matchesSearch = !requestSearchQuery || 
-                                  request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                  request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                  request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
-                                return matchesStatus && matchesSearch;
-                              })
-                              .map((request) => (
-                          <TableRow key={request.id}>
-                            <TableCell>{request.service_type}</TableCell>
-                            <TableCell>{request.location}</TableCell>
-                            <TableCell>{request.profiles?.full_name || 'Unassigned'}</TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                                : request.status === 'completed' ? 'Pending Payment' : '-'}
-                            </TableCell>
-                            <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
-                            <TableCell>
+                              <TableCell>
+                                {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                  ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                                  : request.status === 'completed' ? 'Pending Payment' : '-'}
+                              </TableCell>
+                              <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
+                              <TableCell>
                               {['pending', 'assigned', 'accepted'].includes(request.status) && (
                                 <Button 
                                   variant="outline" 
@@ -1017,9 +1019,169 @@ const Dashboard = () => {
                            </TableRow>
                          ))
                         )}
-                       </TableBody>
-                     </Table>
-                   </CardContent>
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View - Shown on Mobile Only */}
+                    <div className="md:hidden space-y-4">
+                      {requests
+                        .filter(request => {
+                          const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                          const matchesSearch = !requestSearchQuery || 
+                            request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                          return matchesStatus && matchesSearch;
+                        })
+                        .length === 0 ? (
+                          <div className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                              <ClipboardList className="h-8 w-8" />
+                              <p>No requests found matching your filters</p>
+                            </div>
+                          </div>
+                        ) : (
+                          requests
+                            .filter(request => {
+                              const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                              const matchesSearch = !requestSearchQuery || 
+                                request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                              return matchesStatus && matchesSearch;
+                            })
+                            .map((request) => (
+                              <Card key={request.id} className="border-2">
+                                <CardContent className="p-4 space-y-3">
+                                  <div className="flex justify-between items-start">
+                                    <div className="space-y-1 flex-1">
+                                      <h3 className="font-semibold capitalize">{request.service_type}</h3>
+                                      <p className="text-sm text-muted-foreground">{request.location}</p>
+                                    </div>
+                                    <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                  </div>
+                                  
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <User className="h-4 w-4 text-muted-foreground" />
+                                      <span>{request.profiles?.full_name || 'Unassigned'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                      <span>
+                                        {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                          ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                                          : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-4 w-4 text-muted-foreground" />
+                                      <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex gap-2 pt-2 border-t">
+                                    {['pending', 'assigned', 'accepted'].includes(request.status) && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={async () => {
+                                          if (confirm('Are you sure you want to cancel this request?')) {
+                                            const { error } = await supabase
+                                              .from('service_requests')
+                                              .update({ status: 'cancelled' })
+                                              .eq('id', request.id);
+                                            
+                                            if (error) {
+                                              toast.error('Failed to cancel request');
+                                            } else {
+                                              toast.success('Request cancelled successfully');
+                                              fetchData();
+                                            }
+                                          }
+                                        }}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    )}
+                                    {request.status === 'completed' && (
+                                      <Dialog open={ratingDialogOpen === request.id} onOpenChange={(open) => setRatingDialogOpen(open ? request.id : null)}>
+                                        <DialogTrigger asChild>
+                                          <Button variant="outline" size="sm" className="flex-1">Rate</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Rate Service</DialogTitle>
+                                          </DialogHeader>
+                                          <form onSubmit={async (e) => {
+                                            e.preventDefault();
+                                            if (!user?.id) {
+                                              toast.error('You must be signed in to submit a rating');
+                                              return;
+                                            }
+                                            const formData = new FormData(e.currentTarget);
+                                            const rating = Number(formData.get('rating'));
+                                            const review = (formData.get('review') as string) || null;
+
+                                            const payload = {
+                                              service_request_id: request.id,
+                                              provider_id: request.provider_id,
+                                              customer_id: user.id,
+                                              rating,
+                                              review,
+                                            };
+
+                                            const { error } = await supabase.from('ratings').insert([payload]);
+
+                                            if (error) {
+                                              if ((error as any).code === '23505' || error.message?.includes('duplicate key value')) {
+                                                const { error: updateError } = await supabase
+                                                  .from('ratings')
+                                                  .update({ rating, review })
+                                                  .eq('service_request_id', request.id)
+                                                  .eq('customer_id', user.id);
+
+                                                if (updateError) {
+                                                  toast.error('Failed to update existing rating');
+                                                  return;
+                                                }
+
+                                                toast.success('Rating updated successfully');
+                                                setRatingDialogOpen(null);
+                                                fetchData();
+                                              } else {
+                                                toast.error(error.message || 'Failed to submit rating');
+                                              }
+                                            } else {
+                                              toast.success('Rating submitted successfully');
+                                              setRatingDialogOpen(null);
+                                              fetchData();
+                                            }
+                                          }}>
+                                            <div className="space-y-4">
+                                              <div>
+                                                <Label>Rating (1-5)</Label>
+                                                <Input name="rating" type="number" min="1" max="5" required />
+                                              </div>
+                                              <div>
+                                                <Label>Review</Label>
+                                                <Textarea name="review" />
+                                              </div>
+                                              <Button type="submit" className="w-full">Submit</Button>
+                                            </div>
+                                          </form>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))
+                        )}
+                    </div>
+                  </CardContent>
                  </Card>
                )}
 
