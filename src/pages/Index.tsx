@@ -219,6 +219,31 @@ const Index = () => {
           </div>
         </div>
         
+        {/* Animated Elements - Center/Middle Area */}
+        <div className="absolute inset-0 hidden lg:block pointer-events-none opacity-15">
+          {/* Top center floating icons */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-12 animate-float" style={{ animationDelay: '0.3s' }}>
+            <LucideIcons.CircleDot className="w-4 h-4 text-accent" />
+          </div>
+          <div className="absolute left-1/3 top-16 animate-float" style={{ animationDelay: '1.2s' }}>
+            <LucideIcons.Gauge className="w-6 h-6 text-white/50" />
+          </div>
+          <div className="absolute right-1/3 top-20 animate-float" style={{ animationDelay: '2.1s' }}>
+            <LucideIcons.Shield className="w-5 h-5 text-white/50" />
+          </div>
+          
+          {/* Bottom center floating icons */}
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-8 animate-float" style={{ animationDelay: '1.8s' }}>
+            <LucideIcons.Radio className="w-5 h-5 text-white/50" />
+          </div>
+          <div className="absolute left-1/3 bottom-12 animate-float" style={{ animationDelay: '0.9s' }}>
+            <LucideIcons.Navigation className="w-4 h-4 text-accent/60" />
+          </div>
+          <div className="absolute right-1/3 bottom-16 animate-float" style={{ animationDelay: '1.5s' }}>
+            <LucideIcons.Timer className="w-6 h-6 text-white/50" />
+          </div>
+        </div>
+        
         <div className="container mx-auto px-4 py-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
