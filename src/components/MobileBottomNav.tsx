@@ -11,7 +11,7 @@ export function MobileBottomNav() {
   const { user, userRole } = useAuth();
 
   // Don't show on dashboard pages (they have their own navigation)
-  if (location.pathname === '/dashboard') {
+  if (location.pathname.startsWith('/dashboard')) {
     return null;
   }
 
