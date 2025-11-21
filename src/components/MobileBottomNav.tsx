@@ -54,7 +54,7 @@ export function MobileBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                 isActive
-                  ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                  ? "bg-accent text-accent-foreground shadow-lg shadow-accent/30 scale-105"
                   : "text-foreground/60 hover:text-foreground hover:bg-accent/50 hover:scale-105"
               )}
             >
@@ -64,13 +64,12 @@ export function MobileBottomNav() {
               )}
               
               <item.icon className={cn(
-                "h-5 w-5 transition-all duration-300 text-white",
-                isActive && "scale-110 drop-shadow-lg",
-                !isActive && "group-hover:scale-110"
+                "h-5 w-5 transition-all duration-300",
+                isActive ? "scale-110 drop-shadow-lg text-accent-foreground" : "text-white group-hover:scale-110"
               )} />
               <span className={cn(
-                "text-[10px] font-semibold text-white truncate max-w-[60px] transition-all duration-300",
-                isActive && "text-primary-foreground"
+                "text-[10px] font-semibold truncate max-w-[60px] transition-all duration-300",
+                isActive ? "text-accent-foreground" : "text-white"
               )}>
                 {item.title}
               </span>
