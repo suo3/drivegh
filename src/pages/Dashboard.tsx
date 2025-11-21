@@ -1623,309 +1623,624 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allRequests.filter(request => {
-                      const searchLower = adminRequestFilter.toLowerCase();
-                      const provider = providers.find(p => p.id === request.provider_id);
-                      return (
-                        request.service_type?.toLowerCase().includes(searchLower) ||
-                        request.location?.toLowerCase().includes(searchLower) ||
-                        request.status?.toLowerCase().includes(searchLower) ||
-                        request.tracking_code?.toLowerCase().includes(searchLower) ||
-                        request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
-                        provider?.full_name?.toLowerCase().includes(searchLower) ||
-                        request.vehicle_make?.toLowerCase().includes(searchLower) ||
-                        request.vehicle_model?.toLowerCase().includes(searchLower)
-                      );
-                    }).map((request) => {
-                      const provider = providers.find(p => p.id === request.provider_id);
-                      
-                      return (
-                        <TableRow key={request.id}>
-                          <TableCell className="font-medium">{request.service_type}</TableCell>
-                          <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
-                          <TableCell className="max-w-xs truncate">{request.location}</TableCell>
-                          <TableCell>
-                            {provider ? (
+                {/* Desktop Table View */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Service</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Provider</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allRequests.filter(request => {
+                        const searchLower = adminRequestFilter.toLowerCase();
+                        const provider = providers.find(p => p.id === request.provider_id);
+                        return (
+                          request.service_type?.toLowerCase().includes(searchLower) ||
+                          request.location?.toLowerCase().includes(searchLower) ||
+                          request.status?.toLowerCase().includes(searchLower) ||
+                          request.tracking_code?.toLowerCase().includes(searchLower) ||
+                          request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+                          provider?.full_name?.toLowerCase().includes(searchLower) ||
+                          request.vehicle_make?.toLowerCase().includes(searchLower) ||
+                          request.vehicle_model?.toLowerCase().includes(searchLower)
+                        );
+                      }).map((request) => {
+                        const provider = providers.find(p => p.id === request.provider_id);
+                        
+                        return (
+                          <TableRow key={request.id}>
+                            <TableCell className="font-medium">{request.service_type}</TableCell>
+                            <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
+                            <TableCell className="max-w-xs truncate">{request.location}</TableCell>
+                            <TableCell>
+                              {provider ? (
+                                <div>
+                                  <p className="font-medium">{provider.full_name}</p>
+                                  <p className="text-xs text-muted-foreground">{provider.phone_number}</p>
+                                </div>
+                              ) : (
+                                <Badge variant="secondary">Unassigned</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                                : request.status === 'completed' ? 'Pending Payment' : '-'}
+                            </TableCell>
+                            <TableCell>
                               <div>
-                                <p className="font-medium">{provider.full_name}</p>
-                                <p className="text-xs text-muted-foreground">{provider.phone_number}</p>
+                                <p className="text-sm">{new Date(request.created_at).toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</p>
                               </div>
-                            ) : (
-                              <Badge variant="secondary">Unassigned</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                              ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                              : request.status === 'completed' ? 'Pending Payment' : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="text-sm">{new Date(request.created_at).toLocaleDateString()}</p>
-                              <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">Details</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Request Details</DialogTitle>
-                                    <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="text-muted-foreground">Service Type</Label>
-                                        <p className="font-medium">{request.service_type}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Status</Label>
-                                        <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Customer</Label>
-                                        <p className="font-medium">{request.profiles?.full_name}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Provider</Label>
-                                        <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
-                                      </div>
-                                      <div className="col-span-2">
-                                        <Label className="text-muted-foreground">Location</Label>
-                                        <p className="font-medium">{request.location}</p>
-                                      </div>
-                                      {request.description && (
-                                        <div className="col-span-2">
-                                          <Label className="text-muted-foreground">Description</Label>
-                                          <p className="font-medium">{request.description}</p>
-                                        </div>
-                                      )}
-                                      <div>
-                                        <Label className="text-muted-foreground">Created</Label>
-                                        <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
-                                      </div>
-                                      {request.completed_at && (
-                                        <div>
-                                          <Label className="text-muted-foreground">Completed</Label>
-                                          <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
-                                        </div>
-                                      )}
-                                      {request.status === 'completed' && (() => {
-                                        const transaction = allTransactions.find(t => t.service_request_id === request.id);
-                                        return transaction ? (
-                                          <div className="col-span-2">
-                                            <div className="flex items-center justify-between mb-2">
-                                              <Label className="text-muted-foreground">Payment Details</Label>
-                                              <Dialog>
-                                                <DialogTrigger asChild>
-                                                  <Button size="sm" variant="ghost">
-                                                    <Edit className="h-4 w-4 mr-2" />
-                                                    Edit Payment
-                                                  </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                  <DialogHeader>
-                                                    <DialogTitle>Edit Payment</DialogTitle>
-                                                    <DialogDescription>Update payment amount and provider percentage</DialogDescription>
-                                                  </DialogHeader>
-                                                  <form onSubmit={(e) => {
-                                                    e.preventDefault();
-                                                    const formData = new FormData(e.currentTarget);
-                                                    const amount = Number(formData.get('amount'));
-                                                    const percentage = Number(formData.get('provider_percentage'));
-                                                    handleUpdateTransaction(transaction.id, amount, percentage);
-                                                  }}>
-                                                    <div className="space-y-4">
-                                                      <div>
-                                                        <Label>Amount (GHS)</Label>
-                                                        <Input 
-                                                          name="amount" 
-                                                          type="number" 
-                                                          step="0.01" 
-                                                          required 
-                                                          defaultValue={transaction.amount}
-                                                          min="0.01"
-                                                          max="1000000"
-                                                        />
-                                                      </div>
-                                                      <div>
-                                                        <Label>Provider Percentage (%)</Label>
-                                                        <Input 
-                                                          name="provider_percentage" 
-                                                          type="number" 
-                                                          step="1" 
-                                                          min="0" 
-                                                          max="100" 
-                                                          required 
-                                                          defaultValue={transaction.provider_percentage}
-                                                        />
-                                                      </div>
-                                                      <div className="bg-muted p-3 rounded-md">
-                                                        <p className="text-sm font-medium mb-1">Current Breakdown:</p>
-                                                        <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
-                                                        <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
-                                                      </div>
-                                                      <Button type="submit" className="w-full">Update Payment</Button>
-                                                    </div>
-                                                  </form>
-                                                </DialogContent>
-                                              </Dialog>
-                                            </div>
-                                            <div className="space-y-1">
-                                              <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
-                                              <p className="text-sm text-muted-foreground">
-                                                Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
-                                              </p>
-                                              <p className="text-sm text-muted-foreground">
-                                                Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
-                                              </p>
-                                            </div>
-                                          </div>
-                                        ) : null;
-                                      })()}
-                                    </div>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                              
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
-                                </DialogTrigger>
-                                  <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
-                                    <DialogDescription>Select an available provider for this service request</DialogDescription>
-                                  </DialogHeader>
-                                  {providers.filter(p => p.is_available !== false).length === 0 ? (
-                                    <div className="text-center py-6">
-                                      <p className="text-muted-foreground">No available providers at the moment</p>
-                                    </div>
-                                  ) : (
-                                    <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select provider" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {providers.filter(p => p.is_available !== false).map((provider) => (
-                                          <SelectItem key={provider.id} value={provider.id}>
-                                            {provider.full_name} - {provider.phone_number}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-                                </DialogContent>
-                              </Dialog>
-                              
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">
-                                    Change Status
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Change Request Status</DialogTitle>
-                                    <DialogDescription>Update the status of this service request</DialogDescription>
-                                  </DialogHeader>
-                                  <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select new status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="pending">Pending</SelectItem>
-                                      <SelectItem value="assigned">Assigned</SelectItem>
-                                      <SelectItem value="in_progress">In Progress</SelectItem>
-                                      <SelectItem value="completed">Completed</SelectItem>
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </DialogContent>
-                              </Dialog>
-                              
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteRequest(request.id)}
-                              >
-                                Delete
-                              </Button>
-                              
-                              {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">Payment</Button>
+                                    <Button size="sm" variant="outline">Details</Button>
                                   </DialogTrigger>
                                   <DialogContent>
                                     <DialogHeader>
-                                      <DialogTitle>Record Payment</DialogTitle>
-                                      <DialogDescription>Record mobile money payment for this service</DialogDescription>
+                                      <DialogTitle>Request Details</DialogTitle>
+                                      <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
                                     </DialogHeader>
-                                    <form onSubmit={(e) => {
-                                      e.preventDefault();
-                                      const formData = new FormData(e.currentTarget);
-                                      handleCompletePayment(
-                                        request.id, 
-                                        Number(formData.get('amount')),
-                                        Number(formData.get('provider_percentage'))
-                                      );
-                                    }}>
-                                      <div className="space-y-4">
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                          <Label>Amount Received (GHS)</Label>
-                                          <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                          <Label className="text-muted-foreground">Service Type</Label>
+                                          <p className="font-medium">{request.service_type}</p>
                                         </div>
                                         <div>
-                                          <Label>Provider Percentage (%)</Label>
-                                          <Input 
-                                            name="provider_percentage" 
-                                            type="number" 
-                                            step="1" 
-                                            min="0" 
-                                            max="100" 
-                                            required 
-                                            defaultValue="70"
-                                            placeholder="70" 
-                                          />
-                                          <p className="text-xs text-muted-foreground mt-1">
-                                            Percentage of payment that goes to the provider
-                                          </p>
+                                          <Label className="text-muted-foreground">Status</Label>
+                                          <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                         </div>
-                                        <Button type="submit" className="w-full">Confirm Payment</Button>
+                                        <div>
+                                          <Label className="text-muted-foreground">Customer</Label>
+                                          <p className="font-medium">{request.profiles?.full_name}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Provider</Label>
+                                          <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
+                                        </div>
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Location</Label>
+                                          <p className="font-medium">{request.location}</p>
+                                        </div>
+                                        {request.description && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Description</Label>
+                                            <p className="font-medium">{request.description}</p>
+                                          </div>
+                                        )}
+                                        <div>
+                                          <Label className="text-muted-foreground">Created</Label>
+                                          <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
+                                        </div>
+                                        {request.completed_at && (
+                                          <div>
+                                            <Label className="text-muted-foreground">Completed</Label>
+                                            <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
+                                          </div>
+                                        )}
+                                        {request.status === 'completed' && (() => {
+                                          const transaction = allTransactions.find(t => t.service_request_id === request.id);
+                                          return transaction ? (
+                                            <div className="col-span-2">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <Label className="text-muted-foreground">Payment Details</Label>
+                                                <Dialog>
+                                                  <DialogTrigger asChild>
+                                                    <Button size="sm" variant="ghost">
+                                                      <Edit className="h-4 w-4 mr-2" />
+                                                      Edit Payment
+                                                    </Button>
+                                                  </DialogTrigger>
+                                                  <DialogContent>
+                                                    <DialogHeader>
+                                                      <DialogTitle>Edit Payment</DialogTitle>
+                                                      <DialogDescription>Update payment amount and provider percentage</DialogDescription>
+                                                    </DialogHeader>
+                                                    <form onSubmit={(e) => {
+                                                      e.preventDefault();
+                                                      const formData = new FormData(e.currentTarget);
+                                                      const amount = Number(formData.get('amount'));
+                                                      const percentage = Number(formData.get('provider_percentage'));
+                                                      handleUpdateTransaction(transaction.id, amount, percentage);
+                                                    }}>
+                                                      <div className="space-y-4">
+                                                        <div>
+                                                          <Label>Amount (GHS)</Label>
+                                                          <Input 
+                                                            name="amount" 
+                                                            type="number" 
+                                                            step="0.01" 
+                                                            required 
+                                                            defaultValue={transaction.amount}
+                                                            min="0.01"
+                                                            max="1000000"
+                                                          />
+                                                        </div>
+                                                        <div>
+                                                          <Label>Provider Percentage (%)</Label>
+                                                          <Input 
+                                                            name="provider_percentage" 
+                                                            type="number" 
+                                                            step="1" 
+                                                            min="0" 
+                                                            max="100" 
+                                                            required 
+                                                            defaultValue={transaction.provider_percentage}
+                                                          />
+                                                        </div>
+                                                        <div className="bg-muted p-3 rounded-md">
+                                                          <p className="text-sm font-medium mb-1">Current Breakdown:</p>
+                                                          <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
+                                                          <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
+                                                        </div>
+                                                        <Button type="submit" className="w-full">Update Payment</Button>
+                                                      </div>
+                                                    </form>
+                                                  </DialogContent>
+                                                </Dialog>
+                                              </div>
+                                              <div className="space-y-1">
+                                                <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                  Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                  Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ) : null;
+                                        })()}
                                       </div>
-                                    </form>
+                                    </div>
                                   </DialogContent>
                                 </Dialog>
-                              )}
+                                
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
+                                  </DialogTrigger>
+                                    <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
+                                      <DialogDescription>Select an available provider for this service request</DialogDescription>
+                                    </DialogHeader>
+                                    {providers.filter(p => p.is_available !== false).length === 0 ? (
+                                      <div className="text-center py-6">
+                                        <p className="text-muted-foreground">No available providers at the moment</p>
+                                      </div>
+                                    ) : (
+                                      <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select provider" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {providers.filter(p => p.is_available !== false).map((provider) => (
+                                            <SelectItem key={provider.id} value={provider.id}>
+                                              {provider.full_name} - {provider.phone_number}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
+                                
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">
+                                      Change Status
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Change Request Status</DialogTitle>
+                                      <DialogDescription>Update the status of this service request</DialogDescription>
+                                    </DialogHeader>
+                                    <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select new status" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="assigned">Assigned</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </DialogContent>
+                                </Dialog>
+                                
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteRequest(request.id)}
+                                >
+                                  Delete
+                                </Button>
+                                
+                                {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button size="sm" variant="outline">Payment</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Record Payment</DialogTitle>
+                                        <DialogDescription>Record mobile money payment for this service</DialogDescription>
+                                      </DialogHeader>
+                                      <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const formData = new FormData(e.currentTarget);
+                                        handleCompletePayment(
+                                          request.id, 
+                                          Number(formData.get('amount')),
+                                          Number(formData.get('provider_percentage'))
+                                        );
+                                      }}>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <Label>Amount Received (GHS)</Label>
+                                            <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                          </div>
+                                          <div>
+                                            <Label>Provider Percentage (%)</Label>
+                                            <Input 
+                                              name="provider_percentage" 
+                                              type="number" 
+                                              step="1" 
+                                              min="0" 
+                                              max="100" 
+                                              required 
+                                              defaultValue="70"
+                                              placeholder="70" 
+                                            />
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              Percentage of payment that goes to the provider
+                                            </p>
+                                          </div>
+                                          <Button type="submit" className="w-full">Confirm Payment</Button>
+                                        </div>
+                                      </form>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {allRequests.filter(request => {
+                    const searchLower = adminRequestFilter.toLowerCase();
+                    const provider = providers.find(p => p.id === request.provider_id);
+                    return (
+                      request.service_type?.toLowerCase().includes(searchLower) ||
+                      request.location?.toLowerCase().includes(searchLower) ||
+                      request.status?.toLowerCase().includes(searchLower) ||
+                      request.tracking_code?.toLowerCase().includes(searchLower) ||
+                      request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+                      provider?.full_name?.toLowerCase().includes(searchLower) ||
+                      request.vehicle_make?.toLowerCase().includes(searchLower) ||
+                      request.vehicle_model?.toLowerCase().includes(searchLower)
+                    );
+                  }).map((request) => {
+                    const provider = providers.find(p => p.id === request.provider_id);
+                    
+                    return (
+                      <Card key={request.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-semibold text-lg capitalize">{request.service_type.replace('_', ' ')}</h3>
+                              <p className="text-sm text-muted-foreground">{request.location}</p>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                          </div>
+
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">Customer:</span>
+                              <span>{request.profiles?.full_name || 'Unknown'}</span>
+                            </div>
+                            
+                            {provider ? (
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Provider:</span>
+                                <span>{provider.full_name}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <UserX className="h-4 w-4 text-muted-foreground" />
+                                <Badge variant="secondary">Unassigned</Badge>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">Amount:</span>
+                              <span>
+                                {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                  ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
+                                  : request.status === 'completed' ? 'Pending Payment' : '-'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                              <span className="text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="flex-1">Details</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Request Details</DialogTitle>
+                                  <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-muted-foreground">Service Type</Label>
+                                      <p className="font-medium">{request.service_type}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Status</Label>
+                                      <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Customer</Label>
+                                      <p className="font-medium">{request.profiles?.full_name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Provider</Label>
+                                      <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
+                                    </div>
+                                    <div className="col-span-2">
+                                      <Label className="text-muted-foreground">Location</Label>
+                                      <p className="font-medium">{request.location}</p>
+                                    </div>
+                                    {request.description && (
+                                      <div className="col-span-2">
+                                        <Label className="text-muted-foreground">Description</Label>
+                                        <p className="font-medium">{request.description}</p>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <Label className="text-muted-foreground">Created</Label>
+                                      <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
+                                    </div>
+                                    {request.completed_at && (
+                                      <div>
+                                        <Label className="text-muted-foreground">Completed</Label>
+                                        <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
+                                      </div>
+                                    )}
+                                    {request.status === 'completed' && (() => {
+                                      const transaction = allTransactions.find(t => t.service_request_id === request.id);
+                                      return transaction ? (
+                                        <div className="col-span-2">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <Label className="text-muted-foreground">Payment Details</Label>
+                                            <Dialog>
+                                              <DialogTrigger asChild>
+                                                <Button size="sm" variant="ghost">
+                                                  <Edit className="h-4 w-4 mr-2" />
+                                                  Edit Payment
+                                                </Button>
+                                              </DialogTrigger>
+                                              <DialogContent>
+                                                <DialogHeader>
+                                                  <DialogTitle>Edit Payment</DialogTitle>
+                                                  <DialogDescription>Update payment amount and provider percentage</DialogDescription>
+                                                </DialogHeader>
+                                                <form onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const formData = new FormData(e.currentTarget);
+                                                  const amount = Number(formData.get('amount'));
+                                                  const percentage = Number(formData.get('provider_percentage'));
+                                                  handleUpdateTransaction(transaction.id, amount, percentage);
+                                                }}>
+                                                  <div className="space-y-4">
+                                                    <div>
+                                                      <Label>Amount (GHS)</Label>
+                                                      <Input 
+                                                        name="amount" 
+                                                        type="number" 
+                                                        step="0.01" 
+                                                        required 
+                                                        defaultValue={transaction.amount}
+                                                        min="0.01"
+                                                        max="1000000"
+                                                      />
+                                                    </div>
+                                                    <div>
+                                                      <Label>Provider Percentage (%)</Label>
+                                                      <Input 
+                                                        name="provider_percentage" 
+                                                        type="number" 
+                                                        step="1" 
+                                                        min="0" 
+                                                        max="100" 
+                                                        required 
+                                                        defaultValue={transaction.provider_percentage}
+                                                      />
+                                                    </div>
+                                                    <div className="bg-muted p-3 rounded-md">
+                                                      <p className="text-sm font-medium mb-1">Current Breakdown:</p>
+                                                      <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
+                                                      <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
+                                                    </div>
+                                                    <Button type="submit" className="w-full">Update Payment</Button>
+                                                  </div>
+                                                </form>
+                                              </DialogContent>
+                                            </Dialog>
+                                          </div>
+                                          <div className="space-y-1">
+                                            <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ) : null;
+                                    })()}
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" className="flex-1">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
+                                  <DialogDescription>Select an available provider for this service request</DialogDescription>
+                                </DialogHeader>
+                                {providers.filter(p => p.is_available !== false).length === 0 ? (
+                                  <div className="text-center py-6">
+                                    <p className="text-muted-foreground">No available providers at the moment</p>
+                                  </div>
+                                ) : (
+                                  <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select provider" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {providers.filter(p => p.is_available !== false).map((provider) => (
+                                        <SelectItem key={provider.id} value={provider.id}>
+                                          {provider.full_name} - {provider.phone_number}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  Change Status
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Change Request Status</DialogTitle>
+                                  <DialogDescription>Update the status of this service request</DialogDescription>
+                                </DialogHeader>
+                                <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select new status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="assigned">Assigned</SelectItem>
+                                    <SelectItem value="in_progress">In Progress</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </DialogContent>
+                            </Dialog>
+                            
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteRequest(request.id)}
+                            >
+                              Delete
+                            </Button>
+                            
+                            {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">Payment</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Record Payment</DialogTitle>
+                                    <DialogDescription>Record mobile money payment for this service</DialogDescription>
+                                  </DialogHeader>
+                                  <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    handleCompletePayment(
+                                      request.id, 
+                                      Number(formData.get('amount')),
+                                      Number(formData.get('provider_percentage'))
+                                    );
+                                  }}>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <Label>Amount Received (GHS)</Label>
+                                        <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                      </div>
+                                      <div>
+                                        <Label>Provider Percentage (%)</Label>
+                                        <Input 
+                                          name="provider_percentage" 
+                                          type="number" 
+                                          step="1" 
+                                          min="0" 
+                                          max="100" 
+                                          required 
+                                          defaultValue="70"
+                                          placeholder="70" 
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          Percentage of payment that goes to the provider
+                                        </p>
+                                      </div>
+                                      <Button type="submit" className="w-full">Confirm Payment</Button>
+                                    </div>
+                                  </form>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
                 {allRequests.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     No service requests yet
