@@ -2740,50 +2740,219 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Total Requests</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {customers.filter(customer => {
-                      const searchLower = adminCustomerFilter.toLowerCase();
-                      return (
-                        customer.full_name?.toLowerCase().includes(searchLower) ||
-                        customer.email?.toLowerCase().includes(searchLower) ||
-                        customer.phone_number?.toLowerCase().includes(searchLower) ||
-                        customer.location?.toLowerCase().includes(searchLower)
-                      );
-                    }).map((customer) => {
-                      const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
-                      const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
-                      const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
-                      
-                      return (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">{customer.full_name}</TableCell>
-                          <TableCell>{customer.email || 'N/A'}</TableCell>
-                          <TableCell>{customer.phone_number || 'N/A'}</TableCell>
-                          <TableCell>{customer.location || 'N/A'}</TableCell>
-                          <TableCell>{totalRequests}</TableCell>
-                          <TableCell>
-                            <Badge variant={activeRequests > 0 ? 'default' : 'secondary'}>
+                {/* Desktop Table View - Hidden on Mobile */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Total Requests</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customers.filter(customer => {
+                        const searchLower = adminCustomerFilter.toLowerCase();
+                        return (
+                          customer.full_name?.toLowerCase().includes(searchLower) ||
+                          customer.email?.toLowerCase().includes(searchLower) ||
+                          customer.phone_number?.toLowerCase().includes(searchLower) ||
+                          customer.location?.toLowerCase().includes(searchLower)
+                        );
+                      }).map((customer) => {
+                        const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
+                        const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
+                        const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
+                        
+                        return (
+                          <TableRow key={customer.id}>
+                            <TableCell className="font-medium">{customer.full_name}</TableCell>
+                            <TableCell>{customer.email || 'N/A'}</TableCell>
+                            <TableCell>{customer.phone_number || 'N/A'}</TableCell>
+                            <TableCell>{customer.location || 'N/A'}</TableCell>
+                            <TableCell>{totalRequests}</TableCell>
+                            <TableCell>
+                              <Badge variant={activeRequests > 0 ? 'default' : 'secondary'}>
+                                {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">View Details</Button>
+                                  </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Customer Details</DialogTitle>
+                                    <DialogDescription>View customer information and service history</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="text-muted-foreground">Full Name</Label>
+                                        <p className="font-medium">{customer.full_name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Email</Label>
+                                        <p className="font-medium">{customer.email || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Phone Number</Label>
+                                        <p className="font-medium">{customer.phone_number || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Location</Label>
+                                        <p className="font-medium">{customer.location || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Bio</Label>
+                                        <p className="font-medium">{customer.bio || 'N/A'}</p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="border-t pt-4">
+                                      <h4 className="font-semibold mb-2">Statistics</h4>
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <Card>
+                                          <CardContent className="pt-6">
+                                            <p className="text-2xl font-bold">{totalRequests}</p>
+                                            <p className="text-sm text-muted-foreground">Total Requests</p>
+                                          </CardContent>
+                                        </Card>
+                                        <Card>
+                                          <CardContent className="pt-6">
+                                            <p className="text-2xl font-bold">{completedRequests}</p>
+                                            <p className="text-sm text-muted-foreground">Completed</p>
+                                          </CardContent>
+                                        </Card>
+                                        <Card>
+                                          <CardContent className="pt-6">
+                                            <p className="text-2xl font-bold">
+                                              ${allTransactions
+                                                .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
+                                                .reduce((sum, t) => sum + Number(t.amount), 0)
+                                                .toFixed(2)}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">Total Spent</p>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+
+                                    <div className="border-t pt-4">
+                                      <h4 className="font-semibold mb-2">Service History</h4>
+                                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                                        {allRequests
+                                          .filter(r => r.customer_id === customer.id)
+                                          .slice(0, 5)
+                                          .map((request) => (
+                                            <div key={request.id} className="flex justify-between items-center p-2 border rounded">
+                                              <div>
+                                                <p className="font-medium">{request.service_type}</p>
+                                                <p className="text-sm text-muted-foreground">{request.location}</p>
+                                                <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
+                                              </div>
+                                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                            </div>
+                                          ))}
+                                        {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
+                                          <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                                </Dialog>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteProfile(customer.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {customers.filter(customer => {
+                    const searchLower = adminCustomerFilter.toLowerCase();
+                    return (
+                      customer.full_name?.toLowerCase().includes(searchLower) ||
+                      customer.email?.toLowerCase().includes(searchLower) ||
+                      customer.phone_number?.toLowerCase().includes(searchLower) ||
+                      customer.location?.toLowerCase().includes(searchLower)
+                    );
+                  }).map((customer) => {
+                    const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
+                    const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
+                    const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
+                    
+                    return (
+                      <Card key={customer.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{customer.full_name}</p>
+                              </div>
+                            </div>
+                            
+                            {customer.email && (
+                              <div className="flex items-start gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                              </div>
+                            )}
+                            
+                            {customer.phone_number && (
+                              <div className="flex items-start gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-muted-foreground truncate">{customer.phone_number}</p>
+                              </div>
+                            )}
+                            
+                            {customer.location && (
+                              <div className="flex items-start gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-muted-foreground truncate">{customer.location}</p>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-start gap-2">
+                              <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground">
+                                {totalRequests} total requests • {completedRequests} completed
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t">
+                            <Badge variant={activeRequests > 0 ? 'default' : 'secondary'} className="text-xs">
                               {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">View Details</Button>
-                                </DialogTrigger>
+                          </div>
+
+                          <div className="flex gap-2 pt-2 border-t">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="flex-1">
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                              </DialogTrigger>
                               <DialogContent className="max-w-2xl">
                                 <DialogHeader>
                                   <DialogTitle>Customer Details</DialogTitle>
@@ -2865,21 +3034,22 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               </DialogContent>
-                              </Dialog>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteProfile(customer.id)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            </Dialog>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteProfile(customer.id)}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
                 {customers.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     No customers registered yet
