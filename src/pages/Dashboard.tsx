@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -3607,58 +3607,285 @@ const Dashboard = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Business Name</TableHead>
-                          <TableHead>Contact Person</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>City</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {applications.filter(app => {
-                          const searchLower = adminApplicationFilter.toLowerCase();
-                          return (
-                            app.business_name?.toLowerCase().includes(searchLower) ||
-                            app.contact_person?.toLowerCase().includes(searchLower) ||
-                            app.email?.toLowerCase().includes(searchLower) ||
-                            app.phone?.toLowerCase().includes(searchLower) ||
-                            app.city?.toLowerCase().includes(searchLower) ||
-                            app.status?.toLowerCase().includes(searchLower)
-                          );
-                        }).map((app) => (
-                          <TableRow key={app.id}>
-                            <TableCell className="font-medium">{app.business_name}</TableCell>
-                            <TableCell>{app.contact_person}</TableCell>
-                            <TableCell>{app.email}</TableCell>
-                            <TableCell>{app.phone}</TableCell>
-                            <TableCell>{app.city}</TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={
-                                  app.status === 'approved' ? 'default' : 
-                                  app.status === 'rejected' ? 'destructive' : 
-                                  'secondary'
-                                }
-                              >
-                                {app.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{new Date(app.created_at).toLocaleDateString()}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(app.created_at).toLocaleTimeString()}</p>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Business Name</TableHead>
+                            <TableHead>Contact Person</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>City</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {applications.filter(app => {
+                            const searchLower = adminApplicationFilter.toLowerCase();
+                            return (
+                              app.business_name?.toLowerCase().includes(searchLower) ||
+                              app.contact_person?.toLowerCase().includes(searchLower) ||
+                              app.email?.toLowerCase().includes(searchLower) ||
+                              app.phone?.toLowerCase().includes(searchLower) ||
+                              app.city?.toLowerCase().includes(searchLower) ||
+                              app.status?.toLowerCase().includes(searchLower)
+                            );
+                          }).map((app) => (
+                            <TableRow key={app.id}>
+                              <TableCell className="font-medium">{app.business_name}</TableCell>
+                              <TableCell>{app.contact_person}</TableCell>
+                              <TableCell>{app.email}</TableCell>
+                              <TableCell>{app.phone}</TableCell>
+                              <TableCell>{app.city}</TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={
+                                    app.status === 'approved' ? 'default' : 
+                                    app.status === 'rejected' ? 'destructive' : 
+                                    'secondary'
+                                  }
+                                >
+                                  {app.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="text-sm">{new Date(app.created_at).toLocaleDateString()}</p>
+                                  <p className="text-xs text-muted-foreground">{new Date(app.created_at).toLocaleTimeString()}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">View</Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Partnership Application Details</DialogTitle>
+                                      <DialogDescription>{app.business_name}</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label className="text-muted-foreground">Business Name</Label>
+                                          <p className="font-medium">{app.business_name}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Contact Person</Label>
+                                          <p className="font-medium">{app.contact_person}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Email</Label>
+                                          <p className="font-medium">{app.email}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Phone</Label>
+                                          <p className="font-medium">{app.phone}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">City/Location</Label>
+                                          <p className="font-medium">{app.city}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Status</Label>
+                                          <Badge 
+                                            variant={
+                                              app.status === 'approved' ? 'default' : 
+                                              app.status === 'rejected' ? 'destructive' : 
+                                              'secondary'
+                                            }
+                                            className="mt-2"
+                                          >
+                                            {app.status}
+                                          </Badge>
+                                        </div>
+                                        {app.message && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Message</Label>
+                                            <p className="font-medium whitespace-pre-wrap">{app.message}</p>
+                                          </div>
+                                        )}
+                                        <div>
+                                          <Label className="text-muted-foreground">Applied On</Label>
+                                          <p className="text-sm">{new Date(app.created_at).toLocaleString()}</p>
+                                        </div>
+                                        {app.reviewed_at && (
+                                          <div>
+                                            <Label className="text-muted-foreground">Reviewed On</Label>
+                                            <p className="text-sm">{new Date(app.reviewed_at).toLocaleString()}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="border-t pt-4 space-y-4">
+                                        <div className="flex gap-2">
+                                          <Button
+                                            onClick={() => handleUpdateApplicationStatus(app.id, 'approved')}
+                                            disabled={app.status === 'approved'}
+                                            className="flex-1"
+                                          >
+                                            Approve Only
+                                          </Button>
+                                          <Button
+                                            variant="destructive"
+                                            onClick={() => handleUpdateApplicationStatus(app.id, 'rejected')}
+                                            disabled={app.status === 'rejected'}
+                                            className="flex-1"
+                                          >
+                                            Reject
+                                          </Button>
+                                          {app.status !== 'pending' && (
+                                            <Button
+                                              variant="outline"
+                                              onClick={() => handleUpdateApplicationStatus(app.id, 'pending')}
+                                              className="flex-1"
+                                            >
+                                              Reset to Pending
+                                            </Button>
+                                          )}
+                                        </div>
+
+                                        <div className="border-t pt-4">
+                                          <Label className="text-sm font-semibold mb-2 block">Create User Account</Label>
+                                          <p className="text-xs text-muted-foreground mb-3">
+                                            Convert this application into a user account with provider or customer access
+                                          </p>
+                                          <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const formData = new FormData(e.currentTarget);
+                                            handleCreateUserFromApplication(
+                                              app,
+                                              formData.get('role') as 'provider' | 'customer',
+                                              formData.get('password') as string
+                                            );
+                                          }}>
+                                            <div className="space-y-3">
+                                              <div>
+                                                <Label htmlFor={`role-${app.id}`}>Assign as</Label>
+                                                <Select name="role" required>
+                                                  <SelectTrigger id={`role-${app.id}`}>
+                                                    <SelectValue placeholder="Select role" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="provider">Provider</SelectItem>
+                                                    <SelectItem value="customer">Customer</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                              <div>
+                                                <Label htmlFor={`password-${app.id}`}>Initial Password</Label>
+                                                <Input
+                                                  id={`password-${app.id}`}
+                                                  name="password"
+                                                  type="password"
+                                                  placeholder="Min. 6 characters"
+                                                  required
+                                                  minLength={6}
+                                                />
+                                              </div>
+                                              <Button type="submit" className="w-full">
+                                                Create Account
+                                              </Button>
+                                            </div>
+                                          </form>
+                                        </div>
+
+                                        <div className="border-t pt-4">
+                                          <Button
+                                            variant="destructive"
+                                            onClick={() => handleDeleteApplication(app.id)}
+                                            className="w-full"
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete Application
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
+                      {applications.filter(app => {
+                        const searchLower = adminApplicationFilter.toLowerCase();
+                        return (
+                          app.business_name?.toLowerCase().includes(searchLower) ||
+                          app.contact_person?.toLowerCase().includes(searchLower) ||
+                          app.email?.toLowerCase().includes(searchLower) ||
+                          app.phone?.toLowerCase().includes(searchLower) ||
+                          app.city?.toLowerCase().includes(searchLower) ||
+                          app.status?.toLowerCase().includes(searchLower)
+                        );
+                      }).map((app) => (
+                        <Card key={app.id} className="border-l-4 border-l-primary">
+                          <CardContent className="pt-6 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-1 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-semibold">{app.business_name}</span>
+                                </div>
+                                <Badge 
+                                  variant={
+                                    app.status === 'approved' ? 'default' : 
+                                    app.status === 'rejected' ? 'destructive' : 
+                                    'secondary'
+                                  }
+                                  className="text-xs"
+                                >
+                                  {app.status}
+                                </Badge>
                               </div>
-                            </TableCell>
-                            <TableCell>
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">Contact:</span>
+                                <span className="font-medium">{app.contact_person}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">Email:</span>
+                                <span className="font-medium">{app.email}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">Phone:</span>
+                                <span className="font-medium">{app.phone}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">City:</span>
+                                <span className="font-medium">{app.city}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">Applied:</span>
+                                <span className="font-medium">{new Date(app.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">View</Button>
+                                  <Button size="sm" variant="outline" className="flex-1">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-2xl">
                                   <DialogHeader>
@@ -3804,11 +4031,12 @@ const Dashboard = () => {
                                   </div>
                                 </DialogContent>
                               </Dialog>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
                     {applications.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No partnership applications yet
