@@ -667,7 +667,12 @@ const RequestService = () => {
       <Footer />
 
       {/* Success Dialog - Enhanced */}
-      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+      <Dialog open={successDialogOpen} onOpenChange={(open) => {
+        setSuccessDialogOpen(open);
+        if (!open) {
+          navigate('/track-rescue');
+        }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader >
             <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
