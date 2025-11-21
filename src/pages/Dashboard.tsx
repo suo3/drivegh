@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +27,9 @@ import { z } from 'zod';
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { view } = useParams();
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('requests');
+  const currentView = view || 'requests';
   
   // Customer state
   const [requests, setRequests] = useState<any[]>([]);
@@ -81,17 +82,19 @@ const Dashboard = () => {
     
     if (userRole) {
       console.log('User role found, fetching data');
-      // Set default view based on role
-      if (userRole === 'customer') setCurrentView('requests');
-      if (userRole === 'provider') setCurrentView('assigned');
-      if (userRole === 'admin') setCurrentView('requests');
+      // Navigate to default view based on role if on base /dashboard
+      if (!view) {
+        if (userRole === 'customer') navigate('/dashboard/requests', { replace: true });
+        else if (userRole === 'provider') navigate('/dashboard/assigned', { replace: true });
+        else if (userRole === 'admin') navigate('/dashboard/requests', { replace: true });
+      }
       fetchData();
     } else {
       console.log('No user role yet, setting loading to false');
       // If userRole is not available after auth is done, stop loading
       setLoading(false);
     }
-  }, [user, userRole, authLoading, navigate]);
+  }, [user, userRole, authLoading, navigate, view]);
 
   useEffect(() => {
     if (!user || userRole !== 'admin') return;
@@ -731,7 +734,7 @@ const Dashboard = () => {
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
-          <DashboardSidebar role="customer" currentView={currentView} onViewChange={setCurrentView} />
+          <DashboardSidebar role="customer" currentView={currentView} />
           
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
@@ -1250,7 +1253,7 @@ const Dashboard = () => {
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
-          <DashboardSidebar role="provider" currentView={currentView} onViewChange={setCurrentView} />
+          <DashboardSidebar role="provider" currentView={currentView} />
           
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
@@ -1540,7 +1543,7 @@ const Dashboard = () => {
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
-          <DashboardSidebar role="admin" currentView={currentView} onViewChange={setCurrentView} />
+          <DashboardSidebar role="admin" currentView={currentView} />
           
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />

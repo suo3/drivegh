@@ -1,5 +1,6 @@
 import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal, MapPin, Layout, Star } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -19,10 +20,10 @@ import { cn } from '@/lib/utils';
 interface DashboardSidebarProps {
   role: 'customer' | 'provider' | 'admin';
   currentView: string;
-  onViewChange: (view: string) => void;
 }
 
-export function DashboardSidebar({ role, currentView, onViewChange }: DashboardSidebarProps) {
+export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
+  const navigate = useNavigate();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const isMobile = useIsMobile();
@@ -79,7 +80,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
             return (
               <button
                 key={item.view}
-                onClick={() => onViewChange(item.view)}
+                onClick={() => navigate(`/dashboard/${item.view}`)}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group",
                   isActive
@@ -145,7 +146,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
                       <button
                         key={item.view}
                         onClick={() => {
-                          onViewChange(item.view);
+                          navigate(`/dashboard/${item.view}`);
                           setMoreMenuOpen(false);
                         }}
                         className={cn(
@@ -201,7 +202,7 @@ export function DashboardSidebar({ role, currentView, onViewChange }: DashboardS
               {items.map((item) => (
                 <SidebarMenuItem key={item.view}>
                   <SidebarMenuButton
-                    onClick={() => onViewChange(item.view)}
+                    onClick={() => navigate(`/dashboard/${item.view}`)}
                     isActive={currentView === item.view}
                     tooltip={item.title}
                     className="group relative my-0.5 rounded-lg transition-all duration-200 hover:bg-sidebar-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-1 data-[active=true]:before:rounded-r-full data-[active=true]:before:bg-primary-foreground"
