@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -3335,50 +3335,178 @@ const Dashboard = () => {
                 <CardDescription>View and manage all payment transactions</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Transaction ID</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allTransactions.map((tx) => {
-                      const request = allRequests.find(r => r.id === tx.service_request_id);
-                      const customer = customers.find(c => c.id === request?.customer_id);
-                      
-                      return (
-                        <TableRow key={tx.id}>
-                          <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}</TableCell>
-                          <TableCell className="font-bold">GHS {Number(tx.amount).toFixed(2)}</TableCell>
-                          <TableCell>{request?.service_type || 'N/A'}</TableCell>
-                          <TableCell>{customer?.full_name || 'Unknown'}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{tx.transaction_type}</Badge>
-                          </TableCell>
-                          <TableCell className="capitalize">{tx.payment_method.replace('_', ' ')}</TableCell>
-                          <TableCell>
-                            <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
-                              {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</p>
-                              <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                {/* Desktop Table View - Hidden on Mobile */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Transaction ID</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Service</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allTransactions.map((tx) => {
+                        const request = allRequests.find(r => r.id === tx.service_request_id);
+                        const customer = customers.find(c => c.id === request?.customer_id);
+                        
+                        return (
+                          <TableRow key={tx.id}>
+                            <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}</TableCell>
+                            <TableCell className="font-bold">GHS {Number(tx.amount).toFixed(2)}</TableCell>
+                            <TableCell>{request?.service_type || 'N/A'}</TableCell>
+                            <TableCell>{customer?.full_name || 'Unknown'}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{tx.transaction_type}</Badge>
+                            </TableCell>
+                            <TableCell className="capitalize">{tx.payment_method.replace('_', ' ')}</TableCell>
+                            <TableCell>
+                              <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
+                                {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">Details</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Transaction Details</DialogTitle>
+                                    <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="text-muted-foreground">Amount</Label>
+                                        <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Status</Label>
+                                        <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
+                                          {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                        </Badge>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Transaction Type</Label>
+                                        <p className="font-medium">{tx.transaction_type}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Payment Method</Label>
+                                        <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                                      </div>
+                                      {tx.reference_number && (
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Reference Number</Label>
+                                          <p className="font-mono font-medium">{tx.reference_number}</p>
+                                        </div>
+                                      )}
+                                      <div className="col-span-2 border-t pt-4">
+                                        <Label className="text-muted-foreground">Service Details</Label>
+                                        <div className="mt-2 space-y-1">
+                                          <p><span className="font-medium">Type:</span> {request?.service_type}</p>
+                                          <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
+                                          <p><span className="font-medium">Location:</span> {request?.location}</p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Created</Label>
+                                        <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
+                                      </div>
+                                      {tx.confirmed_at && (
+                                        <div>
+                                          <Label className="text-muted-foreground">Confirmed</Label>
+                                          <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
+                                        </div>
+                                      )}
+                                      {tx.notes && (
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Notes</Label>
+                                          <p className="text-sm">{tx.notes}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {allTransactions.map((tx) => {
+                    const request = allRequests.find(r => r.id === tx.service_request_id);
+                    const customer = customers.find(c => c.id === request?.customer_id);
+                    
+                    return (
+                      <Card key={tx.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2 flex-1 min-w-0">
+                                <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-bold text-sm">GHS {Number(tx.amount).toFixed(2)}</p>
+                                  <p className="text-xs text-muted-foreground font-mono">#{tx.id.slice(0, 8)}</p>
+                                </div>
+                              </div>
+                              <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="text-xs">
+                                {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                              </Badge>
                             </div>
-                          </TableCell>
-                          <TableCell>
+                            
+                            <div className="flex items-start gap-2">
+                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground truncate">{customer?.full_name || 'Unknown'}</p>
+                            </div>
+                            
+                            <div className="flex items-start gap-2">
+                              <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground truncate capitalize">{request?.service_type || 'N/A'}</p>
+                            </div>
+                            
+                            <div className="flex items-start gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                            </div>
+                            
+                            <div className="flex items-start gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t">
+                            <Badge variant="outline" className="text-xs capitalize">{tx.transaction_type.replace('_', ' ')}</Badge>
+                          </div>
+
+                          <div className="pt-2 border-t">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">Details</Button>
+                                <Button size="sm" variant="outline" className="w-full">
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View Details
+                                </Button>
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
@@ -3439,12 +3567,13 @@ const Dashboard = () => {
                                 </div>
                               </DialogContent>
                             </Dialog>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
                 {allTransactions.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     No transactions recorded yet
