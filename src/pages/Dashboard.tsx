@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -2274,57 +2274,291 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Jobs Completed</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {providers.filter(provider => {
-                      const searchLower = adminProviderFilter.toLowerCase();
-                      return (
-                        provider.full_name?.toLowerCase().includes(searchLower) ||
-                        provider.email?.toLowerCase().includes(searchLower) ||
-                        provider.phone_number?.toLowerCase().includes(searchLower) ||
-                        provider.location?.toLowerCase().includes(searchLower)
-                      );
-                    }).map((provider) => {
-                      const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
-                      const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
-                      
-                      return (
-                        <TableRow key={provider.id}>
-                          <TableCell className="font-medium">{provider.full_name}</TableCell>
-                          <TableCell>{provider.email || 'N/A'}</TableCell>
-                          <TableCell>{provider.phone_number || 'N/A'}</TableCell>
-                          <TableCell>{provider.location || 'N/A'}</TableCell>
-                          <TableCell>{completedJobs}</TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
-                                {provider.is_available === false ? 'Unavailable' : 'Available'}
-                              </Badge>
-                              {activeJobs > 0 && (
-                                <span className="text-xs text-muted-foreground">
-                                  {activeJobs} Active Job{activeJobs > 1 ? 's' : ''}
-                                </span>
-                              )}
+                {/* Desktop Table View */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Jobs Completed</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {providers.filter(provider => {
+                        const searchLower = adminProviderFilter.toLowerCase();
+                        return (
+                          provider.full_name?.toLowerCase().includes(searchLower) ||
+                          provider.email?.toLowerCase().includes(searchLower) ||
+                          provider.phone_number?.toLowerCase().includes(searchLower) ||
+                          provider.location?.toLowerCase().includes(searchLower)
+                        );
+                      }).map((provider) => {
+                        const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
+                        const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
+                        
+                        return (
+                          <TableRow key={provider.id}>
+                            <TableCell className="font-medium">{provider.full_name}</TableCell>
+                            <TableCell>{provider.email || 'N/A'}</TableCell>
+                            <TableCell>{provider.phone_number || 'N/A'}</TableCell>
+                            <TableCell>{provider.location || 'N/A'}</TableCell>
+                            <TableCell>{completedJobs}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
+                                  {provider.is_available === false ? 'Unavailable' : 'Available'}
+                                </Badge>
+                                {activeJobs > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {activeJobs} Active Job{activeJobs > 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">View Details</Button>
+                                  </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Provider Details</DialogTitle>
+                                    <DialogDescription>View and manage provider information</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="text-muted-foreground">Full Name</Label>
+                                        <p className="font-medium">{provider.full_name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Email</Label>
+                                        <p className="font-medium">{provider.email || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Phone Number</Label>
+                                        <p className="font-medium">{provider.phone_number || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Location</Label>
+                                        <p className="font-medium">{provider.location || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="text-muted-foreground">Bio</Label>
+                                        <p className="font-medium">{provider.bio || 'N/A'}</p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="border-t pt-4">
+                                      <h4 className="font-semibold mb-2">Statistics</h4>
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <Card>
+                                          <CardContent className="pt-6">
+                                            <p className="text-2xl font-bold">{completedJobs}</p>
+                                            <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                                          </CardContent>
+                                        </Card>
+                                         <Card>
+                                           <CardContent className="pt-6">
+                                             <p className="text-2xl font-bold">{activeJobs}</p>
+                                             <p className="text-sm text-muted-foreground">Active Jobs</p>
+                                           </CardContent>
+                                         </Card>
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">
+                                                ${allTransactions
+                                                  .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                                  .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                                  .toFixed(2)}
+                                              </p>
+                                              <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                            </CardContent>
+                                          </Card>
+                                       </div>
+                                     </div>
+
+                                     <div className="border-t pt-4">
+                                       <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
+                                       <div className="grid grid-cols-2 gap-4 mb-4">
+                                         <Card>
+                                           <CardContent className="pt-6">
+                                             <div className="flex items-center gap-2">
+                                               <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                                               <p className="text-2xl font-bold">
+                                                 {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
+                                               </p>
+                                             </div>
+                                             <p className="text-sm text-muted-foreground">Average Rating</p>
+                                           </CardContent>
+                                         </Card>
+                                         <Card>
+                                           <CardContent className="pt-6">
+                                             <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
+                                             <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                           </CardContent>
+                                         </Card>
+                                       </div>
+                                       {provider.ratings && provider.ratings.length > 0 ? (
+                                         <div className="space-y-2 max-h-48 overflow-y-auto">
+                                           {provider.ratings.slice(0, 5).map((rating: any) => (
+                                             <div key={rating.id} className="p-3 border rounded">
+                                               <div className="flex items-center gap-2 mb-1">
+                                                 <div className="flex">
+                                                   {[...Array(5)].map((_, i) => (
+                                                     <Star
+                                                       key={i}
+                                                       className={`h-4 w-4 ${
+                                                         i < rating.rating
+                                                           ? 'fill-yellow-400 text-yellow-400'
+                                                           : 'text-gray-300'
+                                                       }`}
+                                                     />
+                                                   ))}
+                                                 </div>
+                                                 <span className="text-sm text-muted-foreground">
+                                                   {new Date(rating.created_at).toLocaleDateString()}
+                                                 </span>
+                                               </div>
+                                               {rating.review && (
+                                                 <p className="text-sm text-muted-foreground">{rating.review}</p>
+                                               )}
+                                             </div>
+                                           ))}
+                                         </div>
+                                       ) : (
+                                         <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
+                                       )}
+                                     </div>
+
+                                    <div className="border-t pt-4">
+                                      <h4 className="font-semibold mb-2">Recent Jobs</h4>
+                                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                                        {allRequests
+                                          .filter(r => r.provider_id === provider.id)
+                                          .slice(0, 5)
+                                          .map((job) => (
+                                            <div key={job.id} className="flex justify-between items-center p-2 border rounded">
+                                              <div>
+                                                <p className="font-medium">{job.service_type}</p>
+                                                <p className="text-sm text-muted-foreground">{job.location}</p>
+                                              </div>
+                                              <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
+                                            </div>
+                                          ))}
+                                        {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
+                                          <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                                </Dialog>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteProfile(provider.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  {providers.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No providers registered yet
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {providers.filter(provider => {
+                    const searchLower = adminProviderFilter.toLowerCase();
+                    return (
+                      provider.full_name?.toLowerCase().includes(searchLower) ||
+                      provider.email?.toLowerCase().includes(searchLower) ||
+                      provider.phone_number?.toLowerCase().includes(searchLower) ||
+                      provider.location?.toLowerCase().includes(searchLower)
+                    );
+                  }).map((provider) => {
+                    const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
+                    const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
+                    
+                    return (
+                      <Card key={provider.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-semibold text-lg">{provider.full_name}</h3>
+                              <p className="text-sm text-muted-foreground">{provider.email || 'N/A'}</p>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">View Details</Button>
-                                </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
+                            <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
+                              {provider.is_available === false ? 'Unavailable' : 'Available'}
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span>{provider.phone_number || 'N/A'}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <span>{provider.location || 'N/A'}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">Completed Jobs:</span>
+                              <span>{completedJobs}</span>
+                            </div>
+
+                            {activeJobs > 0 && (
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Active Jobs:</span>
+                                <span>{activeJobs}</span>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">Total Earnings:</span>
+                              <span>
+                                ${allTransactions
+                                  .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                  .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                  .toFixed(2)}
+                              </span>
+                            </div>
+
+                            {provider.avgRating && (
+                              <div className="flex items-center gap-2">
+                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <span className="font-medium">Rating:</span>
+                                <span>{provider.avgRating.toFixed(1)} ({provider.ratingCount || 0} reviews)</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="flex-1">View Details</Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                                 <DialogHeader>
                                   <DialogTitle>Provider Details</DialogTitle>
                                   <DialogDescription>View and manage provider information</DialogDescription>
@@ -2347,7 +2581,7 @@ const Dashboard = () => {
                                       <Label className="text-muted-foreground">Location</Label>
                                       <p className="font-medium">{provider.location || 'N/A'}</p>
                                     </div>
-                                    <div>
+                                    <div className="col-span-2">
                                       <Label className="text-muted-foreground">Bio</Label>
                                       <p className="font-medium">{provider.bio || 'N/A'}</p>
                                     </div>
@@ -2457,26 +2691,27 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               </DialogContent>
-                              </Dialog>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteProfile(provider.id)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-                {providers.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No providers registered yet
-                  </div>
-                )}
+                            </Dialog>
+                            
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteProfile(provider.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                  
+                  {providers.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No providers registered yet
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
               )}
