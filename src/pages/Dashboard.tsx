@@ -3125,93 +3125,205 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allUsers.map((user) => {
-                      const userRole = user.user_roles?.[0]?.role || 'N/A';
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.full_name}</TableCell>
-                          <TableCell>{user.email || 'N/A'}</TableCell>
-                          <TableCell>{user.phone_number || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Badge>{userRole}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">Edit</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Edit User</DialogTitle>
-                                  </DialogHeader>
-                                  <form onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    handleUpdateUser(user.id, {
-                                      full_name: formData.get('full_name') as string,
-                                      phone_number: formData.get('phone_number') as string,
-                                      email: formData.get('email') as string,
-                                      location: formData.get('location') as string,
-                                    });
-                                  }}>
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label>Full Name</Label>
-                                        <Input name="full_name" defaultValue={user.full_name} required />
+                {/* Desktop Table View - Hidden on Mobile */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allUsers.map((user) => {
+                        const userRole = user.user_roles?.[0]?.role || 'N/A';
+                        return (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">{user.full_name}</TableCell>
+                            <TableCell>{user.email || 'N/A'}</TableCell>
+                            <TableCell>{user.phone_number || 'N/A'}</TableCell>
+                            <TableCell>
+                              <Badge>{userRole}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">Edit</Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Edit User</DialogTitle>
+                                    </DialogHeader>
+                                    <form onSubmit={(e) => {
+                                      e.preventDefault();
+                                      const formData = new FormData(e.currentTarget);
+                                      handleUpdateUser(user.id, {
+                                        full_name: formData.get('full_name') as string,
+                                        phone_number: formData.get('phone_number') as string,
+                                        email: formData.get('email') as string,
+                                        location: formData.get('location') as string,
+                                      });
+                                    }}>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <Label>Full Name</Label>
+                                          <Input name="full_name" defaultValue={user.full_name} required />
+                                        </div>
+                                        <div>
+                                          <Label>Email</Label>
+                                          <Input name="email" type="email" defaultValue={user.email || ''} />
+                                        </div>
+                                        <div>
+                                          <Label>Phone</Label>
+                                          <Input name="phone_number" defaultValue={user.phone_number || ''} />
+                                        </div>
+                                        <div>
+                                          <Label>Location</Label>
+                                          <Input name="location" defaultValue={user.location || ''} />
+                                        </div>
+                                        <div>
+                                          <Label>Change Role</Label>
+                                          <Select 
+                                            defaultValue={userRole}
+                                            onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="customer">Customer</SelectItem>
+                                              <SelectItem value="provider">Provider</SelectItem>
+                                              <SelectItem value="admin">Admin</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <Button type="submit" className="w-full">Save Changes</Button>
                                       </div>
-                                      <div>
-                                        <Label>Email</Label>
-                                        <Input name="email" type="email" defaultValue={user.email || ''} />
-                                      </div>
-                                      <div>
-                                        <Label>Phone</Label>
-                                        <Input name="phone_number" defaultValue={user.phone_number || ''} />
-                                      </div>
-                                      <div>
-                                        <Label>Location</Label>
-                                        <Input name="location" defaultValue={user.location || ''} />
-                                      </div>
-                                      <div>
-                                        <Label>Change Role</Label>
-                                        <Select 
-                                          defaultValue={userRole}
-                                          onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="customer">Customer</SelectItem>
-                                            <SelectItem value="provider">Provider</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <Button type="submit" className="w-full">Save Changes</Button>
-                                    </div>
-                                  </form>
-                                </DialogContent>
-                              </Dialog>
-                              <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                                    </form>
+                                  </DialogContent>
+                                </Dialog>
+                                <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {allUsers.map((user) => {
+                    const userRole = user.user_roles?.[0]?.role || 'N/A';
+                    return (
+                      <Card key={user.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{user.full_name}</p>
+                              </div>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            
+                            {user.email && (
+                              <div className="flex items-start gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                              </div>
+                            )}
+                            
+                            {user.phone_number && (
+                              <div className="flex items-start gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-muted-foreground truncate">{user.phone_number}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="pt-2 border-t">
+                            <Badge className="text-xs capitalize">{userRole}</Badge>
+                          </div>
+
+                          <div className="flex gap-2 pt-2 border-t">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="flex-1">
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit User</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={(e) => {
+                                  e.preventDefault();
+                                  const formData = new FormData(e.currentTarget);
+                                  handleUpdateUser(user.id, {
+                                    full_name: formData.get('full_name') as string,
+                                    phone_number: formData.get('phone_number') as string,
+                                    email: formData.get('email') as string,
+                                    location: formData.get('location') as string,
+                                  });
+                                }}>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label>Full Name</Label>
+                                      <Input name="full_name" defaultValue={user.full_name} required />
+                                    </div>
+                                    <div>
+                                      <Label>Email</Label>
+                                      <Input name="email" type="email" defaultValue={user.email || ''} />
+                                    </div>
+                                    <div>
+                                      <Label>Phone</Label>
+                                      <Input name="phone_number" defaultValue={user.phone_number || ''} />
+                                    </div>
+                                    <div>
+                                      <Label>Location</Label>
+                                      <Input name="location" defaultValue={user.location || ''} />
+                                    </div>
+                                    <div>
+                                      <Label>Change Role</Label>
+                                      <Select 
+                                        defaultValue={userRole}
+                                        onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="customer">Customer</SelectItem>
+                                          <SelectItem value="provider">Provider</SelectItem>
+                                          <SelectItem value="admin">Admin</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <Button type="submit" className="w-full">Save Changes</Button>
+                                  </div>
+                                </form>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
               )}
