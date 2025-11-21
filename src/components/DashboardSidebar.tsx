@@ -72,8 +72,8 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
     const moreItems = role === 'admin' ? items.slice(4) : [];
 
     return (
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] border-t-2 border-sidebar-border bg-sidebar/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
-        <div className="flex items-center justify-around px-1 py-2 safe-area-inset-bottom max-w-screen-lg mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around px-2 py-2.5">
           {primaryItems.map((item) => {
             const isActive = currentView === item.view;
             
@@ -82,22 +82,33 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
                 key={item.view}
                 onClick={() => navigate(`/dashboard/${item.view}`)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[72px] relative group touch-manipulation",
+                  "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent active:bg-sidebar-accent/70"
+                    ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                    : "text-white/60 hover:text-white hover:bg-accent/50 hover:scale-105"
                 )}
               >
+                {/* Active indicator line */}
+                {isActive && (
+                  <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
+                )}
+                
                 <item.icon className={cn(
-                  "h-5 w-5 transition-transform duration-200",
-                  isActive && "scale-110"
+                  "h-5 w-5 transition-all duration-300 text-white",
+                  isActive && "scale-110 drop-shadow-lg",
+                  !isActive && "group-hover:scale-110"
                 )} />
                 <span className={cn(
-                  "text-[11px] font-medium truncate max-w-full transition-colors duration-200",
-                  isActive ? "text-primary-foreground" : "text-inherit"
+                  "text-[10px] font-semibold text-white truncate max-w-[60px] transition-all duration-300",
+                  isActive && "text-primary-foreground"
                 )}>
                   {item.title.split(' ')[0]}
                 </span>
+                
+                {/* Hover glow effect */}
+                {!isActive && (
+                  <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                )}
               </button>
             );
           })}
@@ -108,21 +119,26 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
               <SheetTrigger asChild>
                 <button
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[72px] relative group touch-manipulation",
+                    "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                     moreItems.some(item => currentView === item.view)
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent active:bg-sidebar-accent/70"
+                      ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                      : "text-white/60 hover:text-white hover:bg-accent/50 hover:scale-105"
                   )}
                 >
-                  <MoreHorizontal className="h-5 w-5" />
-                  <span className="text-[11px] font-medium">More</span>
+                  {moreItems.some(item => currentView === item.view) && (
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
+                  )}
+                  <MoreHorizontal className="h-5 w-5 transition-all duration-300 text-white group-hover:scale-110" />
+                  <span className="text-[10px] font-semibold text-white">More</span>
                 </button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="rounded-t-3xl border-t-2 border-border bg-background">
-                <SheetHeader className="pb-4">
-                  <SheetTitle className="text-2xl font-bold">More Options</SheetTitle>
+              <SheetContent side="bottom" className="rounded-t-2xl border-t-2 border-border/50 bg-gradient-to-b from-background to-background/95 backdrop-blur-xl">
+                <SheetHeader>
+                  <SheetTitle className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    More Options
+                  </SheetTitle>
                 </SheetHeader>
-                <div className="grid grid-cols-2 gap-3 pb-safe">
+                <div className="grid grid-cols-2 gap-3 mt-6 pb-6">
                   {moreItems.map((item) => {
                     const isActive = currentView === item.view;
                     
@@ -134,14 +150,17 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
                           setMoreMenuOpen(false);
                         }}
                         className={cn(
-                          "flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-200 border touch-manipulation",
+                          "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl transition-all duration-300 border-2 group",
                           isActive
-                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                            : "bg-card border-border hover:border-primary/30 hover:bg-accent active:bg-accent/70"
+                            ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground border-transparent shadow-lg shadow-primary/20 scale-105"
+                            : "bg-background border-border hover:border-primary/50 hover:bg-accent hover:scale-105 active:scale-95"
                         )}
                       >
-                        <item.icon className="h-6 w-6" />
-                        <span className="text-sm font-medium text-center leading-tight">{item.title}</span>
+                        <item.icon className={cn(
+                          "h-7 w-7 transition-all duration-300",
+                          isActive ? "drop-shadow-lg" : "group-hover:scale-110"
+                        )} />
+                        <span className="text-xs font-semibold text-center">{item.title}</span>
                       </button>
                     );
                   })}
@@ -150,6 +169,9 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
             </Sheet>
           )}
         </div>
+        
+        {/* Bottom accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </nav>
     );
   }
