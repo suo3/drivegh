@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -40,7 +40,10 @@ const App = () => (
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<Navigate to="requests" replace />} />
+              <Route path=":view" element={null} />
+            </Route>
             <Route path="/request-service" element={<RequestService />} />
             <Route path="/get-help" element={<GetHelp />} />
             <Route path="/about" element={<AboutUs />} />
