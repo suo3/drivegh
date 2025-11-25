@@ -287,6 +287,8 @@ export type Database = {
           customer_lat: number | null
           customer_lng: number | null
           description: string | null
+          fuel_amount: number | null
+          fuel_type: string | null
           id: string
           location: string
           phone_number: string | null
@@ -312,6 +314,8 @@ export type Database = {
           customer_lat?: number | null
           customer_lng?: number | null
           description?: string | null
+          fuel_amount?: number | null
+          fuel_type?: string | null
           id?: string
           location: string
           phone_number?: string | null
@@ -337,6 +341,8 @@ export type Database = {
           customer_lat?: number | null
           customer_lng?: number | null
           description?: string | null
+          fuel_amount?: number | null
+          fuel_type?: string | null
           id?: string
           location?: string
           phone_number?: string | null

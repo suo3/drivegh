@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation } from 'lucide-react';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel } from 'lucide-react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -417,9 +417,19 @@ const ProviderDashboard = () => {
                           <Badge className="capitalize shadow-sm text-xs flex-shrink-0 ml-2">{request.status.replace('_', ' ')}</Badge>
                         </div>
                         
-                        {request.description && (
+                         {request.description && (
                           <div className="md:ml-14 mb-4 p-3 md:p-4 rounded-xl bg-muted/50 border border-muted">
                             <p className="text-xs md:text-sm break-words">{request.description}</p>
+                          </div>
+                        )}
+
+                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                          <div className="md:ml-14 mb-4 flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                            <Fuel className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                            <div className="flex gap-3 text-sm">
+                              {request.fuel_type && <span className="capitalize font-medium">{request.fuel_type}</span>}
+                              {request.fuel_amount && <span className="text-amber-900">{request.fuel_amount} Liters</span>}
+                            </div>
                           </div>
                         )}
 

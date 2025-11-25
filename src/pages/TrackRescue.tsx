@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter, Star } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Filter, Star, Fuel } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -570,6 +570,25 @@ const TrackRescue = () => {
                           <div className="flex-1">
                             <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Description</p>
                             <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.description}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                        <div className="flex items-start gap-3 lg:gap-4">
+                          <div className="bg-amber-100 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                            <Fuel className="h-4 w-4 lg:h-5 lg:w-5 text-amber-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Fuel Details</p>
+                            <div className="flex gap-2 lg:gap-3 text-xs lg:text-sm text-muted-foreground">
+                              {request.fuel_type && (
+                                <span className="capitalize">{request.fuel_type}</span>
+                              )}
+                              {request.fuel_amount && (
+                                <span>{request.fuel_amount} Liters</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
