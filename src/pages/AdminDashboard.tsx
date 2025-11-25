@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, FileText, Building, Mail, MessageSquare, Archive, Eye } from 'lucide-react';
+import { Loader2, DollarSign, AlertCircle, Users, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, FileText, Building, Mail, MessageSquare, Archive, Eye, Fuel } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ServiceManager from '@/components/ServiceManager';
@@ -409,11 +409,20 @@ const AdminDashboard = () => {
                                   <span className="font-medium">Provider:</span> {request.provider.full_name}
                                 </div>
                               )}
-                            </div>
-                          </div>
-                          <Badge className="capitalize">{request.status.replace('_', ' ')}</Badge>
-                        </div>
-                        <div className="flex gap-2 mt-4">
+                             </div>
+                           </div>
+                           <Badge className="capitalize">{request.status.replace('_', ' ')}</Badge>
+                         </div>
+                         {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                           <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200 mb-3">
+                             <Fuel className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                             <div className="flex gap-3 text-sm">
+                               {request.fuel_type && <span className="capitalize font-medium">{request.fuel_type}</span>}
+                               {request.fuel_amount && <span className="text-amber-900">{request.fuel_amount} Liters</span>}
+                             </div>
+                           </div>
+                         )}
+                         <div className="flex gap-2 mt-4">
                           {request.status === 'pending' && (
                             <Button
                               size="sm"

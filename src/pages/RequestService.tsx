@@ -25,6 +25,8 @@ const serviceSchema = z.object({
   vehicleYear: z.string().trim().optional(),
   vehiclePlate: z.string().trim().optional(),
   phoneNumber: z.string().trim().min(10, 'Phone number must be at least 10 digits').max(20, 'Phone number must be less than 20 characters'),
+  fuelType: z.string().optional(),
+  fuelAmount: z.string().optional(),
 });
 
 const RequestService = () => {
@@ -41,6 +43,8 @@ const RequestService = () => {
   const [vehicleYear, setVehicleYear] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [fuelAmount, setFuelAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
@@ -84,6 +88,16 @@ const RequestService = () => {
         if (!serviceType) {
           toast.error('Please select a service type');
           return false;
+        }
+        if (serviceType === 'fuel_delivery') {
+          if (!fuelType) {
+            toast.error('Please select a fuel type');
+            return false;
+          }
+          if (!fuelAmount || parseFloat(fuelAmount) <= 0) {
+            toast.error('Please enter a valid fuel amount');
+            return false;
+          }
         }
         return true;
       case 2:
@@ -221,6 +235,8 @@ const RequestService = () => {
         vehicle_plate: vehiclePlate.trim() || null,
         customer_lat: customerLat,
         customer_lng: customerLng,
+        fuel_type: serviceType === 'fuel_delivery' ? fuelType : null,
+        fuel_amount: serviceType === 'fuel_delivery' && fuelAmount ? parseFloat(fuelAmount) : null,
         status: 'pending' as const,
       }]).select().single();
 
@@ -402,6 +418,48 @@ const RequestService = () => {
                           );
                         })}
                       </div>
+
+                      {/* Fuel Details - Only show for fuel_delivery */}
+                      {serviceType === 'fuel_delivery' && (
+                        <div className="space-y-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl animate-fade-in mt-6">
+                          <Label className="text-lg font-bold flex items-center gap-2">
+                            <Fuel className="h-5 w-5 text-amber-600" />
+                            Fuel Details *
+                          </Label>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="fuelType" className="font-semibold">Fuel Type *</Label>
+                              <Select value={fuelType} onValueChange={setFuelType}>
+                                <SelectTrigger id="fuelType" className="h-12 bg-white">
+                                  <SelectValue placeholder="Select fuel type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="petrol">Petrol (Gasoline)</SelectItem>
+                                  <SelectItem value="diesel">Diesel</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="fuelAmount" className="font-semibold">Amount (Liters) *</Label>
+                              <Input
+                                id="fuelAmount"
+                                type="number"
+                                min="1"
+                                max="100"
+                                step="1"
+                                value={fuelAmount}
+                                onChange={(e) => setFuelAmount(e.target.value)}
+                                placeholder="e.g., 10"
+                                className="h-12 bg-white"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-sm text-amber-900 flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            Please specify the type and amount of fuel you need. Standard delivery is available from 5 to 50 liters.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -561,6 +619,18 @@ const RequestService = () => {
                             <span className="text-muted-foreground">Vehicle:</span>
                             <span className="font-semibold">{vehicleMake} {vehicleModel} {vehicleYear}</span>
                           </div>
+                          {serviceType === 'fuel_delivery' && fuelType && fuelAmount && (
+                            <>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Fuel Type:</span>
+                                <span className="font-semibold capitalize">{fuelType}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Fuel Amount:</span>
+                                <span className="font-semibold">{fuelAmount} Liters</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 

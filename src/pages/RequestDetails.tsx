@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route, Fuel } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { supabase } from '@/integrations/supabase/client';
@@ -394,6 +394,24 @@ const RequestDetails = () => {
                         Plate: {request.vehicle_plate}
                       </p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Fuel Details - Only for fuel_delivery */}
+              {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                <div className="flex items-start gap-4">
+                  <Fuel className="h-6 w-6 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg">Fuel Details</p>
+                    <div className="flex gap-3 mt-1">
+                      {request.fuel_type && (
+                        <span className="capitalize text-muted-foreground text-lg">{request.fuel_type}</span>
+                      )}
+                      {request.fuel_amount && (
+                        <span className="text-muted-foreground text-lg">{request.fuel_amount} Liters</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

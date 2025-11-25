@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2, Fuel } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
@@ -239,8 +239,15 @@ const CustomerDashboard = () => {
                                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                   <span>{request.location}</span>
                                 </div>
-                                {request.description && (
+                                 {request.description && (
                                   <p className="text-muted-foreground">{request.description}</p>
+                                )}
+                                {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                  <div className="flex items-center gap-4 text-muted-foreground bg-amber-50 p-2 rounded">
+                                    <Fuel className="h-4 w-4 text-amber-600" />
+                                    {request.fuel_type && <span className="capitalize">{request.fuel_type}</span>}
+                                    {request.fuel_amount && <span>{request.fuel_amount} Liters</span>}
+                                  </div>
                                 )}
                                 {request.profiles && (
                                   <div className="flex items-center gap-2 text-muted-foreground">
