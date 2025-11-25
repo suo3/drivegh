@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 
 const RequestDetails = () => {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -558,6 +559,26 @@ const RequestDetails = () => {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Live Tracking Map */}
+              {(request.status === 'en_route' || request.status === 'in_progress') && 
+               request.customer_lat && request.customer_lng && 
+               request.provider_lat && request.provider_lng && (
+                <div className="border-t pt-6">
+                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    <Navigation className="h-5 w-5 text-primary" />
+                    Live Tracking
+                  </h3>
+                  <div className="rounded-lg overflow-hidden border-2 border-primary/20">
+                    <LiveTrackingMap
+                      customerLat={request.customer_lat}
+                      customerLng={request.customer_lng}
+                      providerLat={request.provider_lat}
+                      providerLng={request.provider_lng}
+                    />
+                  </div>
                 </div>
               )}
 
