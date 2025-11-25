@@ -1367,13 +1367,23 @@ const Dashboard = () => {
                                   <div className="flex gap-2">
                                     {request.status === 'assigned' && (
                                       <>
-                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
                                           Accept
                                         </Button>
                                         <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
                                           Deny
                                         </Button>
                                       </>
+                                    )}
+                                    {request.status === 'accepted' && (
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                        Start Driving (En Route)
+                                      </Button>
+                                    )}
+                                    {request.status === 'en_route' && (
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                        Arrived - Start Service
+                                      </Button>
                                     )}
                                     {request.status === 'in_progress' && (
                                       <Dialog>
@@ -1439,7 +1449,7 @@ const Dashboard = () => {
                                     <Button
                                       size="sm"
                                       className="w-full sm:w-auto"
-                                      onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}
+                                      onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}
                                     >
                                       Accept
                                     </Button>
@@ -1452,6 +1462,26 @@ const Dashboard = () => {
                                       Deny
                                     </Button>
                                   </>
+                                )}
+
+                                {request.status === 'accepted' && (
+                                  <Button
+                                    size="sm"
+                                    className="w-full sm:w-auto"
+                                    onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}
+                                  >
+                                    Start Driving (En Route)
+                                  </Button>
+                                )}
+
+                                {request.status === 'en_route' && (
+                                  <Button
+                                    size="sm"
+                                    className="w-full sm:w-auto"
+                                    onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}
+                                  >
+                                    Arrived - Start Service
+                                  </Button>
                                 )}
 
                                 {request.status === 'in_progress' && (
