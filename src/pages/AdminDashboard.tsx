@@ -401,8 +401,14 @@ const AdminDashboard = () => {
                               </div>
                               <div className="flex items-center gap-2 text-sm mt-1">
                                 <User className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Customer:</span> {request.profiles?.full_name}
+                                <span className="font-medium">Customer:</span> {request.profiles?.full_name || 'Guest User'}
                               </div>
+                              {request.phone_number && !request.profiles && (
+                                <div className="flex items-center gap-2 text-sm mt-1">
+                                  <Phone className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Phone:</span> {request.phone_number}
+                                </div>
+                              )}
                               {request.provider && (
                                 <div className="flex items-center gap-2 text-sm">
                                   <User className="h-4 w-4 text-muted-foreground" />
