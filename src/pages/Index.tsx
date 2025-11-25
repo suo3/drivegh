@@ -307,10 +307,17 @@ const Index = () => {
             
             <div className="flex flex-wrap gap-3">
               <Button 
-                onClick={() => navigate('/get-help')} 
+                onClick={() => navigate('/request-service')} 
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
               >
                 Request Help Now
+              </Button>
+              <Button 
+                onClick={() => navigate('/partnership')} 
+                variant="outline"
+                className="md:hidden bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm hover:scale-105 transition-all"
+              >
+                Become a Partner
               </Button>
               <Button 
                 onClick={() => navigate('/track-rescue')} 
