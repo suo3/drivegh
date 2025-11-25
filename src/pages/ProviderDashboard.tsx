@@ -9,6 +9,7 @@ import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, 
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useProviderLocation } from '@/hooks/useProviderLocation';
 
 const ProviderDashboard = () => {
   const { user, signOut } = useAuth();
@@ -22,6 +23,21 @@ const ProviderDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
   const [updatingLocation, setUpdatingLocation] = useState<string | null>(null);
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+
+  // Track active request (en_route or in_progress)
+  useEffect(() => {
+    const activeRequest = requests.find(r => 
+      r.status === 'en_route' || r.status === 'in_progress'
+    );
+    setActiveRequestId(activeRequest?.id || null);
+  }, [requests]);
+
+  // Enable live location tracking for active requests
+  useProviderLocation({
+    requestId: activeRequestId,
+    isActive: activeRequestId !== null
+  });
 
   useEffect(() => {
     if (user) {

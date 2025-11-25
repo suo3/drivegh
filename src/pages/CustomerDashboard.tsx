@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { LiveTrackingMap } from '@/components/LiveTrackingMap';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const CustomerDashboard = () => {
   const { user, signOut } = useAuth();
@@ -17,6 +19,7 @@ const CustomerDashboard = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedRequestForTracking, setSelectedRequestForTracking] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +50,18 @@ const CustomerDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
+  // Auto-open tracking for active requests
+  useEffect(() => {
+    const activeRequest = requests.find(r => 
+      (r.status === 'en_route' || r.status === 'in_progress') && 
+      r.provider_lat && 
+      r.provider_lng
+    );
+    if (activeRequest && !selectedRequestForTracking) {
+      setSelectedRequestForTracking(activeRequest);
+    }
+  }, [requests]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -230,9 +245,21 @@ const CustomerDashboard = () => {
                                 <h3 className="font-bold text-xl capitalize bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                                   {request.service_type.replace('_', ' ')}
                                 </h3>
-                                <Badge className={`${getStatusColor(request.status)} shadow-sm`}>
-                                  {getStatusLabel(request.status)}
-                                </Badge>
+                                 <Badge className={`${getStatusColor(request.status)} shadow-sm`}>
+                                   {getStatusLabel(request.status)}
+                                 </Badge>
+                                 {(request.status === 'en_route' || request.status === 'in_progress') && 
+                                  request.customer_lat && request.customer_lng && (
+                                   <Button
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={() => setSelectedRequestForTracking(request)}
+                                     className="ml-2"
+                                   >
+                                     <MapPin className="h-4 w-4 mr-1" />
+                                     Track Live
+                                   </Button>
+                                 )}
                               </div>
                               <div className="space-y-2 text-sm">
                                 <div className="flex items-start gap-2 text-muted-foreground">
@@ -335,6 +362,42 @@ const CustomerDashboard = () => {
           </div>
         </div>
       </section>
+
+      {/* Live Tracking Dialog */}
+      <Dialog open={!!selectedRequestForTracking} onOpenChange={(open) => !open && setSelectedRequestForTracking(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Live Tracking - {selectedRequestForTracking?.service_type?.replace('_', ' ').toUpperCase()}</DialogTitle>
+          </DialogHeader>
+          {selectedRequestForTracking && selectedRequestForTracking.customer_lat && selectedRequestForTracking.customer_lng && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">Provider</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedRequestForTracking.profiles?.full_name || 'Assigned Provider'}
+                    </p>
+                  </div>
+                </div>
+                <Badge className={getStatusColor(selectedRequestForTracking.status)}>
+                  {getStatusLabel(selectedRequestForTracking.status)}
+                </Badge>
+              </div>
+              <LiveTrackingMap
+                customerLat={selectedRequestForTracking.customer_lat}
+                customerLng={selectedRequestForTracking.customer_lng}
+                providerLat={selectedRequestForTracking.provider_lat}
+                providerLng={selectedRequestForTracking.provider_lng}
+                customerName={profile?.full_name || 'You'}
+                providerName={selectedRequestForTracking.profiles?.full_name || 'Provider'}
+                showETA={true}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
+import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -553,16 +554,29 @@ const TrackRescue = () => {
                           <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Location</p>
                           <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                         </div>
-                      </div>
+                       </div>
 
-                      {/* Map Display - Show if maps are enabled */}
-{mapsEnabled && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Open the request to view live map tracking.
-                        </p>
-                      )}
+                       {/* Live Tracking Map */}
+                       {(request.status === 'en_route' || request.status === 'in_progress') && 
+                        request.customer_lat && request.customer_lng && (
+                         <div className="mt-4">
+                           <div className="flex items-center gap-2 mb-3">
+                             <Navigation className="h-5 w-5 text-primary" />
+                             <p className="font-semibold text-sm lg:text-base">Live Tracking</p>
+                           </div>
+                           <LiveTrackingMap
+                             customerLat={request.customer_lat}
+                             customerLng={request.customer_lng}
+                             providerLat={request.provider_lat}
+                             providerLng={request.provider_lng}
+                             customerName="Your Location"
+                             providerName={request.profiles?.full_name || 'Provider'}
+                             showETA={true}
+                           />
+                         </div>
+                       )}
 
-                      {request.description && (
+                       {request.description && (
                         <div className="flex items-start gap-3 lg:gap-4">
                           <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
                             <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
