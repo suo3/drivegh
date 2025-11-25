@@ -464,7 +464,7 @@ const TrackRescue = () => {
                   Make sure you're using the same phone number you provided when requesting assistance.
                 </p>
                 <Button 
-                  onClick={() => navigate('/get-help')}
+                  onClick={() => navigate('/request-service')}
                   className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold"
                 >
                   Request New Service
