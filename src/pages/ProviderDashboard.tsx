@@ -464,8 +464,9 @@ const ProviderDashboard = () => {
                           )}
                           {request.status === 'accepted' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
-                                Mark En Route
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 shadow-md hover:shadow-lg transition-all">
+                                <Navigation className="h-4 w-4 mr-2" />
+                                Start Driving (En Route)
                               </Button>
                               <Button 
                                 size="sm" 
@@ -485,8 +486,9 @@ const ProviderDashboard = () => {
                           )}
                           {request.status === 'en_route' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
-                                Start Service
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md hover:shadow-lg transition-all">
+                                <Briefcase className="h-4 w-4 mr-2" />
+                                Arrived - Start Service
                               </Button>
                               <Button 
                                 size="sm" 
