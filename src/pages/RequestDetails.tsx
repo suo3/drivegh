@@ -562,10 +562,40 @@ const RequestDetails = () => {
                 </div>
               )}
 
+              {/* Real-time Distance Indicator */}
+              {(request.status === 'en_route' || request.status === 'in_progress') && 
+               distance !== null && request.provider_lat && request.provider_lng && (
+                <div className="border-t pt-6">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 mb-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-primary/20 p-4 rounded-full">
+                          <Route className="h-8 w-8 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Distance to You</p>
+                          <p className="text-3xl font-bold text-primary">{formatDistance(distance)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground font-medium">Provider Status</p>
+                        <Badge variant="secondary" className="text-lg mt-1 capitalize">
+                          {request.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                      <span>Location updating in real-time</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Live Tracking Map */}
               {(request.status === 'en_route' || request.status === 'in_progress') && 
                request.customer_lat && request.customer_lng && (
-                <div className="border-t pt-6">
+                <div className={distance === null || !request.provider_lat || !request.provider_lng ? "border-t pt-6" : ""}>
                   <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                     <Navigation className="h-5 w-5 text-primary" />
                     Live Tracking
@@ -576,6 +606,9 @@ const RequestDetails = () => {
                       customerLng={request.customer_lng}
                       providerLat={request.provider_lat}
                       providerLng={request.provider_lng}
+                      customerName="You"
+                      providerName={request.profiles?.full_name || 'Provider'}
+                      showETA={true}
                     />
                   </div>
                 </div>
