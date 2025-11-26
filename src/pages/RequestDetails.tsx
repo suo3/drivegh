@@ -564,8 +564,7 @@ const RequestDetails = () => {
 
               {/* Live Tracking Map */}
               {(request.status === 'en_route' || request.status === 'in_progress') && 
-               request.customer_lat && request.customer_lng && 
-               request.provider_lat && request.provider_lng && (
+               request.customer_lat && request.customer_lng && (
                 <div className="border-t pt-6">
                   <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                     <Navigation className="h-5 w-5 text-primary" />
