@@ -16,6 +16,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSoundAlert } from '@/hooks/useSoundAlert';
+import { useProviderETA } from '@/hooks/useProviderETA';
 
 const RequestDetails = () => {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -33,6 +34,14 @@ const RequestDetails = () => {
   const [soundAlertPlayed, setSoundAlertPlayed] = useState(false);
   const { permission, requestPermission, sendNotification, isSupported } = useNotifications();
   const { playProximityAlert, playArrivalAlert } = useSoundAlert();
+
+  // Real-time ETA calculation
+  const { distance: providerDistance, speed: providerSpeed, eta: providerETA } = useProviderETA({
+    providerLat: request?.provider_lat,
+    providerLng: request?.provider_lng,
+    customerLat: request?.customer_lat,
+    customerLng: request?.customer_lng,
+  });
 
   const distance = useMemo(() => {
     if (!request?.customer_lat || !request?.customer_lng || !request?.provider_lat || !request?.provider_lng) {
@@ -708,10 +717,79 @@ const RequestDetails = () => {
                 </div>
               )}
 
+              {/* Real-time Distance and ETA Card */}
+              {(request.status === 'en_route' || request.status === 'in_progress') && 
+               request.provider_lat && request.provider_lng && request.customer_lat && request.customer_lng && (
+                <div className="border-t pt-6">
+                  <Card className="mb-6 bg-primary/5 border-primary/20">
+                    <div className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Distance */}
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <MapPin className="h-7 w-7 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Distance</p>
+                            <p className="text-3xl font-bold text-primary">
+                              {providerDistance !== null ? formatDistance(providerDistance) : '---'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Speed */}
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Navigation className="h-7 w-7 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Speed</p>
+                            <p className="text-3xl font-bold text-primary">
+                              {providerSpeed !== null ? `${providerSpeed.toFixed(0)}` : '---'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">km/h</p>
+                          </div>
+                        </div>
+
+                        {/* ETA */}
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Clock className="h-7 w-7 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">ETA</p>
+                            <p className="text-3xl font-bold text-primary">
+                              {providerETA !== null 
+                                ? providerETA < 1 
+                                  ? '< 1m' 
+                                  : providerETA < 60 
+                                    ? `${Math.round(providerETA)}m` 
+                                    : `${Math.floor(providerETA / 60)}h ${Math.round(providerETA % 60)}m`
+                                : '---'
+                              }
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                              Live tracking
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-primary/10">
+                        <Badge variant={request.status === 'en_route' ? 'default' : 'secondary'} className="text-sm">
+                          {request.status === 'en_route' ? '🚗 Provider on the way' : '🔧 Service in progress'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              )}
+
               {/* Live Tracking Map */}
               {(request.status === 'en_route' || request.status === 'in_progress') && 
                request.customer_lat && request.customer_lng && (
-                <div className={distance === null || !request.provider_lat || !request.provider_lng ? "border-t pt-6" : ""}>
+                <div>
                   <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                     <Navigation className="h-5 w-5 text-primary" />
                     Live Tracking
@@ -724,7 +802,7 @@ const RequestDetails = () => {
                       providerLng={request.provider_lng}
                       customerName="You"
                       providerName={request.profiles?.full_name || 'Provider'}
-                      showETA={true}
+                      showETA={false}
                     />
                   </div>
                 </div>
