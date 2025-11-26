@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route, Fuel } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route, Fuel, Bell, BellOff } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const RequestDetails = () => {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -26,6 +27,9 @@ const RequestDetails = () => {
   const [currentRating, setCurrentRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [lastNotifiedStatus, setLastNotifiedStatus] = useState<string | null>(null);
+  const [lastNotifiedDistance, setLastNotifiedDistance] = useState<number | null>(null);
+  const { permission, requestPermission, sendNotification, isSupported } = useNotifications();
 
   const distance = useMemo(() => {
     if (!request?.customer_lat || !request?.customer_lng || !request?.provider_lat || !request?.provider_lng) {
@@ -135,6 +139,70 @@ const RequestDetails = () => {
       supabase.removeChannel(channel);
     };
   }, [request?.id]);
+
+  // Send status change notifications
+  useEffect(() => {
+    if (!request || permission !== 'granted') return;
+    
+    if (lastNotifiedStatus && lastNotifiedStatus !== request.status) {
+      const statusMessages: Record<string, { title: string; body: string }> = {
+        assigned: {
+          title: 'Provider Assigned! 👨‍🔧',
+          body: 'A provider has been assigned to your request.',
+        },
+        accepted: {
+          title: 'Request Accepted! ✅',
+          body: 'The provider has accepted your service request.',
+        },
+        en_route: {
+          title: 'Provider On The Way! 🚗',
+          body: 'Your provider is now heading to your location.',
+        },
+        in_progress: {
+          title: 'Service Started! 🔧',
+          body: 'The provider has started working on your vehicle.',
+        },
+        completed: {
+          title: 'Service Completed! ✨',
+          body: 'Your service has been completed successfully.',
+        },
+        cancelled: {
+          title: 'Request Cancelled ❌',
+          body: 'Your service request has been cancelled.',
+        },
+      };
+
+      const message = statusMessages[request.status];
+      if (message) {
+        sendNotification(message.title, {
+          body: message.body,
+          tag: 'status-update',
+          requireInteraction: request.status === 'completed' || request.status === 'cancelled',
+        });
+      }
+    }
+    
+    setLastNotifiedStatus(request.status);
+  }, [request?.status, permission, sendNotification, lastNotifiedStatus]);
+
+  // Send proximity notifications based on distance changes
+  useEffect(() => {
+    if (!distance || permission !== 'granted') return;
+    
+    // Notify when provider is within 2km and getting closer
+    if (
+      distance <= 2 &&
+      (lastNotifiedDistance === null || distance < lastNotifiedDistance - 0.5)
+    ) {
+      const distanceText = formatDistance(distance);
+      sendNotification('Provider Approaching! 🚗', {
+        body: `Your provider is now ${distanceText} away and approaching your location.`,
+        tag: 'proximity-alert',
+        requireInteraction: false,
+      });
+      setLastNotifiedDistance(distance);
+    }
+  }, [distance, permission, sendNotification, lastNotifiedDistance]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -347,15 +415,38 @@ const RequestDetails = () => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleShare}
-                  className="gap-2"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
+                <div className="flex gap-2">
+                  {isSupported && (
+                    <Button
+                      onClick={requestPermission}
+                      variant={permission === 'granted' ? 'secondary' : 'secondary'}
+                      disabled={permission === 'granted'}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {permission === 'granted' ? (
+                        <>
+                          <Bell className="h-4 w-4" />
+                          Notifications On
+                        </>
+                      ) : (
+                        <>
+                          <BellOff className="h-4 w-4" />
+                          Enable Alerts
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleShare}
+                    className="gap-2"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
               </div>
             </div>
 
