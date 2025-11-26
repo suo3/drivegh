@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSoundAlert } from '@/hooks/useSoundAlert';
 
 const RequestDetails = () => {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -29,7 +30,9 @@ const RequestDetails = () => {
   const [reviewText, setReviewText] = useState('');
   const [lastNotifiedStatus, setLastNotifiedStatus] = useState<string | null>(null);
   const [lastNotifiedDistance, setLastNotifiedDistance] = useState<number | null>(null);
+  const [soundAlertPlayed, setSoundAlertPlayed] = useState(false);
   const { permission, requestPermission, sendNotification, isSupported } = useNotifications();
+  const { playProximityAlert, playArrivalAlert } = useSoundAlert();
 
   const distance = useMemo(() => {
     if (!request?.customer_lat || !request?.customer_lng || !request?.provider_lat || !request?.provider_lng) {
@@ -185,12 +188,27 @@ const RequestDetails = () => {
     setLastNotifiedStatus(request.status);
   }, [request?.status, permission, sendNotification, lastNotifiedStatus]);
 
-  // Send proximity notifications based on distance changes
+  // Send proximity notifications and sound alerts based on distance changes
   useEffect(() => {
-    if (!distance || permission !== 'granted') return;
+    if (!distance) return;
     
-    // Notify when provider is within 2km and getting closer
+    // Play sound alert when provider is within 500m (0.5km)
+    if (distance <= 0.5 && !soundAlertPlayed && request?.status === 'en_route') {
+      playProximityAlert();
+      setSoundAlertPlayed(true);
+      
+      if (permission === 'granted') {
+        sendNotification('Provider Very Close! 📍', {
+          body: `Your provider is only ${formatDistance(distance)} away!`,
+          tag: 'proximity-alert-close',
+          requireInteraction: true,
+        });
+      }
+    }
+    
+    // Regular notification when provider is within 2km and getting closer
     if (
+      permission === 'granted' &&
       distance <= 2 &&
       (lastNotifiedDistance === null || distance < lastNotifiedDistance - 0.5)
     ) {
@@ -202,7 +220,14 @@ const RequestDetails = () => {
       });
       setLastNotifiedDistance(distance);
     }
-  }, [distance, permission, sendNotification, lastNotifiedDistance]);
+  }, [distance, permission, sendNotification, lastNotifiedDistance, soundAlertPlayed, playProximityAlert, request?.status]);
+
+  // Reset sound alert flag when provider moves away or status changes
+  useEffect(() => {
+    if (!distance || distance > 0.5 || request?.status === 'in_progress') {
+      setSoundAlertPlayed(false);
+    }
+  }, [distance, request?.status]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
