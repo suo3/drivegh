@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader2, Phone, MapPin, CreditCard, Star, MapPinned, Key } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Phone, MapPin, CreditCard, Star, MapPinned, Key, Search } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
@@ -20,6 +21,7 @@ const Index = () => {
   const [cities, setCities] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [sections, setSections] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchServices();
@@ -349,8 +351,27 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto mb-6 lg:mb-10">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search services..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-6">
-            {services.map((service, index) => {
+            {services
+              .filter(service => 
+                service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                service.description?.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((service, index) => {
               const Icon = getIconComponent(service.icon);
               return (
                 <Card 
