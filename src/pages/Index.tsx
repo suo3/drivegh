@@ -349,21 +349,25 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-6">
             {services.map((service, index) => {
               const Icon = getIconComponent(service.icon);
               return (
                 <Card 
                   key={service.id} 
-                  className="p-4 lg:p-8 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
+                  className="p-3 lg:p-6 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                   onClick={() => navigate(`/request-service?service=${service.slug}`)}
                 >
-                  <div className="bg-primary/10 rounded-xl lg:rounded-2xl w-10 h-10 lg:w-16 lg:h-16 flex items-center justify-center mb-3 lg:mb-6 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300 mx-auto lg:mx-0">
-                    <Icon className="h-5 w-5 lg:h-8 lg:w-8 text-primary" />
+                  <div className="flex items-start gap-3 lg:gap-4">
+                    <div className="bg-primary/10 rounded-lg lg:rounded-xl w-10 h-10 lg:w-14 lg:h-14 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="h-5 w-5 lg:h-7 lg:w-7 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm lg:text-lg font-bold mb-1 lg:mb-2 group-hover:text-primary transition-colors">{service.name}</h3>
+                      <p className="text-muted-foreground leading-relaxed text-xs lg:text-sm line-clamp-2">{service.description}</p>
+                    </div>
                   </div>
-                  <h3 className="text-sm lg:text-xl font-bold mb-2 lg:mb-3 group-hover:text-primary transition-colors text-center lg:text-left">{service.name}</h3>
-                  <p className="text-muted-foreground leading-relaxed text-xs lg:text-base hidden lg:block">{service.description}</p>
                 </Card>
               );
             })}
