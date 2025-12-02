@@ -44,6 +44,7 @@ const RequestService = () => {
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [fuelType, setFuelType] = useState('');
+  const [customFuelType, setCustomFuelType] = useState('');
   const [fuelAmount, setFuelAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
@@ -92,6 +93,10 @@ const RequestService = () => {
         if (serviceType === 'fuel_delivery') {
           if (!fuelType) {
             toast.error('Please select a fuel type');
+            return false;
+          }
+          if (fuelType === 'other' && !customFuelType.trim()) {
+            toast.error('Please enter a custom fuel type');
             return false;
           }
           if (!fuelAmount || parseFloat(fuelAmount) <= 0) {
@@ -235,7 +240,7 @@ const RequestService = () => {
         vehicle_plate: vehiclePlate.trim() || null,
         customer_lat: customerLat,
         customer_lng: customerLng,
-        fuel_type: serviceType === 'fuel_delivery' ? fuelType : null,
+        fuel_type: serviceType === 'fuel_delivery' ? (fuelType === 'other' ? customFuelType : fuelType) : null,
         fuel_amount: serviceType === 'fuel_delivery' && fuelAmount ? parseFloat(fuelAmount) : null,
         status: 'pending' as const,
       }]).select().single();
@@ -436,9 +441,24 @@ const RequestService = () => {
                                 <SelectContent>
                                   <SelectItem value="petrol">Petrol (Gasoline)</SelectItem>
                                   <SelectItem value="diesel">Diesel</SelectItem>
+                                  <SelectItem value="other">Other (Specify)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
+                            {fuelType === 'other' && (
+                              <div className="space-y-2">
+                                <Label htmlFor="customFuelType" className="font-semibold">Specify Fuel Type *</Label>
+                                <Input
+                                  id="customFuelType"
+                                  type="text"
+                                  value={customFuelType}
+                                  onChange={(e) => setCustomFuelType(e.target.value)}
+                                  placeholder="e.g., Premium, LPG, CNG"
+                                  className="h-12 bg-white"
+                                  maxLength={50}
+                                />
+                              </div>
+                            )}
                             <div className="space-y-2">
                               <Label htmlFor="fuelAmount" className="font-semibold">Amount (Liters) *</Label>
                               <Input
