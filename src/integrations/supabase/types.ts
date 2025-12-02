@@ -562,6 +562,8 @@ export type Database = {
         | "battery_jump"
         | "lockout_service"
         | "emergency_assistance"
+        | "mechanic_fault"
+        | "electrical_fault"
       transaction_type: "customer_to_business" | "business_to_provider"
     }
     CompositeTypes: {
@@ -709,6 +711,8 @@ export const Constants = {
         "battery_jump",
         "lockout_service",
         "emergency_assistance",
+        "mechanic_fault",
+        "electrical_fault",
       ],
       transaction_type: ["customer_to_business", "business_to_provider"],
     },
