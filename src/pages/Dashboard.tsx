@@ -86,7 +86,7 @@ const Dashboard = () => {
       if (!view) {
         if (userRole === 'customer') navigate('/dashboard/requests', { replace: true });
         else if (userRole === 'provider') navigate('/dashboard/assigned', { replace: true });
-        else if (userRole === 'admin') navigate('/dashboard/requests', { replace: true });
+        else if (userRole === 'admin' || userRole === 'super_admin') navigate('/dashboard/requests', { replace: true });
       }
       fetchData();
     } else {
@@ -145,7 +145,7 @@ const Dashboard = () => {
       } else if (userRole === 'provider') {
         console.log('Fetching provider data');
         await fetchProviderData();
-      } else if (userRole === 'admin') {
+      } else if (userRole === 'admin' || userRole === 'super_admin') {
         console.log('Fetching admin data');
         await fetchAdminData();
       }
@@ -1569,7 +1569,7 @@ const Dashboard = () => {
   }
 
   // Admin Dashboard
-  if (userRole === 'admin') {
+  if (userRole === 'admin' || userRole === 'super_admin') {
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
