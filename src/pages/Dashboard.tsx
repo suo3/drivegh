@@ -86,7 +86,7 @@ const Dashboard = () => {
       if (!view) {
         if (userRole === 'customer') navigate('/dashboard/requests', { replace: true });
         else if (userRole === 'provider') navigate('/dashboard/assigned', { replace: true });
-        else if (userRole === 'admin') navigate('/dashboard/requests', { replace: true });
+        else if (userRole === 'admin' || userRole === 'super_admin') navigate('/dashboard/requests', { replace: true });
       }
       fetchData();
     } else {
@@ -97,19 +97,42 @@ const Dashboard = () => {
   }, [user, userRole, authLoading, navigate, view]);
 
   useEffect(() => {
-    if (!user || userRole !== 'admin') return;
+    if (!user || (userRole !== 'admin' && userRole !== 'super_admin')) return;
     
     const requestsChannel = supabase
       .channel('service_requests_changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'service_requests'
         },
         () => {
           fetchServiceRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        () => {
+          fetchServiceRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        (payload) => {
+          // Handle DELETE optimistically - remove from state without re-fetching
+          setAllRequests(prev => prev.filter(req => req.id !== payload.old.id));
         }
       )
       .subscribe();
@@ -145,7 +168,7 @@ const Dashboard = () => {
       } else if (userRole === 'provider') {
         console.log('Fetching provider data');
         await fetchProviderData();
-      } else if (userRole === 'admin') {
+      } else if (userRole === 'admin' || userRole === 'super_admin') {
         console.log('Fetching admin data');
         await fetchAdminData();
       }
@@ -342,6 +365,9 @@ const Dashboard = () => {
   };
 
   const handleDeleteRequest = async (requestId: string) => {
+    // Optimistically remove from state for instant UI feedback
+    setAllRequests(prev => prev.filter(req => req.id !== requestId));
+    
     const { error } = await supabase
       .from('service_requests')
       .delete()
@@ -349,6 +375,8 @@ const Dashboard = () => {
 
     if (error) {
       toast.error('Failed to delete request');
+      // Re-fetch to restore state on error
+      fetchServiceRequests();
     } else {
       toast.success('Request deleted successfully');
     }
@@ -1569,7 +1597,7 @@ const Dashboard = () => {
   }
 
   // Admin Dashboard
-  if (userRole === 'admin') {
+  if (userRole === 'admin' || userRole === 'super_admin') {
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">

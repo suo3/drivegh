@@ -18,7 +18,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 interface DashboardSidebarProps {
-  role: 'customer' | 'provider' | 'admin';
+  role: 'customer' | 'provider' | 'admin' | 'super_admin';
   currentView: string;
 }
 
@@ -67,9 +67,10 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
 
   // Mobile: Horizontal bottom navigation
   if (isMobile) {
-    // For admin, show first 4 items + More menu
-    const primaryItems = role === 'admin' ? items.slice(0, 4) : items;
-    const moreItems = role === 'admin' ? items.slice(4) : [];
+    // For admin/super_admin, show first 4 items + More menu
+    const isAdmin = role === 'admin' || role === 'super_admin';
+    const primaryItems = isAdmin ? items.slice(0, 4) : items;
+    const moreItems = isAdmin ? items.slice(4) : [];
 
     return (
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
