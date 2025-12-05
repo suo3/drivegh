@@ -104,12 +104,35 @@ const Dashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'service_requests'
         },
         () => {
           fetchServiceRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        () => {
+          fetchServiceRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'service_requests'
+        },
+        (payload) => {
+          // Handle DELETE optimistically - remove from state without re-fetching
+          setAllRequests(prev => prev.filter(req => req.id !== payload.old.id));
         }
       )
       .subscribe();
