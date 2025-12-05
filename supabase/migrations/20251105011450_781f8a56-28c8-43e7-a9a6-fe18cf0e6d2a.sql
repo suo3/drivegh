@@ -190,8 +190,8 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 For questions about this Privacy Policy, contact us at:
 - Email: support@drivegh.com
-- Phone: +233 20 222 2244
-- Address: 123 Independence Ave, Accra, Ghana',
+- Phone: +233 53 507 2058
+- Address: Estate #5. Kitase-Akuapim, Eastern Region, Ghana',
   true
 )
 ON CONFLICT (document_type) DO NOTHING;

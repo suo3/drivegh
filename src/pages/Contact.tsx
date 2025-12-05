@@ -102,8 +102,7 @@ const Contact = () => {
                       <div>
                         <h3 className="font-bold text-lg mb-2">Visit Us</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          123 Independence Ave<br />
-                          Accra, Ghana
+                          Estate #5.<br/> Kitase-Akuapim<br /> Eastern Region, Ghana
                         </p>
                       </div>
                     </div>
@@ -119,8 +118,7 @@ const Contact = () => {
                       <div>
                         <h3 className="font-bold text-lg mb-2">Call Us</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          +233 20 222 2244<br />
-                          +233 50 333 4455
+                          +233 53 507 2058<br />
                         </p>
                       </div>
                     </div>

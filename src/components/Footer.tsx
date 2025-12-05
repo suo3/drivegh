@@ -193,11 +193,11 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 flex-shrink-0" />
-                <span>123 Independence Ave, Accra, Ghana</span>
+                <span>Estate #5. Kitase-Akuapim, Eastern Region, Ghana</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" />
-                <span>+233 20 222 2244</span>
+                <span>+233 53 507 2058</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
