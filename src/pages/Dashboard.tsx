@@ -97,7 +97,7 @@ const Dashboard = () => {
   }, [user, userRole, authLoading, navigate, view]);
 
   useEffect(() => {
-    if (!user || userRole !== 'admin') return;
+    if (!user || (userRole !== 'admin' && userRole !== 'super_admin')) return;
     
     const requestsChannel = supabase
       .channel('service_requests_changes')
@@ -342,6 +342,9 @@ const Dashboard = () => {
   };
 
   const handleDeleteRequest = async (requestId: string) => {
+    // Optimistically remove from state for instant UI feedback
+    setAllRequests(prev => prev.filter(req => req.id !== requestId));
+    
     const { error } = await supabase
       .from('service_requests')
       .delete()
@@ -349,6 +352,8 @@ const Dashboard = () => {
 
     if (error) {
       toast.error('Failed to delete request');
+      // Re-fetch to restore state on error
+      fetchServiceRequests();
     } else {
       toast.success('Request deleted successfully');
     }
