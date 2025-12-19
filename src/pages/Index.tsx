@@ -669,7 +669,7 @@ const Index = () => {
               <Button 
                 onClick={() => navigate('/get-help')} 
                 size="lg" 
-                className="bg-gradient-to-r from-accent to-yellow-400 text-accent-foreground hover:shadow-[var(--shadow-glow)] font-bold lg:text-lg px-8 lg:px-10 py-5 lg:py-6 h-auto pulse-glow w-full sm:w-auto"
+                className="hidden sm:flex bg-gradient-to-r from-accent to-yellow-400 text-accent-foreground hover:shadow-[var(--shadow-glow)] font-bold lg:text-lg px-8 lg:px-10 py-5 lg:py-6 h-auto pulse-glow"
               >
                 Request Help Now
               </Button>
