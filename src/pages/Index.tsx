@@ -491,7 +491,7 @@ const Index = () => {
               <Button 
                 onClick={() => navigate('/request-service')}
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold lg:text-lg px-6 lg:px-8 shadow-xl w-full sm:w-auto mb-4 lg:mb-0"
+                className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 font-semibold lg:text-lg px-6 lg:px-8 shadow-xl"
               >
                 Request Help Now
               </Button>
