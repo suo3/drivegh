@@ -609,9 +609,9 @@ const Index = () => {
       </section>
       )}
 
-      {/* Cities Section - Compact collapsible on mobile */}
+      {/* Cities Section - Hidden on mobile */}
       {sections.cities && (
-      <section className="py-12 lg:py-24 bg-background relative">
+      <section className="hidden lg:block py-12 lg:py-24 bg-background relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 lg:mb-16 animate-fade-in">
             <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-secondary/10 text-secondary rounded-full text-xs lg:text-sm font-semibold mb-3 lg:mb-4">
@@ -623,52 +623,8 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Mobile compact view */}
-          <div className="lg:hidden space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              {cities.slice(0, 6).map((city, index) => (
-                <div 
-                  key={city.id} 
-                  onClick={() => navigate('/request-service')}
-                  className="flex items-center gap-2 p-2.5 border-2 rounded-lg hover:border-primary transition-all cursor-pointer bg-white animate-scale-in"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <MapPinned className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="font-semibold text-sm">{city.name}</span>
-                </div>
-              ))}
-            </div>
-            
-            {cities.length > 6 && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAllCities(!showAllCities)}
-                  className="w-full text-sm font-semibold border-2 hover:border-primary"
-                >
-                  {showAllCities ? 'Show Less' : `View All ${cities.length} Cities`}
-                </Button>
-                
-                {showAllCities && (
-                  <div className="grid grid-cols-2 gap-2 animate-fade-in">
-                    {cities.slice(6).map((city) => (
-                      <div 
-                        key={city.id} 
-                        onClick={() => navigate('/request-service')}
-                        className="flex items-center gap-2 p-2.5 border-2 rounded-lg hover:border-primary transition-all cursor-pointer bg-white"
-                      >
-                        <MapPinned className="h-3.5 w-3.5 text-primary shrink-0" />
-                        <span className="font-semibold text-sm">{city.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
           {/* Desktop grid view */}
-          <div className="hidden lg:grid grid-cols-5 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-5 gap-4 max-w-6xl mx-auto">
             {cities.map((city, index) => (
               <div 
                 key={city.id} 
