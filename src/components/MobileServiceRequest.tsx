@@ -207,15 +207,6 @@ const MobileServiceRequest = () => {
   return (
     <section className="py-8 bg-gradient-to-b from-background to-[hsl(var(--section-bg))]">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-6">
-          <div className="inline-block px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold mb-3">
-            Quick Request
-          </div>
-          <h2 className="text-xl font-bold mb-2">Get Help Now</h2>
-          <p className="text-muted-foreground text-sm">
-            Complete this form to request roadside assistance
-          </p>
-        </div>
 
         <Card className="shadow-xl border-2 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b py-4">
