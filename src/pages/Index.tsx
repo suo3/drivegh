@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import heroTaxi from '@/assets/hero-taxi.png';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
+import MobileServiceRequest from '@/components/MobileServiceRequest';
 const Index = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
@@ -331,12 +331,17 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Services Section - Compact grid on mobile */}
+      {/* Mobile Service Request Form - Only visible on mobile */}
+      <div className="lg:hidden">
+        <MobileServiceRequest />
+      </div>
+
+      {/* Services Section - Hidden on mobile, visible on desktop */}
       {sections.services && (
-      <section id="services" className="py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative">
-        {/* Decorative elements - hidden on mobile */}
-        <div className="hidden lg:block absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="hidden lg:block absolute bottom-10 right-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
+      <section id="services" className="hidden lg:block py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative">
+        {/* Decorative elements */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
         
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-8 lg:mb-16 animate-fade-in">
