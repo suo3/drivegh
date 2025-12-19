@@ -162,11 +162,11 @@ const Navbar = () => {
             </Button>
           )}
           <Button 
-            onClick={() => navigate('/request-service')} 
+            onClick={() => navigate('/partnership')} 
             size="sm"
             className="bg-accent text-accent-foreground hover:bg-accent/90"
           >
-            Get Help
+            Become a Partner
           </Button>
         </div>
       </div>
