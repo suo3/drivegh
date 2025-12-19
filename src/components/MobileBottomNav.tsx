@@ -23,7 +23,7 @@ export function MobileBottomNav() {
   // Guest user navigation
   const guestItems = [
     { title: 'Home', path: '/', icon: Home },
-    { title: 'Services', path: '/request-service', icon: Search },
+    { title: 'Services', path: '/', icon: Search },
     { title: 'Track', path: '/track-rescue', icon: MapPin },
     { title: 'Contact', path: '/contact', icon: Phone },
     { title: 'Sign In', path: '/auth', icon: LogIn },
@@ -32,7 +32,7 @@ export function MobileBottomNav() {
   // Authenticated user navigation
   const authenticatedItems = [
     { title: 'Home', path: '/', icon: Home },
-    { title: 'Services', path: '/request-service', icon: Search },
+    { title: 'Services', path: '/', icon: Search },
     { title: 'Dashboard', path: '/dashboard', icon: ClipboardList },
     { title: 'Track', path: '/track-rescue', icon: MapPin },
     { title: 'My Account', path: '/dashboard', icon: User },
