@@ -41,16 +41,28 @@ export function MobileBottomNav() {
   const items = user ? authenticatedItems : guestItems;
   const currentPath = location.pathname;
 
+  const handleNavClick = (path: string, title: string) => {
+    if (title === 'Services' && currentPath === '/') {
+      // Scroll to service form on homepage
+      const formElement = document.getElementById('mobile-service-form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    navigate(path);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10  backdrop-blur-xl  shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around px-2 py-2.5">
         {items.map((item) => {
-          const isActive = currentPath === item.path;
+          const isActive = currentPath === item.path && item.title !== 'Services';
           
           return (
             <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
+              key={item.title}
+              onClick={() => handleNavClick(item.path, item.title)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                 isActive

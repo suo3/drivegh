@@ -325,7 +325,7 @@ const Index = () => {
       </section>
 
       {/* Mobile Service Request Form - Only visible on mobile */}
-      <div className="lg:hidden">
+      <div id="mobile-service-form" className="lg:hidden">
         <MobileServiceRequest />
       </div>
 
