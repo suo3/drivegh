@@ -57,7 +57,8 @@ export function MobileBottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10  backdrop-blur-xl  shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around px-2 py-2.5">
         {items.map((item) => {
-          const isActive = currentPath === item.path && item.title !== 'Services';
+          // Services button is never "active" - it's an action button that scrolls
+          const isActive = item.title !== 'Services' && currentPath === item.path;
           
           return (
             <button
