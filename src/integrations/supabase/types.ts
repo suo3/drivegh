@@ -187,37 +187,49 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          current_lat: number | null
+          current_lng: number | null
           email: string | null
           full_name: string
           id: string
           is_available: boolean
           location: string | null
+          location_updated_at: string | null
           phone_number: string | null
           updated_at: string | null
+          years_experience: number | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
           email?: string | null
           full_name: string
           id: string
           is_available?: boolean
           location?: string | null
+          location_updated_at?: string | null
           phone_number?: string | null
           updated_at?: string | null
+          years_experience?: number | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
           email?: string | null
           full_name?: string
           id?: string
           is_available?: boolean
           location?: string | null
+          location_updated_at?: string | null
           phone_number?: string | null
           updated_at?: string | null
+          years_experience?: number | null
         }
         Relationships: []
       }
@@ -534,6 +546,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_closest_provider: {
+        Args: { customer_lat: number; customer_lng: number }
+        Returns: {
+          distance_km: number
+          full_name: string
+          provider_id: string
+        }[]
+      }
+      find_nearby_providers: {
+        Args: {
+          customer_lat: number
+          customer_lng: number
+          radius_km?: number
+          service_type_param?: string
+        }
+        Returns: {
+          avatar_url: string
+          avg_rating: number
+          current_lat: number
+          current_lng: number
+          distance_km: number
+          full_name: string
+          is_available: boolean
+          phone_number: string
+          provider_id: string
+          total_reviews: number
+          years_experience: number
+        }[]
+      }
       generate_tracking_code: { Args: never; Returns: string }
       has_role: {
         Args: {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Phone, MapPin, CheckCircle2, AlertCircle, Car, Fuel, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ProviderSelectionStep } from '@/components/ProviderSelectionStep';
 
 const MobileServiceRequest = () => {
   const { user } = useAuth();
@@ -35,8 +36,10 @@ const MobileServiceRequest = () => {
   const [customerLat, setCustomerLat] = useState<number | null>(null);
   const [customerLng, setCustomerLng] = useState<number | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [autoAssignedProviderId, setAutoAssignedProviderId] = useState<string | null>(null);
 
-  const totalSteps = 4;
+  const totalSteps = 5; // Added provider selection step
 
   useEffect(() => {
     fetchServices();
@@ -96,10 +99,21 @@ const MobileServiceRequest = () => {
           return false;
         }
         return true;
+      case 4:
+        // Provider selection step - must have a provider selected or auto-assigned
+        if (!selectedProviderId && !autoAssignedProviderId) {
+          toast.error('Please select a provider or wait for auto-assignment');
+          return false;
+        }
+        return true;
       default:
         return true;
     }
   };
+
+  const handleAutoAssign = useCallback((providerId: string | null) => {
+    setAutoAssignedProviderId(providerId);
+  }, []);
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
@@ -158,6 +172,8 @@ const MobileServiceRequest = () => {
     
     setLoading(true);
 
+    const assignedProviderId = selectedProviderId || autoAssignedProviderId;
+
     try {
       const { data, error } = await supabase.from('service_requests').insert([{
         customer_id: user?.id || null,
@@ -173,7 +189,9 @@ const MobileServiceRequest = () => {
         customer_lng: customerLng,
         fuel_type: serviceType === 'fuel_delivery' ? (fuelType === 'other' ? customFuelType : fuelType) : null,
         fuel_amount: serviceType === 'fuel_delivery' && fuelAmount ? parseFloat(fuelAmount) : null,
-        status: 'pending' as const,
+        status: assignedProviderId ? 'assigned' as const : 'pending' as const,
+        provider_id: assignedProviderId || null,
+        assigned_at: assignedProviderId ? new Date().toISOString() : null,
       }]).select().single();
 
       if (error) {
@@ -201,7 +219,8 @@ const MobileServiceRequest = () => {
     { id: 1, title: 'Service' },
     { id: 2, title: 'Location' },
     { id: 3, title: 'Vehicle' },
-    { id: 4, title: 'Review' },
+    { id: 4, title: 'Provider' },
+    { id: 5, title: 'Review' },
   ];
 
   return (
@@ -237,7 +256,7 @@ const MobileServiceRequest = () => {
                       <span className="font-semibold">{step.id}</span>
                     )}
                   </div>
-                  {step.id < 4 && (
+                  {step.id < 5 && (
                     <div className={`flex-1 h-1 mx-1 transition-all ${
                       currentStep > step.id ? 'bg-primary' : 'bg-muted-foreground/20'
                     }`} />
@@ -437,8 +456,19 @@ const MobileServiceRequest = () => {
                 </div>
               )}
 
-              {/* Step 4: Review & Submit */}
+              {/* Step 4: Provider Selection */}
               {currentStep === 4 && (
+                <ProviderSelectionStep
+                  customerLat={customerLat}
+                  customerLng={customerLng}
+                  selectedProviderId={selectedProviderId}
+                  onProviderSelect={setSelectedProviderId}
+                  onAutoAssign={handleAutoAssign}
+                />
+              )}
+
+              {/* Step 5: Review & Submit */}
+              {currentStep === 5 && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="space-y-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
                     <h3 className="text-sm font-bold flex items-center gap-2">
@@ -463,6 +493,12 @@ const MobileServiceRequest = () => {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Vehicle:</span>
                         <span className="font-semibold">{vehicleMake} {vehicleModel}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Provider:</span>
+                        <span className="font-semibold text-primary">
+                          {selectedProviderId ? 'Selected' : autoAssignedProviderId ? 'Auto-assigned' : 'Pending'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -570,6 +606,8 @@ const MobileServiceRequest = () => {
                 setPhoneNumber('');
                 setFuelType('');
                 setFuelAmount('');
+                setSelectedProviderId(null);
+                setAutoAssignedProviderId(null);
               }}
               className="w-full"
             >

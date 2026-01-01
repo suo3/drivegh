@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel, Wifi, WifiOff } from 'lucide-react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useProviderLocation } from '@/hooks/useProviderLocation';
+import { useProviderAvailability } from '@/hooks/useProviderAvailability';
 
 const ProviderDashboard = () => {
   const { user, signOut } = useAuth();
@@ -24,6 +26,9 @@ const ProviderDashboard = () => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
   const [updatingLocation, setUpdatingLocation] = useState<string | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+
+  // Provider availability management
+  const { isAvailable, isUpdating, toggleAvailability } = useProviderAvailability({ userId: user?.id });
 
   // Track active request (en_route or in_progress)
   useEffect(() => {
@@ -253,14 +258,29 @@ const ProviderDashboard = () => {
                 Manage your jobs, track earnings, and deliver excellent service
               </p>
             </div>
-            <Button 
-              onClick={handleSignOut} 
-              variant="outline" 
-              size="lg"
-              className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-primary transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${
+                isAvailable 
+                  ? 'bg-green-500/20 border-green-500/50 text-green-100' 
+                  : 'bg-red-500/20 border-red-500/50 text-red-100'
+              }`}>
+                {isAvailable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+                <span className="text-sm font-medium">{isAvailable ? 'Online' : 'Offline'}</span>
+                <Switch
+                  checked={isAvailable}
+                  onCheckedChange={toggleAvailability}
+                  disabled={isUpdating}
+                />
+              </div>
+              <Button 
+                onClick={handleSignOut} 
+                variant="outline" 
+                size="lg"
+                className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-primary transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </section>
