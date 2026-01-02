@@ -49,7 +49,7 @@ const GetHelp = () => {
               <p className="text-muted-foreground mb-6">
                 Submit a service request and track your rescue team - no account required
               </p>
-              <Button onClick={() => navigate('/request-service')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={() => navigate('/')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                 Request Service Now
               </Button>
             </div>
@@ -92,7 +92,7 @@ const GetHelp = () => {
                 <Button onClick={() => window.location.href = 'tel:+233202222244'} size="lg" variant="outline" className="bg-white text-primary hover:bg-gray-100">
                   Call Now
                 </Button>
-                <Button onClick={() => navigate('/request-service')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button onClick={() => navigate('/')} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                   Request Service
                 </Button>
               </div>

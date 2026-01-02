@@ -65,7 +65,7 @@ const Footer = () => {
               {services.map((service) => (
                 <button
                   key={service.id}
-                  onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                  onClick={() => navigate('/')}
                   className="block py-1.5 hover:text-white transition-colors text-left w-full"
                 >
                   {service.name}
@@ -86,7 +86,7 @@ const Footer = () => {
               {['Accra', 'Kumasi', 'Tamale', 'Takoradi', 'Cape Coast'].map((city) => (
                 <button 
                   key={city}
-                  onClick={() => navigate('/request-service')} 
+                  onClick={() => navigate('/')} 
                   className="block py-1.5 hover:text-white transition-colors text-left w-full"
                 >
                   {city}
@@ -147,7 +147,7 @@ const Footer = () => {
               {services.map((service) => (
                 <li key={service.id}>
                   <button
-                    onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                    onClick={() => navigate('/')}
                     className="hover:text-white transition-colors text-left"
                   >
                     {service.name}
@@ -161,27 +161,27 @@ const Footer = () => {
             <h3 className="font-bold text-lg mb-4">POPULAR CITIES</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                <button onClick={() => navigate('/')} className="hover:text-white transition-colors text-left">
                   Accra
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                <button onClick={() => navigate('/')} className="hover:text-white transition-colors text-left">
                   Kumasi
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                <button onClick={() => navigate('/')} className="hover:text-white transition-colors text-left">
                   Tamale
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                <button onClick={() => navigate('/')} className="hover:text-white transition-colors text-left">
                   Takoradi
                 </button>
               </li>
               <li>
-                <button onClick={() => navigate('/request-service')} className="hover:text-white transition-colors text-left">
+                <button onClick={() => navigate('/')} className="hover:text-white transition-colors text-left">
                   Cape Coast
                 </button>
               </li>

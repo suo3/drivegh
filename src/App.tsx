@@ -11,7 +11,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import RequestService from "./pages/RequestService";
+
 import GetHelp from "./pages/GetHelp";
 import AboutUs from "./pages/AboutUs";
 import Partnership from "./pages/Partnership";
@@ -44,7 +44,8 @@ const App = () => (
               <Route index element={<Navigate to="requests" replace />} />
               <Route path=":view" element={null} />
             </Route>
-            <Route path="/request-service" element={<RequestService />} />
+            {/* Redirect old /request-service to homepage */}
+            <Route path="/request-service" element={<Navigate to="/" replace />} />
             <Route path="/get-help" element={<GetHelp />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/partnership" element={<Partnership />} />

@@ -791,7 +791,7 @@ const Dashboard = () => {
               {/* Mobile: Single CTA button at top */}
               <div className="lg:hidden">
                 <Button 
-                  onClick={() => navigate('/request-service')}
+                  onClick={() => navigate('/')}
                   className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
                   size="lg"
                 >
@@ -802,7 +802,7 @@ const Dashboard = () => {
               {/* Desktop: Stats and CTA */}
               <div className="hidden lg:flex justify-end">
                 <Button 
-                  onClick={() => navigate('/request-service')}
+                  onClick={() => navigate('/')}
                   className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
                   size="lg"
                 >

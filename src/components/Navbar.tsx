@@ -64,7 +64,7 @@ const Navbar = () => {
                 return (
                   <DropdownMenuItem
                     key={service.id}
-                    onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                    onClick={() => navigate('/')}
                     className="cursor-pointer"
                   >
                     <Icon className="h-4 w-4 mr-2" />
@@ -115,7 +115,7 @@ const Navbar = () => {
               Login
             </Button>
           )}
-          <Button onClick={() => navigate('/request-service')} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button onClick={() => navigate('/')} className="bg-accent text-accent-foreground hover:bg-accent/90">
             Get Help
           </Button>
         </div>

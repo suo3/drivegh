@@ -219,7 +219,7 @@ const CustomerDashboard = () => {
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Refresh
                     </Button>
-                    <Button onClick={() => navigate('/request-service')} size="sm" className="shadow-md hover:shadow-lg transition-shadow">
+                    <Button onClick={() => navigate('/')} size="sm" className="shadow-md hover:shadow-lg transition-shadow">
                       New Request
                     </Button>
                   </div>
@@ -230,7 +230,7 @@ const CustomerDashboard = () => {
                   <div className="text-center py-12">
                     <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground mb-4">No service requests yet</p>
-                    <Button onClick={() => navigate('/request-service')}>
+                    <Button onClick={() => navigate('/')}>
                       Request Service Now
                     </Button>
                   </div>
