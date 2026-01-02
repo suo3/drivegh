@@ -11,6 +11,7 @@ import heroTaxi from '@/assets/hero-taxi.png';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import MobileServiceRequest from '@/components/MobileServiceRequest';
+import DesktopServiceRequest from '@/components/DesktopServiceRequest';
 const Index = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
@@ -307,7 +308,10 @@ const Index = () => {
             
             <div className="hidden lg:flex flex-wrap gap-3">
               <Button 
-                onClick={() => navigate('/request-service')} 
+                onClick={() => {
+                  const section = document.getElementById('service-request');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }} 
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
               >
                 Request Help Now
@@ -327,6 +331,11 @@ const Index = () => {
       {/* Mobile Service Request Form - Only visible on mobile */}
       <div id="mobile-service-form" className="lg:hidden">
         <MobileServiceRequest />
+      </div>
+
+      {/* Desktop Service Request Form - Only visible on desktop */}
+      <div className="hidden lg:block">
+        <DesktopServiceRequest />
       </div>
 
       {/* Services Section - Hidden on mobile, visible on desktop */}
@@ -355,7 +364,10 @@ const Index = () => {
                   key={service.id} 
                   className="p-3 lg:p-6 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => navigate(`/request-service?service=${service.slug}`)}
+                  onClick={() => {
+                    const section = document.getElementById('service-request');
+                    section?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                 >
                   <div className="flex items-start gap-3 lg:gap-4">
                     <div className="bg-primary/10 rounded-lg lg:rounded-xl w-10 h-10 lg:w-14 lg:h-14 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300">
@@ -489,7 +501,10 @@ const Index = () => {
               </div>
               
               <Button 
-                onClick={() => navigate('/request-service')}
+                onClick={() => {
+                  const section = document.getElementById('service-request');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 size="lg"
                 className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 font-semibold lg:text-lg px-6 lg:px-8 shadow-xl"
               >
@@ -628,7 +643,10 @@ const Index = () => {
             {cities.map((city, index) => (
               <div 
                 key={city.id} 
-                onClick={() => navigate('/request-service')}
+                onClick={() => {
+                  const section = document.getElementById('service-request');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="flex items-center gap-3 p-5 border-2 rounded-2xl hover:border-primary transition-all cursor-pointer group hover-lift bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >

@@ -232,7 +232,7 @@ const Billing = () => {
                         Your transaction history will appear here once you complete a service request.
                       </p>
                       <Button 
-                        onClick={() => navigate('/request-service')} 
+                        onClick={() => navigate('/')} 
                         size="lg"
                         className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold"
                       >
