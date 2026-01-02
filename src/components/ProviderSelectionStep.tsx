@@ -100,12 +100,15 @@ export function ProviderSelectionStep({
         )}
 
         {!closestProvider && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              No providers are currently available. Please try again later or call our emergency line.
-            </AlertDescription>
-          </Alert>
+          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+              <span className="font-semibold text-sm">Finding Provider</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              We'll automatically assign the best available provider to your request.
+            </p>
+          </div>
         )}
       </div>
     );
