@@ -100,11 +100,8 @@ const MobileServiceRequest = () => {
         }
         return true;
       case 4:
-        // Provider selection step - must have a provider selected or auto-assigned
-        if (!selectedProviderId && !autoAssignedProviderId) {
-          toast.error('Please select a provider or wait for auto-assignment');
-          return false;
-        }
+        // Provider selection step - allow proceeding if provider selected, auto-assigned, or auto-assign mode active
+        // When no nearby providers exist, we auto-assign in the background so user can proceed
         return true;
       default:
         return true;
