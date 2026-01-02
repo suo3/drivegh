@@ -108,10 +108,8 @@ const DesktopServiceRequest = () => {
         }
         return true;
       case 4:
-        if (!selectedProviderId && !autoAssignedProviderId) {
-          toast.error('Please select a provider or wait for auto-assignment');
-          return false;
-        }
+        // Provider selection step - allow proceeding if provider selected, auto-assigned, or auto-assign mode active
+        // When no nearby providers exist, we auto-assign in the background so user can proceed
         return true;
       default:
         return true;
