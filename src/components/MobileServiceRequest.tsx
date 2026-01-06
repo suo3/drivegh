@@ -194,6 +194,22 @@ const MobileServiceRequest = () => {
       if (error) {
         toast.error('Failed to create service request. Please try again.');
       } else {
+        // If no provider was assigned, auto-assign the closest one in the background
+        if (!assignedProviderId && customerLat && customerLng) {
+          supabase.rpc('find_closest_provider', {
+            customer_lat: customerLat,
+            customer_lng: customerLng,
+          }).then(({ data: closestData }) => {
+            if (closestData && closestData.length > 0) {
+              supabase.from('service_requests').update({
+                provider_id: closestData[0].provider_id,
+                status: 'assigned',
+                assigned_at: new Date().toISOString(),
+              }).eq('id', data.id);
+            }
+          });
+        }
+        
         setCreatedRequestId(data.tracking_code || data.id);
         setSuccessDialogOpen(true);
         toast.success('Service request submitted successfully!');
