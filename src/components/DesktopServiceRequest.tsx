@@ -612,7 +612,15 @@ const DesktopServiceRequest = () => {
       </div>
 
       {/* Success Dialog */}
-      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+      <Dialog 
+        open={successDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open && createdRequestId) {
+            navigate(`/track-rescue?code=${createdRequestId}`);
+          }
+          setSuccessDialogOpen(open);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
