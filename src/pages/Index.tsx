@@ -338,53 +338,6 @@ const Index = () => {
         <DesktopServiceRequest />
       </div>
 
-      {/* Services Section - Hidden on mobile, visible on desktop */}
-      {sections.services && (
-      <section id="services" className="hidden lg:block py-12 lg:py-24 bg-[hsl(var(--section-bg))] relative">
-        {/* Decorative elements */}
-        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-8 lg:mb-16 animate-fade-in">
-            <div className="inline-block px-3 py-1.5 lg:px-4 lg:py-2 bg-primary/10 text-primary rounded-full text-xs lg:text-sm font-semibold mb-3 lg:mb-4">
-              Our Services
-            </div>
-            <h2 className="text-2xl lg:text-4xl xl:text-5xl font-bold mb-2 lg:mb-4">Complete Roadside Assistance</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-sm lg:text-lg px-4">
-              Professional help for any roadside emergency. Ready 24/7 across Ghana.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-6">
-            {services.map((service, index) => {
-              const Icon = getIconComponent(service.icon);
-              return (
-                <Card 
-                  key={service.id} 
-                  className="p-3 lg:p-6 hover-lift cursor-pointer group border-2 hover:border-primary/20 bg-gradient-to-br from-white to-gray-50/50 animate-scale-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => {
-                    const section = document.getElementById('service-request');
-                    section?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  <div className="flex items-start gap-3 lg:gap-4">
-                    <div className="bg-primary/10 rounded-lg lg:rounded-xl w-10 h-10 lg:w-14 lg:h-14 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="h-5 w-5 lg:h-7 lg:w-7 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm lg:text-lg font-bold mb-1 lg:mb-2 group-hover:text-primary transition-colors">{service.name}</h3>
-                      <p className="text-muted-foreground leading-relaxed text-xs lg:text-sm line-clamp-2">{service.description}</p>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      )}
 
       {/* How It Works Section - Horizontal scroll on mobile */}
       {sections.how_it_works && (
