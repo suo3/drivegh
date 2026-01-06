@@ -39,14 +39,17 @@ export function ProviderSelectionStep({
     }
   }, [loading, hasNearbyProviders, closestProvider, autoAssignTriggered, onAutoAssign]);
 
+  // No GPS coordinates - show message and let user proceed
   if (!customerLat || !customerLng) {
     return (
-      <Alert variant="destructive" className="animate-fade-in">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          GPS location is required to find nearby providers. Please go back and enable location services.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-4 animate-fade-in">
+        <Alert className="bg-primary/5 border-primary/20">
+          <MapPin className="h-4 w-4 text-primary" />
+          <AlertDescription>
+            Location not available. Submit your request and we'll assign a provider automatically.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
