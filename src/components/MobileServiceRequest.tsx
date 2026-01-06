@@ -580,7 +580,15 @@ const MobileServiceRequest = () => {
       </div>
 
       {/* Success Dialog */}
-      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+      <Dialog 
+        open={successDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open && createdRequestId) {
+            navigate(`/track-rescue?code=${createdRequestId}`);
+          }
+          setSuccessDialogOpen(open);
+        }}
+      >
         <DialogContent className="max-w-sm mx-auto">
           <DialogHeader>
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
