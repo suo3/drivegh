@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, MapPin, AlertCircle, Users, Zap } from 'lucide-react';
 import { useNearbyProviders } from '@/hooks/useNearbyProviders';
 import { ProviderCard } from '@/components/ProviderCard';
+import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,13 +53,18 @@ export function ProviderSelectionStep({
   if (loading) {
     return (
       <div className="space-y-3 animate-fade-in">
-        <div className="flex items-center gap-2">
+        <ProviderSelectionMap
+          customerLat={customerLat}
+          customerLng={customerLng}
+          providers={[]}
+          selectedProviderId={null}
+          onProviderSelect={() => {}}
+          isSearching={true}
+        />
+        <div className="flex items-center gap-2 justify-center py-2">
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <span className="text-sm text-muted-foreground">Finding nearby providers...</span>
         </div>
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-lg" />
-        ))}
       </div>
     );
   }
@@ -76,9 +82,18 @@ export function ProviderSelectionStep({
   if (!hasNearbyProviders) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <Alert className="bg-amber-50 border-amber-200">
+        <ProviderSelectionMap
+          customerLat={customerLat}
+          customerLng={customerLng}
+          providers={[]}
+          selectedProviderId={null}
+          onProviderSelect={() => {}}
+          isSearching={false}
+        />
+        
+        <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
           <Zap className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800">
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
             No providers within 5km. We'll automatically assign the closest available provider.
           </AlertDescription>
         </Alert>
@@ -117,15 +132,23 @@ export function ProviderSelectionStep({
   // Show nearby providers for selection
   return (
     <div className="space-y-3 animate-fade-in">
+      <ProviderSelectionMap
+        customerLat={customerLat}
+        customerLng={customerLng}
+        providers={providers}
+        selectedProviderId={selectedProviderId}
+        onProviderSelect={(id) => onProviderSelect(id)}
+      />
+      
       <Label className="text-sm font-bold flex items-center gap-2">
         <Users className="h-4 w-4 text-primary" />
         Choose a Provider ({providers.length} nearby)
       </Label>
       <p className="text-xs text-muted-foreground">
-        Select a provider within 5km of your location
+        Tap a provider on the map or select from the list below
       </p>
 
-      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+      <div className="space-y-2 max-h-[200px] overflow-y-auto">
         {providers.map((provider) => (
           <ProviderCard
             key={provider.provider_id}
