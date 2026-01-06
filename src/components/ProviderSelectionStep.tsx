@@ -78,7 +78,7 @@ export function ProviderSelectionStep({
     );
   }
 
-  // No nearby providers - auto-assign mode
+  // No nearby providers - show simple message and let user proceed
   if (!hasNearbyProviders) {
     return (
       <div className="space-y-4 animate-fade-in">
@@ -91,40 +91,12 @@ export function ProviderSelectionStep({
           isSearching={false}
         />
         
-        <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
-          <Zap className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            No providers within 5km. We'll automatically assign the closest available provider.
+        <Alert className="bg-primary/5 border-primary/20">
+          <Zap className="h-4 w-4 text-primary" />
+          <AlertDescription>
+            No providers nearby right now. Submit your request and we'll assign one automatically.
           </AlertDescription>
         </Alert>
-
-        {closestProvider && (
-          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-sm">Closest Provider</span>
-            </div>
-            <p className="text-sm">
-              <span className="font-medium">{closestProvider.full_name}</span> is{' '}
-              <span className="text-primary font-semibold">
-                {closestProvider.distance_km.toFixed(1)}km
-              </span>{' '}
-              away and will be assigned to your request.
-            </p>
-          </div>
-        )}
-
-        {!closestProvider && (
-          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Loader2 className="h-4 w-4 text-primary animate-spin" />
-              <span className="font-semibold text-sm">Finding Provider</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              We'll automatically assign the best available provider to your request.
-            </p>
-          </div>
-        )}
       </div>
     );
   }
