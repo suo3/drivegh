@@ -213,7 +213,9 @@ const DesktopServiceRequest = () => {
                 provider_id: closestData[0].provider_id,
                 status: 'assigned',
                 assigned_at: new Date().toISOString(),
-              }).eq('id', data.id);
+              }).eq('id', data.id).then(() => {
+                toast.success('A provider has been assigned to your request. Help is on the way!');
+              });
             }
           });
         }
