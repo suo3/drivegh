@@ -36,25 +36,50 @@ const customerIcon = new DivIcon({
   iconAnchor: [12, 12],
 });
 
-// Provider icon (car/vehicle style)
-const createProviderIcon = (isSelected: boolean, isAvailable: boolean) => new DivIcon({
-  className: 'provider-marker',
-  html: `
-    <div class="relative transition-transform ${isSelected ? 'scale-125' : ''}" style="width: 40px; height: 40px;">
-      <div class="absolute inset-0 flex items-center justify-center">
-        <div class="${isSelected ? 'bg-primary' : isAvailable ? 'bg-blue-600' : 'bg-gray-400'} rounded-full p-2 shadow-lg border-2 border-white transition-all ${isSelected ? 'ring-4 ring-primary/30' : ''}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8c-.1.2-.1.4-.1.6v4c0 .6.4 1 1 1h2"/>
-            <circle cx="7" cy="17" r="2"/>
-            <circle cx="17" cy="17" r="2"/>
-          </svg>
+// Calculate ETA in minutes based on distance (assumes 30 km/h average speed in urban traffic)
+const calculateETA = (distanceKm: number): number => {
+  const avgSpeedKmH = 30;
+  return Math.ceil((distanceKm / avgSpeedKmH) * 60);
+};
+
+// Format ETA for display
+const formatETA = (minutes: number): string => {
+  if (minutes < 1) return '<1 min';
+  if (minutes >= 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  return `${minutes} min`;
+};
+
+// Provider icon with ETA badge (car/vehicle style)
+const createProviderIcon = (isSelected: boolean, isAvailable: boolean, distanceKm: number) => {
+  const eta = calculateETA(distanceKm);
+  const etaText = formatETA(eta);
+  
+  return new DivIcon({
+    className: 'provider-marker',
+    html: `
+      <div class="relative" style="width: 48px; height: 56px;">
+        <!-- ETA Badge -->
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 bg-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md border border-gray-200 whitespace-nowrap z-10" style="font-size: 10px; color: ${isSelected ? 'hsl(142, 76%, 36%)' : '#2563eb'};">
+          ${etaText}
+        </div>
+        <!-- Car Icon -->
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 transition-transform ${isSelected ? 'scale-110' : ''}" style="width: 40px; height: 40px;">
+          <div class="flex items-center justify-center h-full">
+            <div class="${isSelected ? 'bg-primary' : isAvailable ? 'bg-blue-600' : 'bg-gray-400'} rounded-full p-2 shadow-lg border-2 border-white transition-all ${isSelected ? 'ring-4 ring-primary/30' : ''}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8c-.1.2-.1.4-.1.6v4c0 .6.4 1 1 1h2"/>
+                <circle cx="7" cy="17" r="2"/>
+                <circle cx="17" cy="17" r="2"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  `,
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
+    `,
+    iconSize: [48, 56],
+    iconAnchor: [24, 56],
+  });
+};
 
 function MapBoundsUpdater({ customerLat, customerLng, providers }: {
   customerLat: number;
@@ -142,7 +167,8 @@ export function ProviderSelectionMap({
             position={[provider.current_lat, provider.current_lng]}
             icon={createProviderIcon(
               selectedProviderId === provider.provider_id,
-              provider.is_available
+              provider.is_available,
+              provider.distance_km
             )}
             eventHandlers={{
               click: () => onProviderSelect(provider.provider_id),
