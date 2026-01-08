@@ -18,26 +18,63 @@ let DefaultIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-// Create provider icon with optional pulsing animation
+// Create provider icon - animated car when moving, static marker when stopped
 const createProviderIcon = (isMoving: boolean) => {
-  const pulseAnimation = isMoving ? `
-    <style>
-      @keyframes pulse-ring {
-        0% { transform: scale(0.8); opacity: 1; }
-        100% { transform: scale(2); opacity: 0; }
-      }
-      .pulse-ring {
-        animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-      }
-    </style>
-    <circle class="pulse-ring" cx="20" cy="20" r="12" fill="#3b82f6" opacity="0.4"/>
-    <circle class="pulse-ring" style="animation-delay: 0.5s" cx="20" cy="20" r="12" fill="#3b82f6" opacity="0.3"/>
-  ` : '';
+  if (isMoving) {
+    // Animated moving car icon
+    return new DivIcon({
+      html: `
+        <div style="position: relative; width: 50px; height: 50px;">
+          <style>
+            @keyframes pulse-ring {
+              0% { transform: scale(0.8); opacity: 0.8; }
+              100% { transform: scale(2.2); opacity: 0; }
+            }
+            @keyframes car-bounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-2px); }
+            }
+            .pulse-ring-1 { animation: pulse-ring 1.5s ease-out infinite; }
+            .pulse-ring-2 { animation: pulse-ring 1.5s ease-out 0.5s infinite; }
+            .car-animate { animation: car-bounce 0.5s ease-in-out infinite; }
+          </style>
+          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
+            <!-- Pulse rings -->
+            <circle class="pulse-ring-1" cx="25" cy="25" r="12" fill="#3b82f6" opacity="0.4"/>
+            <circle class="pulse-ring-2" cx="25" cy="25" r="12" fill="#3b82f6" opacity="0.3"/>
+            <!-- Car body -->
+            <g class="car-animate">
+              <!-- Shadow -->
+              <ellipse cx="25" cy="38" rx="10" ry="3" fill="rgba(0,0,0,0.2)"/>
+              <!-- Car base -->
+              <rect x="12" y="22" width="26" height="12" rx="3" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
+              <!-- Car top -->
+              <path d="M16 22 L19 14 L31 14 L34 22" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
+              <!-- Windows -->
+              <path d="M18 21 L20 15 L25 15 L25 21 Z" fill="#60a5fa"/>
+              <path d="M26 21 L26 15 L30 15 L32 21 Z" fill="#60a5fa"/>
+              <!-- Headlights -->
+              <rect x="35" y="25" width="3" height="3" rx="1" fill="#fbbf24"/>
+              <rect x="12" y="25" width="3" height="3" rx="1" fill="#fbbf24"/>
+              <!-- Wheels -->
+              <circle cx="18" cy="34" r="4" fill="#1e293b" stroke="white" stroke-width="1"/>
+              <circle cx="32" cy="34" r="4" fill="#1e293b" stroke="white" stroke-width="1"/>
+              <circle cx="18" cy="34" r="1.5" fill="#94a3b8"/>
+              <circle cx="32" cy="34" r="1.5" fill="#94a3b8"/>
+            </g>
+          </svg>
+        </div>
+      `,
+      className: 'provider-car-icon',
+      iconSize: [50, 50],
+      iconAnchor: [25, 35],
+    });
+  }
 
+  // Static marker when not moving
   return new DivIcon({
     html: `
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-        ${pulseAnimation}
         <circle cx="20" cy="20" r="12" fill="#3b82f6" stroke="white" stroke-width="2"/>
         <path d="M14 20l4 4 8-8" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
