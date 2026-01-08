@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Mail, Lock, User, Phone, ArrowRight, CheckCircle } from 'lucide-react';
@@ -24,7 +24,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [role, setRole] = useState('customer');
+  
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user, userRole } = useAuth();
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await signUp(email, password, fullName, phoneNumber, role);
+        const { error } = await signUp(email, password, fullName, phoneNumber, 'customer');
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered');
@@ -183,18 +183,6 @@ const Auth = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="role" className="text-sm font-medium">I am a</Label>
-                    <Select value={role} onValueChange={setRole}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="customer">Customer</SelectItem>
-                        <SelectItem value="provider">Service Provider</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </>
               )}
               
