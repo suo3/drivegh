@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Navigation, User } from 'lucide-react';
-import { calculateDistance, formatDistance } from '@/lib/distance';
+import { Navigation, TrendingDown, Gauge } from 'lucide-react';
+import { formatDistance } from '@/lib/distance';
 import { Card } from './ui/card';
+import { useProviderETA } from '@/hooks/useProviderETA';
 
 // Fix for default marker icons in Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -74,6 +75,17 @@ function MapUpdater({ customerLat, customerLng, providerLat, providerLng }: {
   return null;
 }
 
+// Format ETA for display
+const formatETA = (minutes: number | null): string => {
+  if (minutes === null) return 'Calculating...';
+  if (minutes < 1) return 'Less than 1 minute';
+  if (minutes === 1) return '1 minute';
+  if (minutes < 60) return `${Math.round(minutes)} minutes`;
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return `${hours}h ${mins}m`;
+};
+
 export function LiveTrackingMap({
   customerLat,
   customerLng,
@@ -83,53 +95,45 @@ export function LiveTrackingMap({
   providerName = "Provider",
   showETA = true
 }: LiveTrackingMapProps) {
-  const [eta, setEta] = useState<string | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (providerLat && providerLng) {
-      const dist = calculateDistance(customerLat, customerLng, providerLat, providerLng);
-      setDistance(dist);
-
-      // Calculate ETA assuming average speed of 40 km/h in city traffic
-      const averageSpeed = 40; // km/h
-      const timeInHours = dist / averageSpeed;
-      const timeInMinutes = Math.round(timeInHours * 60);
-      
-      if (timeInMinutes < 1) {
-        setEta('Less than 1 minute');
-      } else if (timeInMinutes === 1) {
-        setEta('1 minute');
-      } else if (timeInMinutes < 60) {
-        setEta(`${timeInMinutes} minutes`);
-      } else {
-        const hours = Math.floor(timeInMinutes / 60);
-        const mins = timeInMinutes % 60;
-        setEta(`${hours}h ${mins}m`);
-      }
-    } else {
-      setDistance(null);
-      setEta(null);
-    }
-  }, [customerLat, customerLng, providerLat, providerLng]);
+  // Use the dynamic ETA hook for real-time updates
+  const { distance, speed, eta } = useProviderETA({
+    providerLat,
+    providerLng,
+    customerLat,
+    customerLng,
+  });
 
   return (
     <div className="space-y-4">
-      {showETA && distance !== null && eta && (
+      {showETA && distance !== null && (
         <Card className="p-4 bg-primary/5 border-primary/20">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Navigation className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 rounded-full p-2">
+                <Navigation className="h-5 w-5 text-primary" />
+              </div>
               <div>
                 <p className="text-sm font-medium">Provider En Route</p>
                 <p className="text-xs text-muted-foreground">Distance: {formatDistance(distance)}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">{eta}</p>
+              <p className="text-2xl font-bold text-primary">{formatETA(eta)}</p>
               <p className="text-xs text-muted-foreground">Estimated arrival</p>
             </div>
           </div>
+          {speed !== null && (
+            <div className="mt-3 pt-3 border-t border-primary/10 flex items-center gap-2 text-xs text-muted-foreground">
+              <Gauge className="h-3.5 w-3.5" />
+              <span>Current speed: {Math.round(speed)} km/h</span>
+              {eta !== null && eta < 5 && (
+                <span className="ml-auto flex items-center gap-1 text-primary font-medium">
+                  <TrendingDown className="h-3.5 w-3.5" />
+                  Almost there!
+                </span>
+              )}
+            </div>
+          )}
         </Card>
       )}
 
