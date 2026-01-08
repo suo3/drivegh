@@ -18,10 +18,31 @@ let DefaultIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
+// Calculate bearing between two points (in degrees)
+const calculateBearing = (
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number
+): number => {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toDeg = (rad: number) => (rad * 180) / Math.PI;
+
+  const dLng = toRad(toLng - fromLng);
+  const lat1 = toRad(fromLat);
+  const lat2 = toRad(toLat);
+
+  const x = Math.sin(dLng) * Math.cos(lat2);
+  const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+
+  const bearing = toDeg(Math.atan2(x, y));
+  return (bearing + 360) % 360; // Normalize to 0-360
+};
+
 // Create provider icon - animated car when moving, static marker when stopped
-const createProviderIcon = (isMoving: boolean) => {
+const createProviderIcon = (isMoving: boolean, rotation: number = 0) => {
   if (isMoving) {
-    // Animated moving car icon
+    // Animated moving car icon with rotation
     return new DivIcon({
       html: `
         <div style="position: relative; width: 50px; height: 50px;">
@@ -39,35 +60,34 @@ const createProviderIcon = (isMoving: boolean) => {
             .car-animate { animation: car-bounce 0.5s ease-in-out infinite; }
           </style>
           <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
-            <!-- Pulse rings -->
+            <!-- Pulse rings (don't rotate) -->
             <circle class="pulse-ring-1" cx="25" cy="25" r="12" fill="#3b82f6" opacity="0.4"/>
             <circle class="pulse-ring-2" cx="25" cy="25" r="12" fill="#3b82f6" opacity="0.3"/>
-            <!-- Car body -->
-            <g class="car-animate">
-              <!-- Shadow -->
-              <ellipse cx="25" cy="38" rx="10" ry="3" fill="rgba(0,0,0,0.2)"/>
+            <!-- Car body (rotated to face direction) -->
+            <g class="car-animate" transform="rotate(${rotation - 90}, 25, 25)">
               <!-- Car base -->
-              <rect x="12" y="22" width="26" height="12" rx="3" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
+              <rect x="12" y="19" width="26" height="12" rx="3" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
               <!-- Car top -->
-              <path d="M16 22 L19 14 L31 14 L34 22" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
+              <path d="M16 19 L19 11 L31 11 L34 19" fill="#3b82f6" stroke="white" stroke-width="1.5"/>
               <!-- Windows -->
-              <path d="M18 21 L20 15 L25 15 L25 21 Z" fill="#60a5fa"/>
-              <path d="M26 21 L26 15 L30 15 L32 21 Z" fill="#60a5fa"/>
-              <!-- Headlights -->
-              <rect x="35" y="25" width="3" height="3" rx="1" fill="#fbbf24"/>
-              <rect x="12" y="25" width="3" height="3" rx="1" fill="#fbbf24"/>
+              <path d="M18 18 L20 12 L25 12 L25 18 Z" fill="#60a5fa"/>
+              <path d="M26 18 L26 12 L30 12 L32 18 Z" fill="#60a5fa"/>
+              <!-- Front headlights (right side - direction of travel) -->
+              <rect x="36" y="22" width="3" height="3" rx="1" fill="#fbbf24"/>
+              <!-- Rear lights -->
+              <rect x="11" y="22" width="3" height="3" rx="1" fill="#ef4444"/>
               <!-- Wheels -->
-              <circle cx="18" cy="34" r="4" fill="#1e293b" stroke="white" stroke-width="1"/>
-              <circle cx="32" cy="34" r="4" fill="#1e293b" stroke="white" stroke-width="1"/>
-              <circle cx="18" cy="34" r="1.5" fill="#94a3b8"/>
-              <circle cx="32" cy="34" r="1.5" fill="#94a3b8"/>
+              <circle cx="18" cy="31" r="3.5" fill="#1e293b" stroke="white" stroke-width="1"/>
+              <circle cx="32" cy="31" r="3.5" fill="#1e293b" stroke="white" stroke-width="1"/>
+              <circle cx="18" cy="31" r="1.5" fill="#94a3b8"/>
+              <circle cx="32" cy="31" r="1.5" fill="#94a3b8"/>
             </g>
           </svg>
         </div>
       `,
       className: 'provider-car-icon',
       iconSize: [50, 50],
-      iconAnchor: [25, 35],
+      iconAnchor: [25, 25],
     });
   }
 
@@ -159,9 +179,17 @@ export function LiveTrackingMap({
     customerLng,
   });
 
+  // Calculate bearing from provider to customer for car rotation
+  const bearing = useMemo(() => {
+    if (providerLat && providerLng) {
+      return calculateBearing(providerLat, providerLng, customerLat, customerLng);
+    }
+    return 0;
+  }, [providerLat, providerLng, customerLat, customerLng]);
+
   // Create provider icon with pulsing animation when moving
   const isMoving = speed !== null && speed > 0;
-  const providerIcon = useMemo(() => createProviderIcon(isMoving), [isMoving]);
+  const providerIcon = useMemo(() => createProviderIcon(isMoving, bearing), [isMoving, bearing]);
 
   return (
     <div className="space-y-4">
