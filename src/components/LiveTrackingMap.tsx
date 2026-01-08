@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Icon, DivIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -171,6 +171,11 @@ export function LiveTrackingMap({
   providerName = "Provider",
   showETA = true
 }: LiveTrackingMapProps) {
+  // Track provider position history for trail effect
+  const [positionHistory, setPositionHistory] = useState<[number, number][]>([]);
+  const lastPositionRef = useRef<{ lat: number; lng: number } | null>(null);
+  const MAX_TRAIL_POINTS = 15;
+
   // Use the dynamic ETA hook for real-time updates
   const { distance, speed, eta } = useProviderETA({
     providerLat,
@@ -178,6 +183,24 @@ export function LiveTrackingMap({
     customerLat,
     customerLng,
   });
+
+  // Update position history when provider moves
+  useEffect(() => {
+    if (providerLat && providerLng) {
+      const lastPos = lastPositionRef.current;
+      // Only add point if position changed significantly (> 0.0001 degrees ~ 11m)
+      if (!lastPos || 
+          Math.abs(lastPos.lat - providerLat) > 0.0001 || 
+          Math.abs(lastPos.lng - providerLng) > 0.0001) {
+        lastPositionRef.current = { lat: providerLat, lng: providerLng };
+        setPositionHistory(prev => {
+          const newHistory = [...prev, [providerLat, providerLng] as [number, number]];
+          // Keep only the last MAX_TRAIL_POINTS
+          return newHistory.slice(-MAX_TRAIL_POINTS);
+        });
+      }
+    }
+  }, [providerLat, providerLng]);
 
   // Calculate bearing from provider to customer for car rotation
   const bearing = useMemo(() => {
@@ -248,6 +271,27 @@ export function LiveTrackingMap({
 
           {providerLat && providerLng && (
             <>
+              {/* Trail effect showing recent path */}
+              {positionHistory.length >= 2 && positionHistory.map((pos, index) => {
+                if (index === 0) return null;
+                const prevPos = positionHistory[index - 1];
+                const opacity = 0.15 + (index / positionHistory.length) * 0.4;
+                const weight = 2 + (index / positionHistory.length) * 2;
+                return (
+                  <Polyline
+                    key={`trail-${index}`}
+                    positions={[prevPos, pos]}
+                    pathOptions={{
+                      color: '#3b82f6',
+                      weight: weight,
+                      opacity: opacity,
+                      lineCap: 'round',
+                      lineJoin: 'round'
+                    }}
+                  />
+                );
+              })}
+              
               {/* Animated dotted route line between provider and customer */}
               <Polyline
                 positions={[
