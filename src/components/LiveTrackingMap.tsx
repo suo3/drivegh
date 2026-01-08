@@ -220,7 +220,7 @@ export function LiveTrackingMap({
 
           {providerLat && providerLng && (
             <>
-              {/* Dotted route line between provider and customer */}
+              {/* Animated dotted route line between provider and customer */}
               <Polyline
                 positions={[
                   [providerLat, providerLng],
@@ -229,9 +229,10 @@ export function LiveTrackingMap({
                 pathOptions={{
                   color: '#3b82f6',
                   weight: 3,
-                  opacity: 0.7,
-                  dashArray: '10, 10',
-                  lineCap: 'round'
+                  opacity: 0.8,
+                  dashArray: '12, 8',
+                  lineCap: 'round',
+                  className: 'animated-route-line'
                 }}
               />
               <Marker position={[providerLat, providerLng]} icon={providerIcon}>
