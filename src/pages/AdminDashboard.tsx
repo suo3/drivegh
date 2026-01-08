@@ -403,10 +403,10 @@ const AdminDashboard = () => {
                                 <User className="h-4 w-4 text-muted-foreground" />
                                 <span className="font-medium">Customer:</span> {request.profiles?.full_name || 'Guest User'}
                               </div>
-                              {request.phone_number && !request.profiles && (
+                              {(request.profiles?.phone_number || request.phone_number) && (
                                 <div className="flex items-center gap-2 text-sm mt-1">
                                   <Phone className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">Phone:</span> {request.phone_number}
+                                  <span className="font-medium">Phone:</span> {request.profiles?.phone_number || request.phone_number}
                                 </div>
                               )}
                               {request.provider && (

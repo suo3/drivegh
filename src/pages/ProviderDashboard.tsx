@@ -430,25 +430,25 @@ const ProviderDashboard = () => {
                                 </div>
                               </div>
                             </div>
-                            {request.profiles && (
-                              <div className="md:ml-14 space-y-1.5 md:space-y-2">
-                                <div className="flex items-center gap-2 text-xs md:text-sm">
-                                  <User className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                                  <span className="font-medium">Customer:</span> <span className="truncate">{request.profiles?.full_name || 'Guest User'}</span>
-                                </div>
+                            <div className="md:ml-14 space-y-1.5 md:space-y-2">
+                              <div className="flex items-center gap-2 text-xs md:text-sm">
+                                <User className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="font-medium">Customer:</span> <span className="truncate">{request.profiles?.full_name || 'Guest User'}</span>
+                              </div>
+                              {(request.profiles?.phone_number || request.phone_number) && (
                                 <div className="flex items-center gap-2 text-xs md:text-sm">
                                   <Phone className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                                   <span className="font-medium">Phone:</span> <span className="truncate">{request.profiles?.phone_number || request.phone_number}</span>
                                 </div>
-                                {getDistance(request) !== null && (
-                                  <div className="flex items-center gap-2 text-xs md:text-sm">
-                                    <Navigation className="h-3 w-3 md:h-4 md:w-4 text-primary flex-shrink-0" />
-                                    <span className="font-medium text-primary">Distance:</span>
-                                    <span className="text-primary font-semibold">{formatDistance(getDistance(request)!)}</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                              )}
+                              {getDistance(request) !== null && (
+                                <div className="flex items-center gap-2 text-xs md:text-sm">
+                                  <Navigation className="h-3 w-3 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                                  <span className="font-medium text-primary">Distance:</span>
+                                  <span className="text-primary font-semibold">{formatDistance(getDistance(request)!)}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <Badge className="capitalize shadow-sm text-xs flex-shrink-0 ml-2">{request.status.replace('_', ' ')}</Badge>
                         </div>
