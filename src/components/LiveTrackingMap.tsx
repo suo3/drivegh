@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { Icon, DivIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, TrendingDown, Gauge } from 'lucide-react';
 import { formatDistance } from '@/lib/distance';
@@ -18,16 +18,35 @@ let DefaultIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-const providerIcon = new Icon({
-  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10" fill="#3b82f6" stroke="white" stroke-width="2"/>
-      <path d="m8 12 2 2 4-4" stroke="white" stroke-width="2"/>
-    </svg>
-  `),
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
+// Create provider icon with optional pulsing animation
+const createProviderIcon = (isMoving: boolean) => {
+  const pulseAnimation = isMoving ? `
+    <style>
+      @keyframes pulse-ring {
+        0% { transform: scale(0.8); opacity: 1; }
+        100% { transform: scale(2); opacity: 0; }
+      }
+      .pulse-ring {
+        animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+    </style>
+    <circle class="pulse-ring" cx="20" cy="20" r="12" fill="#3b82f6" opacity="0.4"/>
+    <circle class="pulse-ring" style="animation-delay: 0.5s" cx="20" cy="20" r="12" fill="#3b82f6" opacity="0.3"/>
+  ` : '';
+
+  return new DivIcon({
+    html: `
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+        ${pulseAnimation}
+        <circle cx="20" cy="20" r="12" fill="#3b82f6" stroke="white" stroke-width="2"/>
+        <path d="M14 20l4 4 8-8" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `,
+    className: 'provider-marker-icon',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  });
+};
 
 const customerIcon = new Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
@@ -102,6 +121,10 @@ export function LiveTrackingMap({
     customerLat,
     customerLng,
   });
+
+  // Create provider icon with pulsing animation when moving
+  const isMoving = speed !== null && speed > 0;
+  const providerIcon = useMemo(() => createProviderIcon(isMoving), [isMoving]);
 
   return (
     <div className="space-y-4">
