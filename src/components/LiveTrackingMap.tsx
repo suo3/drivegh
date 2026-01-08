@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Icon, DivIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, TrendingDown, Gauge } from 'lucide-react';
@@ -219,15 +219,31 @@ export function LiveTrackingMap({
           </Marker>
 
           {providerLat && providerLng && (
-            <Marker position={[providerLat, providerLng]} icon={providerIcon}>
-              <Popup>
-                <div className="text-center">
-                  <p className="font-semibold">{providerName}</p>
-                  <p className="text-xs text-muted-foreground">Provider Location</p>
-                  {distance && <p className="text-xs mt-1">{formatDistance(distance)} away</p>}
-                </div>
-              </Popup>
-            </Marker>
+            <>
+              {/* Dotted route line between provider and customer */}
+              <Polyline
+                positions={[
+                  [providerLat, providerLng],
+                  [customerLat, customerLng]
+                ]}
+                pathOptions={{
+                  color: '#3b82f6',
+                  weight: 3,
+                  opacity: 0.7,
+                  dashArray: '10, 10',
+                  lineCap: 'round'
+                }}
+              />
+              <Marker position={[providerLat, providerLng]} icon={providerIcon}>
+                <Popup>
+                  <div className="text-center">
+                    <p className="font-semibold">{providerName}</p>
+                    <p className="text-xs text-muted-foreground">Provider Location</p>
+                    {distance && <p className="text-xs mt-1">{formatDistance(distance)} away</p>}
+                  </div>
+                </Popup>
+              </Marker>
+            </>
           )}
 
           <MapUpdater 
