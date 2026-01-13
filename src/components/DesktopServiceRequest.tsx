@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 import { Phone, MapPin, CheckCircle2, Car, Fuel, ArrowRight, ArrowLeft, Wrench } from 'lucide-react';
 import { ProviderSelectionStep } from '@/components/ProviderSelectionStep';
+import { geocodeAddress } from '@/lib/geocode';
 
 const DesktopServiceRequest = () => {
   const { user } = useAuth();
@@ -120,8 +121,19 @@ const DesktopServiceRequest = () => {
     setAutoAssignedProviderId(providerId);
   }, []);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateStep(currentStep)) {
+      // Geocode address if moving from Location step and no GPS coordinates
+      if (currentStep === 2 && !customerLat && !customerLng && location.trim()) {
+        setGettingLocation(true);
+        const coords = await geocodeAddress(location.trim());
+        if (coords) {
+          setCustomerLat(coords.lat);
+          setCustomerLng(coords.lng);
+          toast.success('Location coordinates found');
+        }
+        setGettingLocation(false);
+      }
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
   };
