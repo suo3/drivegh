@@ -494,6 +494,22 @@ const RequestDetails = () => {
                 </div>
               </div>
 
+              {/* Customer Contact */}
+              {request.phone_number && (
+                <div className="flex items-start gap-4">
+                  <Phone className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg">Customer Contact</p>
+                    <a 
+                      href={`tel:${request.phone_number}`}
+                      className="text-primary hover:underline text-lg"
+                    >
+                      {request.phone_number}
+                    </a>
+                  </div>
+                </div>
+              )}
+
 
               {request.description && (
                 <div className="flex items-start gap-4">
