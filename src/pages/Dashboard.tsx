@@ -1369,7 +1369,8 @@ const Dashboard = () => {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Service</TableHead>
-                            <TableHead>Customer</TableHead>
+                            <TableHead>Customer Name</TableHead>
+                            <TableHead>Customer Phone</TableHead>
                             <TableHead>Location</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Actions</TableHead>
@@ -1381,64 +1382,140 @@ const Dashboard = () => {
                             .map((request) => (
                               <TableRow key={request.id}>
                                 <TableCell>{request.service_type}</TableCell>
-                                <TableCell>
-                                  <div>{request.profiles?.full_name}</div>
-                                  <div className="text-sm text-muted-foreground">{request.profiles?.phone_number}</div>
-                                </TableCell>
+                                <TableCell>{request.profiles?.full_name || 'Guest'}</TableCell>
+                                <TableCell>{request.profiles?.phone_number || 'N/A'}</TableCell>
                                 <TableCell>{request.location}</TableCell>
                                 <TableCell>
                                   <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex gap-2">
-                                    {request.status === 'assigned' && (
-                                      <>
-                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
-                                          Accept
-                                        </Button>
-                                        <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
-                                          Deny
-                                        </Button>
-                                      </>
-                                    )}
-                                    {request.status === 'accepted' && (
-                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
-                                        Start Driving (En Route)
-                                      </Button>
-                                    )}
-                                    {request.status === 'en_route' && (
-                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
-                                        Arrived - Start Service
-                                      </Button>
-                                    )}
-                                    {request.status === 'in_progress' && (
-                                      <Dialog>
-                                        <DialogTrigger asChild>
-                                          <Button size="sm">Complete</Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                          <DialogHeader>
-                                            <DialogTitle>Complete Service</DialogTitle>
-                                            <DialogDescription>
-                                              Ask customer to send payment to business mobile money number
-                                            </DialogDescription>
-                                          </DialogHeader>
-                                          <div className="space-y-4">
-                                            <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
-                                            <p className="text-sm text-muted-foreground">
-                                              Once you receive payment confirmation, the admin will complete the transaction.
-                                            </p>
-                                            <Button onClick={() => {
-                                              toast.success('Customer notified to send payment');
-                                              handleUpdateRequestStatus(request.id, 'completed');
-                                            }}>
-                                              Mark as Awaiting Payment
-                                            </Button>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button size="sm" variant="outline">Details</Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl">
+                                      <DialogHeader>
+                                        <DialogTitle>Request Details</DialogTitle>
+                                        <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="text-muted-foreground">Service Type</Label>
+                                            <p className="font-medium capitalize">{request.service_type.replace('_', ' ')}</p>
                                           </div>
-                                        </DialogContent>
-                                      </Dialog>
-                                    )}
-                                  </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Status</Label>
+                                            <div>
+                                              <Badge className={getStatusColor(request.status)}>{request.status.replace('_', ' ')}</Badge>
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Customer</Label>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{request.profiles?.full_name}</span>
+                                              {request.profiles?.phone_number && (
+                                                <a href={`tel:${request.profiles.phone_number}`} className="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
+                                                  <Phone className="h-3 w-3" />
+                                                  {request.profiles.phone_number}
+                                                </a>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Location</Label>
+                                            <p className="font-medium">{request.location}</p>
+                                          </div>
+
+                                          {(request.vehicle_make || request.vehicle_model) && (
+                                            <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
+                                              <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
+                                                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                                  <ClipboardList className="h-3 w-3 text-primary" />
+                                                </div>
+                                                Vehicle Details
+                                              </Label>
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                  <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                </div>
+                                                {request.vehicle_year && (
+                                                  <div>
+                                                    <span className="text-xs text-muted-foreground block">Year</span>
+                                                    <span className="font-medium">{request.vehicle_year}</span>
+                                                  </div>
+                                                )}
+                                                {request.vehicle_plate && (
+                                                  <div>
+                                                    <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                    <span className="font-medium">{request.vehicle_plate}</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {request.description && (
+                                            <div className="col-span-1 md:col-span-2">
+                                              <Label className="text-muted-foreground">Description</Label>
+                                              <p className="text-sm bg-muted/30 p-3 rounded-md mt-1">{request.description}</p>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-2 justify-end border-t pt-4">
+                                          {request.status === 'assigned' && (
+                                            <>
+                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
+                                                Accept
+                                              </Button>
+                                              <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
+                                                Deny
+                                              </Button>
+                                            </>
+                                          )}
+                                          {request.status === 'accepted' && (
+                                            <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                              Start Driving (En Route)
+                                            </Button>
+                                          )}
+                                          {request.status === 'en_route' && (
+                                            <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                              Arrived - Start Service
+                                            </Button>
+                                          )}
+                                          {request.status === 'in_progress' && (
+                                            <Dialog>
+                                              <DialogTrigger asChild>
+                                                <Button size="sm">Complete</Button>
+                                              </DialogTrigger>
+                                              <DialogContent>
+                                                <DialogHeader>
+                                                  <DialogTitle>Complete Service</DialogTitle>
+                                                  <DialogDescription>
+                                                    Ask customer to send payment to business mobile money number
+                                                  </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-4">
+                                                  <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                                  <p className="text-sm text-muted-foreground">
+                                                    Once you receive payment confirmation, the admin will complete the transaction.
+                                                  </p>
+                                                  <Button onClick={() => {
+                                                    toast.success('Customer notified to send payment');
+                                                    handleUpdateRequestStatus(request.id, 'completed');
+                                                  }}>
+                                                    Mark as Awaiting Payment
+                                                  </Button>
+                                                </div>
+                                              </DialogContent>
+                                            </Dialog>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -2474,8 +2551,8 @@ const Dashboard = () => {
                                                           <Star
                                                             key={i}
                                                             className={`h-4 w-4 ${i < rating.rating
-                                                                ? 'fill-yellow-400 text-yellow-400'
-                                                                : 'text-gray-300'
+                                                              ? 'fill-yellow-400 text-yellow-400'
+                                                              : 'text-gray-300'
                                                               }`}
                                                           />
                                                         ))}
@@ -2705,8 +2782,8 @@ const Dashboard = () => {
                                                       <Star
                                                         key={i}
                                                         className={`h-4 w-4 ${i < rating.rating
-                                                            ? 'fill-yellow-400 text-yellow-400'
-                                                            : 'text-gray-300'
+                                                          ? 'fill-yellow-400 text-yellow-400'
+                                                          : 'text-gray-300'
                                                           }`}
                                                       />
                                                     ))}
@@ -4264,20 +4341,20 @@ const Dashboard = () => {
                               <Card
                                 key={message.id}
                                 className={`transition-all hover:shadow-md ${message.status === 'new'
-                                    ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10'
-                                    : message.status === 'read'
-                                      ? 'border-green-500/20 bg-gradient-to-br from-green-500/5 to-card'
-                                      : 'border-border/50 bg-card/50'
+                                  ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10'
+                                  : message.status === 'read'
+                                    ? 'border-green-500/20 bg-gradient-to-br from-green-500/5 to-card'
+                                    : 'border-border/50 bg-card/50'
                                   }`}
                               >
                                 <CardContent className="p-6">
                                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                     <div className="flex items-start gap-3 flex-1">
                                       <div className={`p-3 rounded-xl ${message.status === 'new'
-                                          ? 'bg-blue-500/10 text-blue-500'
-                                          : message.status === 'read'
-                                            ? 'bg-green-500/10 text-green-500'
-                                            : 'bg-muted text-muted-foreground'
+                                        ? 'bg-blue-500/10 text-blue-500'
+                                        : message.status === 'read'
+                                          ? 'bg-green-500/10 text-green-500'
+                                          : 'bg-muted text-muted-foreground'
                                         }`}>
                                         <Mail className="h-5 w-5" />
                                       </div>
