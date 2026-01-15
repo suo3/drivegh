@@ -1389,133 +1389,183 @@ const Dashboard = () => {
                                   <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button size="sm" variant="outline">Details</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-2xl">
-                                      <DialogHeader>
-                                        <DialogTitle>Request Details</DialogTitle>
-                                        <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                      </DialogHeader>
-                                      <div className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                          <div>
-                                            <Label className="text-muted-foreground">Service Type</Label>
-                                            <p className="font-medium capitalize">{request.service_type.replace('_', ' ')}</p>
+                                  <div className="flex gap-2 items-center flex-wrap">
+                                    {request.status === 'assigned' && (
+                                      <>
+                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
+                                          Accept
+                                        </Button>
+                                        <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
+                                          Deny
+                                        </Button>
+                                      </>
+                                    )}
+                                    {request.status === 'accepted' && (
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                        Start Driving
+                                      </Button>
+                                    )}
+                                    {request.status === 'en_route' && (
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                        Start Service
+                                      </Button>
+                                    )}
+                                    {request.status === 'in_progress' && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button size="sm">Complete</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Complete Service</DialogTitle>
+                                            <DialogDescription>
+                                              Ask customer to send payment to business mobile money number
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <div className="space-y-4">
+                                            <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Once you receive payment confirmation, the admin will complete the transaction.
+                                            </p>
+                                            <Button onClick={() => {
+                                              toast.success('Customer notified to send payment');
+                                              handleUpdateRequestStatus(request.id, 'completed');
+                                            }}>
+                                              Mark as Awaiting Payment
+                                            </Button>
                                           </div>
-                                          <div>
-                                            <Label className="text-muted-foreground">Status</Label>
-                                            <div>
-                                              <Badge className={getStatusColor(request.status)}>{request.status.replace('_', ' ')}</Badge>
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <Label className="text-muted-foreground">Customer</Label>
-                                            <div className="flex flex-col">
-                                              <span className="font-medium">{request.profiles?.full_name}</span>
-                                              {request.profiles?.phone_number && (
-                                                <a href={`tel:${request.profiles.phone_number}`} className="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
-                                                  <Phone className="h-3 w-3" />
-                                                  {request.profiles.phone_number}
-                                                </a>
-                                              )}
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <Label className="text-muted-foreground">Location</Label>
-                                            <p className="font-medium">{request.location}</p>
-                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
 
-                                          {(request.vehicle_make || request.vehicle_model) && (
-                                            <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
-                                              <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
-                                                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                                  <ClipboardList className="h-3 w-3 text-primary" />
-                                                </div>
-                                                Vehicle Details
-                                              </Label>
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                  <span className="text-xs text-muted-foreground block">Make/Model</span>
-                                                  <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
-                                                </div>
-                                                {request.vehicle_year && (
-                                                  <div>
-                                                    <span className="text-xs text-muted-foreground block">Year</span>
-                                                    <span className="font-medium">{request.vehicle_year}</span>
-                                                  </div>
-                                                )}
-                                                {request.vehicle_plate && (
-                                                  <div>
-                                                    <span className="text-xs text-muted-foreground block">Plate Number</span>
-                                                    <span className="font-medium">{request.vehicle_plate}</span>
-                                                  </div>
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">Details</Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-2xl">
+                                        <DialogHeader>
+                                          <DialogTitle>Request Details</DialogTitle>
+                                          <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-6">
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                              <Label className="text-muted-foreground">Service Type</Label>
+                                              <p className="font-medium capitalize">{request.service_type.replace('_', ' ')}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Status</Label>
+                                              <div>
+                                                <Badge className={getStatusColor(request.status)}>{request.status.replace('_', ' ')}</Badge>
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Customer</Label>
+                                              <div className="flex flex-col">
+                                                <span className="font-medium">{request.profiles?.full_name}</span>
+                                                {request.profiles?.phone_number && (
+                                                  <a href={`tel:${request.profiles.phone_number}`} className="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
+                                                    <Phone className="h-3 w-3" />
+                                                    {request.profiles.phone_number}
+                                                  </a>
                                                 )}
                                               </div>
                                             </div>
-                                          )}
-
-                                          {request.description && (
-                                            <div className="col-span-1 md:col-span-2">
-                                              <Label className="text-muted-foreground">Description</Label>
-                                              <p className="text-sm bg-muted/30 p-3 rounded-md mt-1">{request.description}</p>
+                                            <div>
+                                              <Label className="text-muted-foreground">Location</Label>
+                                              <p className="font-medium">{request.location}</p>
                                             </div>
-                                          )}
-                                        </div>
 
-                                        <div className="flex flex-wrap gap-2 justify-end border-t pt-4">
-                                          {request.status === 'assigned' && (
-                                            <>
-                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
-                                                Accept
-                                              </Button>
-                                              <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
-                                                Deny
-                                              </Button>
-                                            </>
-                                          )}
-                                          {request.status === 'accepted' && (
-                                            <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
-                                              Start Driving (En Route)
-                                            </Button>
-                                          )}
-                                          {request.status === 'en_route' && (
-                                            <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
-                                              Arrived - Start Service
-                                            </Button>
-                                          )}
-                                          {request.status === 'in_progress' && (
-                                            <Dialog>
-                                              <DialogTrigger asChild>
-                                                <Button size="sm">Complete</Button>
-                                              </DialogTrigger>
-                                              <DialogContent>
-                                                <DialogHeader>
-                                                  <DialogTitle>Complete Service</DialogTitle>
-                                                  <DialogDescription>
-                                                    Ask customer to send payment to business mobile money number
-                                                  </DialogDescription>
-                                                </DialogHeader>
-                                                <div className="space-y-4">
-                                                  <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
-                                                  <p className="text-sm text-muted-foreground">
-                                                    Once you receive payment confirmation, the admin will complete the transaction.
-                                                  </p>
-                                                  <Button onClick={() => {
-                                                    toast.success('Customer notified to send payment');
-                                                    handleUpdateRequestStatus(request.id, 'completed');
-                                                  }}>
-                                                    Mark as Awaiting Payment
-                                                  </Button>
+                                            {(request.vehicle_make || request.vehicle_model) && (
+                                              <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
+                                                <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
+                                                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <ClipboardList className="h-3 w-3 text-primary" />
+                                                  </div>
+                                                  Vehicle Details
+                                                </Label>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  <div>
+                                                    <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                    <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                  </div>
+                                                  {request.vehicle_year && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Year</span>
+                                                      <span className="font-medium">{request.vehicle_year}</span>
+                                                    </div>
+                                                  )}
+                                                  {request.vehicle_plate && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                      <span className="font-medium">{request.vehicle_plate}</span>
+                                                    </div>
+                                                  )}
                                                 </div>
-                                              </DialogContent>
-                                            </Dialog>
-                                          )}
+                                              </div>
+                                            )}
+
+                                            {request.description && (
+                                              <div className="col-span-1 md:col-span-2">
+                                                <Label className="text-muted-foreground">Description</Label>
+                                                <p className="text-sm bg-muted/30 p-3 rounded-md mt-1">{request.description}</p>
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          <div className="flex flex-wrap gap-2 justify-end border-t pt-4">
+                                            {request.status === 'assigned' && (
+                                              <>
+                                                <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
+                                                  Accept
+                                                </Button>
+                                                <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
+                                                  Deny
+                                                </Button>
+                                              </>
+                                            )}
+                                            {request.status === 'accepted' && (
+                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                                Start Driving (En Route)
+                                              </Button>
+                                            )}
+                                            {request.status === 'en_route' && (
+                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
+                                                Arrived - Start Service
+                                              </Button>
+                                            )}
+                                            {request.status === 'in_progress' && (
+                                              <Dialog>
+                                                <DialogTrigger asChild>
+                                                  <Button size="sm">Complete</Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                  <DialogHeader>
+                                                    <DialogTitle>Complete Service</DialogTitle>
+                                                    <DialogDescription>
+                                                      Ask customer to send payment to business mobile money number
+                                                    </DialogDescription>
+                                                  </DialogHeader>
+                                                  <div className="space-y-4">
+                                                    <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                      Once you receive payment confirmation, the admin will complete the transaction.
+                                                    </p>
+                                                    <Button onClick={() => {
+                                                      toast.success('Customer notified to send payment');
+                                                      handleUpdateRequestStatus(request.id, 'completed');
+                                                    }}>
+                                                      Mark as Awaiting Payment
+                                                    </Button>
+                                                  </div>
+                                                </DialogContent>
+                                              </Dialog>
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -1600,7 +1650,7 @@ const Dashboard = () => {
                                         </DialogDescription>
                                       </DialogHeader>
                                       <div className="space-y-4">
-                                        <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
+                                        <p className="text-sm">Business Mobile Money: <strong></strong></p>
                                         <p className="text-sm text-muted-foreground">
                                           Once you receive payment confirmation, the admin will complete the transaction.
                                         </p>
