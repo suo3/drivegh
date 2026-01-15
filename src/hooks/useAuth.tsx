@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           setTimeout(() => {
             fetchUserRole(session.user.id);
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchUserRole(session.user.id);
       } else {
@@ -53,25 +53,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const fetchUserRole = async (userId: string) => {
-    console.log('fetchUserRole called for userId:', userId);
+
     // Fetch all roles for the user (they may have multiple)
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
 
-    console.log('fetchUserRole result:', { data, error });
-    
+
+
     if (error) {
       console.error('Error fetching user role:', error);
     }
-    
+
     if (data && data.length > 0) {
       // Priority: super_admin > admin > provider > customer
       const rolePriority = ['super_admin', 'admin', 'provider', 'customer'];
       const roles = data.map(r => r.role);
       const highestRole = rolePriority.find(r => roles.includes(r as any)) || roles[0];
-      console.log('Setting userRole to:', highestRole);
+
       setUserRole(highestRole as string);
     } else {
       console.log('No role data found for user');
@@ -81,9 +81,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string, phoneNumber: string, role: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    console.log('signUp called with:', { fullName, phoneNumber, role });
-    
+
+
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -97,11 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
-    console.log('signUp auth result:', { 
-      userId: data.user?.id, 
-      metadata: data.user?.user_metadata,
-      error 
-    });
+
 
     // Rely on DB trigger to create profile and assign role
     return { error };

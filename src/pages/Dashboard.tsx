@@ -30,18 +30,18 @@ const Dashboard = () => {
   const { view } = useParams();
   const [loading, setLoading] = useState(true);
   const currentView = view || 'requests';
-  
+
   // Customer state
   const [requests, setRequests] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
-  
+
   // Provider state
   const [earnings, setEarnings] = useState(0);
   const [ratings, setRatings] = useState<any[]>([]);
   const [avgRating, setAvgRating] = useState(0);
   const [isAvailable, setIsAvailable] = useState(true);
-  
+
   // Admin state
   const [allRequests, setAllRequests] = useState<any[]>([]);
   const [providers, setProviders] = useState<any[]>([]);
@@ -52,36 +52,35 @@ const Dashboard = () => {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
   const [mapsEnabled, setMapsEnabled] = useState(true);
-  
+
   // Admin filters
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
   const [adminCustomerFilter, setAdminCustomerFilter] = useState('');
   const [adminProviderFilter, setAdminProviderFilter] = useState('');
   const [adminApplicationFilter, setAdminApplicationFilter] = useState('');
-  
+
   // Contact messages filters
   const [messageStatusFilter, setMessageStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
-  
+
   // Customer request filters
   const [requestStatusFilter, setRequestStatusFilter] = useState<string>('all');
   const [requestSearchQuery, setRequestSearchQuery] = useState('');
 
   useEffect(() => {
-    console.log('Dashboard useEffect - authLoading:', authLoading, 'user:', !!user, 'userRole:', userRole);
-    
+
     if (authLoading) {
       return;
     }
-    
+
     if (!user) {
-      console.log('No user found, redirecting to auth');
+
       navigate('/auth');
       return;
     }
-    
+
     if (userRole) {
-      console.log('User role found, fetching data');
+
       // Navigate to default view based on role if on base /dashboard
       if (!view) {
         if (userRole === 'customer') navigate('/dashboard/requests', { replace: true });
@@ -90,7 +89,6 @@ const Dashboard = () => {
       }
       fetchData();
     } else {
-      console.log('No user role yet, setting loading to false');
       // If userRole is not available after auth is done, stop loading
       setLoading(false);
     }
@@ -98,7 +96,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user || (userRole !== 'admin' && userRole !== 'super_admin')) return;
-    
+
     const requestsChannel = supabase
       .channel('service_requests_changes')
       .on(
@@ -159,7 +157,7 @@ const Dashboard = () => {
   }, [user, userRole]);
 
   const fetchData = async () => {
-    console.log('fetchData called with userRole:', userRole);
+
     setLoading(true);
     try {
       if (userRole === 'customer') {
@@ -299,7 +297,7 @@ const Dashboard = () => {
       const settingsValue = settingsRes.data.value as { enabled?: boolean };
       setMapsEnabled(settingsValue?.enabled ?? true);
     }
-    
+
     // Combine profiles with their roles
     if (allProfilesRes.data && allUserRolesRes.data) {
       const profilesWithRoles = allProfilesRes.data.map(profile => ({
@@ -367,7 +365,7 @@ const Dashboard = () => {
   const handleDeleteRequest = async (requestId: string) => {
     // Optimistically remove from state for instant UI feedback
     setAllRequests(prev => prev.filter(req => req.id !== requestId));
-    
+
     const { error } = await supabase
       .from('service_requests')
       .delete()
@@ -493,7 +491,7 @@ const Dashboard = () => {
       .from('profiles')
       .update({ is_available: available })
       .eq('id', user?.id);
-    
+
     if (error) {
       toast.error('Failed to update availability');
       setIsAvailable(!available);
@@ -763,10 +761,10 @@ const Dashboard = () => {
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="customer" currentView={currentView} />
-          
+
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
-            
+
             {/* Compact mobile header */}
             <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-4 lg:px-6 lg:py-5">
@@ -790,7 +788,7 @@ const Dashboard = () => {
             <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-28 lg:pb-6">
               {/* Mobile: Single CTA button at top */}
               <div className="lg:hidden">
-                <Button 
+                <Button
                   onClick={() => navigate('/')}
                   className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
                   size="lg"
@@ -801,7 +799,7 @@ const Dashboard = () => {
 
               {/* Desktop: Stats and CTA */}
               <div className="hidden lg:flex justify-end">
-                <Button 
+                <Button
                   onClick={() => navigate('/')}
                   className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
                   size="lg"
@@ -899,7 +897,7 @@ const Dashboard = () => {
                       <div className="text-sm text-muted-foreground">
                         Showing {requests.filter(request => {
                           const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                          const matchesSearch = !requestSearchQuery || 
+                          const matchesSearch = !requestSearchQuery ||
                             request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
                             request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
                             request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
@@ -926,219 +924,57 @@ const Dashboard = () => {
                           {requests
                             .filter(request => {
                               const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                              const matchesSearch = !requestSearchQuery || 
+                              const matchesSearch = !requestSearchQuery ||
                                 request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
                                 request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
                                 request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
                               return matchesStatus && matchesSearch;
                             })
                             .length === 0 ? (
-                              <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8">
-                                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                    <ClipboardList className="h-8 w-8" />
-                                    <p>No requests found matching your filters</p>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ) : (
-                              requests
-                                .filter(request => {
-                                  const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                                  const matchesSearch = !requestSearchQuery || 
-                                    request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                    request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                    request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
-                                  return matchesStatus && matchesSearch;
-                                })
-                                .map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell>{request.service_type}</TableCell>
-                              <TableCell>{request.location}</TableCell>
-                              <TableCell>{request.profiles?.full_name || 'Unassigned'}</TableCell>
-                              <TableCell>
-                                <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8">
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                  <ClipboardList className="h-8 w-8" />
+                                  <p>No requests found matching your filters</p>
+                                </div>
                               </TableCell>
-                              <TableCell>
-                                {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                  ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                                  : request.status === 'completed' ? 'Pending Payment' : '-'}
-                              </TableCell>
-                              <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
-                              <TableCell>
-                              {['pending', 'assigned', 'accepted'].includes(request.status) && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={async () => {
-                                    if (confirm('Are you sure you want to cancel this request?')) {
-                                      const { error } = await supabase
-                                        .from('service_requests')
-                                        .update({ status: 'cancelled' })
-                                        .eq('id', request.id);
-                                      
-                                      if (error) {
-                                        toast.error('Failed to cancel request');
-                                      } else {
-                                        toast.success('Request cancelled successfully');
-                                        fetchData();
-                                      }
-                                    }
-                                  }}
-                                  className="mr-2"
-                                >
-                                  Cancel
-                                </Button>
-                              )}
-                              {request.status === 'completed' && (
-                                <Dialog open={ratingDialogOpen === request.id} onOpenChange={(open) => setRatingDialogOpen(open ? request.id : null)}>
-                                  <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm">Rate</Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Rate Service</DialogTitle>
-                                    </DialogHeader>
-                                    <form onSubmit={async (e) => {
-                                      e.preventDefault();
-                                      if (!user?.id) {
-                                        toast.error('You must be signed in to submit a rating');
-                                        return;
-                                      }
-                                      const formData = new FormData(e.currentTarget);
-                                      const rating = Number(formData.get('rating'));
-                                      const review = (formData.get('review') as string) || null;
-
-                                      const payload = {
-                                        service_request_id: request.id,
-                                        provider_id: request.provider_id,
-                                        customer_id: user.id,
-                                        rating,
-                                        review,
-                                      };
-
-                                      const { error } = await supabase.from('ratings').insert([payload]);
-
-                                      if (error) {
-                                        // Handle duplicate rating by updating existing record
-                                        if ((error as any).code === '23505' || error.message?.includes('duplicate key value')) {
-                                          const { error: updateError } = await supabase
-                                            .from('ratings')
-                                            .update({ rating, review })
-                                            .eq('service_request_id', request.id)
-                                            .eq('customer_id', user.id);
-
-                                          if (updateError) {
-                                            toast.error('Failed to update existing rating');
-                                            return;
-                                          }
-
-                                          toast.success('Rating updated successfully');
-                                          setRatingDialogOpen(null);
-                                          fetchData();
-                                        } else {
-                                          toast.error(error.message || 'Failed to submit rating');
-                                        }
-                                      } else {
-                                        toast.success('Rating submitted successfully');
-                                        setRatingDialogOpen(null);
-                                        fetchData();
-                                      }
-                                    }}>
-                                      <div className="space-y-4">
-                                        <div>
-                                          <Label>Rating (1-5)</Label>
-                                          <Input name="rating" type="number" min="1" max="5" required />
-                                        </div>
-                                        <div>
-                                          <Label>Review</Label>
-                                          <Textarea name="review" />
-                                        </div>
-                                        <Button type="submit" className="w-full">Submit</Button>
-                                      </div>
-                                    </form>
-                                  </DialogContent>
-                                 </Dialog>
-                               )}
-                             </TableCell>
-                           </TableRow>
-                         ))
-                        )}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile Card View - Shown on Mobile Only */}
-                    <div className="md:hidden space-y-4">
-                      {requests
-                        .filter(request => {
-                          const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                          const matchesSearch = !requestSearchQuery || 
-                            request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                            request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                            request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
-                          return matchesStatus && matchesSearch;
-                        })
-                        .length === 0 ? (
-                          <div className="text-center py-8">
-                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                              <ClipboardList className="h-8 w-8" />
-                              <p>No requests found matching your filters</p>
-                            </div>
-                          </div>
-                        ) : (
-                          requests
-                            .filter(request => {
-                              const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
-                              const matchesSearch = !requestSearchQuery || 
-                                request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
-                                request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
-                              return matchesStatus && matchesSearch;
-                            })
-                            .map((request) => (
-                              <Card key={request.id} className={`border-2 border-l-4 ${getStatusBorderColor(request.status)}`}>
-                                <CardContent className="p-4 space-y-3">
-                                  <div className="flex justify-between items-start">
-                                    <div className="space-y-1 flex-1">
-                                      <h3 className="font-semibold capitalize">{request.service_type}</h3>
-                                      <p className="text-sm text-muted-foreground">{request.location}</p>
-                                    </div>
+                            </TableRow>
+                          ) : (
+                            requests
+                              .filter(request => {
+                                const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                                const matchesSearch = !requestSearchQuery ||
+                                  request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                  request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                                  request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                                return matchesStatus && matchesSearch;
+                              })
+                              .map((request) => (
+                                <TableRow key={request.id}>
+                                  <TableCell>{request.service_type}</TableCell>
+                                  <TableCell>{request.location}</TableCell>
+                                  <TableCell>{request.profiles?.full_name || 'Unassigned'}</TableCell>
+                                  <TableCell>
                                     <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                  </div>
-                                  
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2">
-                                      <User className="h-4 w-4 text-muted-foreground" />
-                                      <span>{request.profiles?.full_name || 'Unassigned'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                      <span>
-                                        {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                          ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                                          : request.status === 'completed' ? 'Pending Payment' : '-'}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Clock className="h-4 w-4 text-muted-foreground" />
-                                      <span>{new Date(request.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex gap-2 pt-2 border-t">
+                                  </TableCell>
+                                  <TableCell>
+                                    {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                      ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                      : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                  </TableCell>
+                                  <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
+                                  <TableCell>
                                     {['pending', 'assigned', 'accepted'].includes(request.status) && (
-                                      <Button 
-                                        variant="outline" 
+                                      <Button
+                                        variant="outline"
                                         size="sm"
-                                        className="flex-1"
                                         onClick={async () => {
                                           if (confirm('Are you sure you want to cancel this request?')) {
                                             const { error } = await supabase
                                               .from('service_requests')
                                               .update({ status: 'cancelled' })
                                               .eq('id', request.id);
-                                            
+
                                             if (error) {
                                               toast.error('Failed to cancel request');
                                             } else {
@@ -1147,6 +983,7 @@ const Dashboard = () => {
                                             }
                                           }
                                         }}
+                                        className="mr-2"
                                       >
                                         Cancel
                                       </Button>
@@ -1154,7 +991,7 @@ const Dashboard = () => {
                                     {request.status === 'completed' && (
                                       <Dialog open={ratingDialogOpen === request.id} onOpenChange={(open) => setRatingDialogOpen(open ? request.id : null)}>
                                         <DialogTrigger asChild>
-                                          <Button variant="outline" size="sm" className="flex-1">Rate</Button>
+                                          <Button variant="outline" size="sm">Rate</Button>
                                         </DialogTrigger>
                                         <DialogContent>
                                           <DialogHeader>
@@ -1181,6 +1018,7 @@ const Dashboard = () => {
                                             const { error } = await supabase.from('ratings').insert([payload]);
 
                                             if (error) {
+                                              // Handle duplicate rating by updating existing record
                                               if ((error as any).code === '23505' || error.message?.includes('duplicate key value')) {
                                                 const { error: updateError } = await supabase
                                                   .from('ratings')
@@ -1220,15 +1058,175 @@ const Dashboard = () => {
                                         </DialogContent>
                                       </Dialog>
                                     )}
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View - Shown on Mobile Only */}
+                    <div className="md:hidden space-y-4">
+                      {requests
+                        .filter(request => {
+                          const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                          const matchesSearch = !requestSearchQuery ||
+                            request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                            request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                          return matchesStatus && matchesSearch;
+                        })
+                        .length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <ClipboardList className="h-8 w-8" />
+                            <p>No requests found matching your filters</p>
+                          </div>
+                        </div>
+                      ) : (
+                        requests
+                          .filter(request => {
+                            const matchesStatus = requestStatusFilter === 'all' || request.status === requestStatusFilter;
+                            const matchesSearch = !requestSearchQuery ||
+                              request.service_type?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                              request.location?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+                              request.profiles?.full_name?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+                            return matchesStatus && matchesSearch;
+                          })
+                          .map((request) => (
+                            <Card key={request.id} className={`border-2 border-l-4 ${getStatusBorderColor(request.status)}`}>
+                              <CardContent className="p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <div className="space-y-1 flex-1">
+                                    <h3 className="font-semibold capitalize">{request.service_type}</h3>
+                                    <p className="text-sm text-muted-foreground">{request.location}</p>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            ))
-                        )}
+                                  <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                </div>
+
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <User className="h-4 w-4 text-muted-foreground" />
+                                    <span>{request.profiles?.full_name || 'Unassigned'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                    <span>
+                                      {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                        ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                        : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                    <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2 pt-2 border-t">
+                                  {['pending', 'assigned', 'accepted'].includes(request.status) && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={async () => {
+                                        if (confirm('Are you sure you want to cancel this request?')) {
+                                          const { error } = await supabase
+                                            .from('service_requests')
+                                            .update({ status: 'cancelled' })
+                                            .eq('id', request.id);
+
+                                          if (error) {
+                                            toast.error('Failed to cancel request');
+                                          } else {
+                                            toast.success('Request cancelled successfully');
+                                            fetchData();
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  )}
+                                  {request.status === 'completed' && (
+                                    <Dialog open={ratingDialogOpen === request.id} onOpenChange={(open) => setRatingDialogOpen(open ? request.id : null)}>
+                                      <DialogTrigger asChild>
+                                        <Button variant="outline" size="sm" className="flex-1">Rate</Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Rate Service</DialogTitle>
+                                        </DialogHeader>
+                                        <form onSubmit={async (e) => {
+                                          e.preventDefault();
+                                          if (!user?.id) {
+                                            toast.error('You must be signed in to submit a rating');
+                                            return;
+                                          }
+                                          const formData = new FormData(e.currentTarget);
+                                          const rating = Number(formData.get('rating'));
+                                          const review = (formData.get('review') as string) || null;
+
+                                          const payload = {
+                                            service_request_id: request.id,
+                                            provider_id: request.provider_id,
+                                            customer_id: user.id,
+                                            rating,
+                                            review,
+                                          };
+
+                                          const { error } = await supabase.from('ratings').insert([payload]);
+
+                                          if (error) {
+                                            if ((error as any).code === '23505' || error.message?.includes('duplicate key value')) {
+                                              const { error: updateError } = await supabase
+                                                .from('ratings')
+                                                .update({ rating, review })
+                                                .eq('service_request_id', request.id)
+                                                .eq('customer_id', user.id);
+
+                                              if (updateError) {
+                                                toast.error('Failed to update existing rating');
+                                                return;
+                                              }
+
+                                              toast.success('Rating updated successfully');
+                                              setRatingDialogOpen(null);
+                                              fetchData();
+                                            } else {
+                                              toast.error(error.message || 'Failed to submit rating');
+                                            }
+                                          } else {
+                                            toast.success('Rating submitted successfully');
+                                            setRatingDialogOpen(null);
+                                            fetchData();
+                                          }
+                                        }}>
+                                          <div className="space-y-4">
+                                            <div>
+                                              <Label>Rating (1-5)</Label>
+                                              <Input name="rating" type="number" min="1" max="5" required />
+                                            </div>
+                                            <div>
+                                              <Label>Review</Label>
+                                              <Textarea name="review" />
+                                            </div>
+                                            <Button type="submit" className="w-full">Submit</Button>
+                                          </div>
+                                        </form>
+                                      </DialogContent>
+                                    </Dialog>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                      )}
                     </div>
                   </CardContent>
-                 </Card>
-               )}
+                </Card>
+              )}
 
               {currentView === 'payments' && (
                 <Card>
@@ -1282,10 +1280,10 @@ const Dashboard = () => {
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="provider" currentView={currentView} />
-          
+
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
-            
+
             {/* Desktop header */}
             <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
               <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-6 lg:py-5">
@@ -1321,43 +1319,43 @@ const Dashboard = () => {
             <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-28 lg:pb-6">
               {/* Compact stats on mobile, full on desktop */}
               <div className="grid grid-cols-3 lg:grid-cols-3 gap-2 lg:gap-6">
-          <Card className="hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
-            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
-              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Earnings</CardTitle>
-              <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
-                <DollarSign className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                <Card className="hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
+                  <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+                    <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Earnings</CardTitle>
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                      <DollarSign className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">${earnings.toFixed(0)}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">From completed jobs</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover-lift bg-gradient-to-br from-yellow-50 to-orange-50/50 border-2 hover:border-yellow-200 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+                  <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+                    <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Rating</CardTitle>
+                    <div className="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                      <Star className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{avgRating.toFixed(1)}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">Customer satisfaction</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover-lift bg-gradient-to-br from-blue-50 to-cyan-50/50 border-2 hover:border-blue-200 animate-scale-in" style={{ animationDelay: '0.2s' }}>
+                  <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
+                    <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Jobs</CardTitle>
+                    <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
+                      <ClipboardList className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 lg:p-6">
+                    <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.length}</p>
+                    <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">All time</p>
+                  </CardContent>
+                </Card>
               </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 lg:p-6">
-              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">${earnings.toFixed(0)}</p>
-              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">From completed jobs</p>
-            </CardContent>
-          </Card>
-          <Card className="hover-lift bg-gradient-to-br from-yellow-50 to-orange-50/50 border-2 hover:border-yellow-200 animate-scale-in" style={{ animationDelay: '0.1s' }}>
-            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
-              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Rating</CardTitle>
-              <div className="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
-                <Star className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 lg:p-6">
-              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{avgRating.toFixed(1)}</p>
-              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">Customer satisfaction</p>
-            </CardContent>
-          </Card>
-          <Card className="hover-lift bg-gradient-to-br from-blue-50 to-cyan-50/50 border-2 hover:border-blue-200 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-            <CardHeader className="p-3 lg:p-6 flex flex-col lg:flex-row items-center lg:justify-between pb-2 gap-2">
-              <CardTitle className="text-xs lg:text-lg order-2 lg:order-1 text-center lg:text-left">Jobs</CardTitle>
-              <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-1.5 lg:p-2 order-1 lg:order-2">
-                <ClipboardList className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 lg:p-6">
-              <p className="text-xl lg:text-4xl font-bold text-primary text-center lg:text-left">{requests.length}</p>
-              <p className="text-[10px] lg:text-sm text-muted-foreground mt-0.5 lg:mt-1 hidden lg:block">All time</p>
-            </CardContent>
-          </Card>
-        </div>
 
               {currentView === 'assigned' && (
                 <Card>
@@ -1428,22 +1426,22 @@ const Dashboard = () => {
                                           <div className="space-y-4">
                                             <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
                                             <p className="text-sm text-muted-foreground">
-                                          Once you receive payment confirmation, the admin will complete the transaction.
-                                        </p>
-                                        <Button onClick={() => {
-                                          toast.success('Customer notified to send payment');
-                                          handleUpdateRequestStatus(request.id, 'completed');
-                                        }}>
-                                          Mark as Awaiting Payment
-                                        </Button>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          ))}
+                                              Once you receive payment confirmation, the admin will complete the transaction.
+                                            </p>
+                                            <Button onClick={() => {
+                                              toast.success('Customer notified to send payment');
+                                              handleUpdateRequestStatus(request.id, 'completed');
+                                            }}>
+                                              Mark as Awaiting Payment
+                                            </Button>
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </div>
@@ -1460,7 +1458,7 @@ const Dashboard = () => {
                                   <p className="font-semibold text-sm capitalize truncate">{request.service_type}</p>
                                   <p className="text-xs text-muted-foreground truncate">{request.location}</p>
                                   <p className="text-xs text-muted-foreground truncate">
-                                    {request.profiles?.full_name} 
+                                    {request.profiles?.full_name}
                                     {request.profiles?.phone_number && (
                                       <span className="ml-1 text-[11px]">({request.profiles.phone_number})</span>
                                     )}
@@ -1574,7 +1572,7 @@ const Dashboard = () => {
                             <TableCell>{request.location}</TableCell>
                             <TableCell>
                               {request.transactions && request.transactions.length > 0 && request.transactions[0].provider_amount
-                                ? `GHS ${Number(request.transactions[0].provider_amount).toFixed(2)}` 
+                                ? `GHS ${Number(request.transactions[0].provider_amount).toFixed(2)}`
                                 : request.status === 'completed' ? 'Pending Payment' : '-'}
                             </TableCell>
                             <TableCell>{new Date(request.completed_at).toLocaleDateString()}</TableCell>
@@ -1602,10 +1600,10 @@ const Dashboard = () => {
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
           <DashboardSidebar role="admin" currentView={currentView} />
-          
+
           <div className="flex-1 flex flex-col min-w-0">
             <Navbar />
-            
+
             {/* Desktop header */}
             <header className="sticky top-16 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:block hidden">
               <div className="flex items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
@@ -1662,44 +1660,337 @@ const Dashboard = () => {
 
               {currentView === 'requests' && (
                 <Card>
-              <CardHeader>
-                <CardTitle>All Service Requests</CardTitle>
-                <CardDescription>Manage all service requests across the platform</CardDescription>
-                <div className="flex items-center gap-2 mt-4">
-                  <Input
-                    placeholder="Search by service, customer, location, provider, or status..."
-                    value={adminRequestFilter}
-                    onChange={(e) => setAdminRequestFilter(e.target.value)}
-                    className="max-w-2xl"
-                  />
-                  {adminRequestFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setAdminRequestFilter('')}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop Table View */}
-                <div className="hidden lg:block">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <CardHeader>
+                    <CardTitle>All Service Requests</CardTitle>
+                    <CardDescription>Manage all service requests across the platform</CardDescription>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Input
+                        placeholder="Search by service, customer, location, provider, or status..."
+                        value={adminRequestFilter}
+                        onChange={(e) => setAdminRequestFilter(e.target.value)}
+                        className="max-w-2xl"
+                      />
+                      {adminRequestFilter && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setAdminRequestFilter('')}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Service</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Provider</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {allRequests.filter(request => {
+                            const searchLower = adminRequestFilter.toLowerCase();
+                            const provider = providers.find(p => p.id === request.provider_id);
+                            return (
+                              request.service_type?.toLowerCase().includes(searchLower) ||
+                              request.location?.toLowerCase().includes(searchLower) ||
+                              request.status?.toLowerCase().includes(searchLower) ||
+                              request.tracking_code?.toLowerCase().includes(searchLower) ||
+                              request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+                              provider?.full_name?.toLowerCase().includes(searchLower) ||
+                              request.vehicle_make?.toLowerCase().includes(searchLower) ||
+                              request.vehicle_model?.toLowerCase().includes(searchLower)
+                            );
+                          }).map((request) => {
+                            const provider = providers.find(p => p.id === request.provider_id);
+
+                            return (
+                              <TableRow key={request.id}>
+                                <TableCell className="font-medium">{request.service_type}</TableCell>
+                                <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
+                                <TableCell className="max-w-xs truncate">{request.location}</TableCell>
+                                <TableCell>
+                                  {provider ? (
+                                    <div>
+                                      <p className="font-medium">{provider.full_name}</p>
+                                      <p className="text-xs text-muted-foreground">{provider.phone_number}</p>
+                                    </div>
+                                  ) : (
+                                    <Badge variant="secondary">Unassigned</Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                    ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                    : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p className="text-sm">{new Date(request.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">Details</Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Request Details</DialogTitle>
+                                          <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                              <Label className="text-muted-foreground">Service Type</Label>
+                                              <p className="font-medium">{request.service_type}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Status</Label>
+                                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Customer</Label>
+                                              <p className="font-medium">{request.profiles?.full_name}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Provider</Label>
+                                              <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
+                                            </div>
+                                            <div className="col-span-2">
+                                              <Label className="text-muted-foreground">Location</Label>
+                                              <p className="font-medium">{request.location}</p>
+                                            </div>
+                                            {request.description && (
+                                              <div className="col-span-2">
+                                                <Label className="text-muted-foreground">Description</Label>
+                                                <p className="font-medium">{request.description}</p>
+                                              </div>
+                                            )}
+                                            <div>
+                                              <Label className="text-muted-foreground">Created</Label>
+                                              <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
+                                            </div>
+                                            {request.completed_at && (
+                                              <div>
+                                                <Label className="text-muted-foreground">Completed</Label>
+                                                <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
+                                              </div>
+                                            )}
+                                            {request.status === 'completed' && (() => {
+                                              const transaction = allTransactions.find(t => t.service_request_id === request.id);
+                                              return transaction ? (
+                                                <div className="col-span-2">
+                                                  <div className="flex items-center justify-between mb-2">
+                                                    <Label className="text-muted-foreground">Payment Details</Label>
+                                                    <Dialog>
+                                                      <DialogTrigger asChild>
+                                                        <Button size="sm" variant="ghost">
+                                                          <Edit className="h-4 w-4 mr-2" />
+                                                          Edit Payment
+                                                        </Button>
+                                                      </DialogTrigger>
+                                                      <DialogContent>
+                                                        <DialogHeader>
+                                                          <DialogTitle>Edit Payment</DialogTitle>
+                                                          <DialogDescription>Update payment amount and provider percentage</DialogDescription>
+                                                        </DialogHeader>
+                                                        <form onSubmit={(e) => {
+                                                          e.preventDefault();
+                                                          const formData = new FormData(e.currentTarget);
+                                                          const amount = Number(formData.get('amount'));
+                                                          const percentage = Number(formData.get('provider_percentage'));
+                                                          handleUpdateTransaction(transaction.id, amount, percentage);
+                                                        }}>
+                                                          <div className="space-y-4">
+                                                            <div>
+                                                              <Label>Amount (GHS)</Label>
+                                                              <Input
+                                                                name="amount"
+                                                                type="number"
+                                                                step="0.01"
+                                                                required
+                                                                defaultValue={transaction.amount}
+                                                                min="0.01"
+                                                                max="1000000"
+                                                              />
+                                                            </div>
+                                                            <div>
+                                                              <Label>Provider Percentage (%)</Label>
+                                                              <Input
+                                                                name="provider_percentage"
+                                                                type="number"
+                                                                step="1"
+                                                                min="0"
+                                                                max="100"
+                                                                required
+                                                                defaultValue={transaction.provider_percentage}
+                                                              />
+                                                            </div>
+                                                            <div className="bg-muted p-3 rounded-md">
+                                                              <p className="text-sm font-medium mb-1">Current Breakdown:</p>
+                                                              <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
+                                                              <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
+                                                            </div>
+                                                            <Button type="submit" className="w-full">Update Payment</Button>
+                                                          </div>
+                                                        </form>
+                                                      </DialogContent>
+                                                    </Dialog>
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                    <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                      Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                      Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              ) : null;
+                                            })()}
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
+                                          <DialogDescription>Select an available provider for this service request</DialogDescription>
+                                        </DialogHeader>
+                                        {providers.filter(p => p.is_available !== false).length === 0 ? (
+                                          <div className="text-center py-6">
+                                            <p className="text-muted-foreground">No available providers at the moment</p>
+                                          </div>
+                                        ) : (
+                                          <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select provider" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {providers.filter(p => p.is_available !== false).map((provider) => (
+                                                <SelectItem key={provider.id} value={provider.id}>
+                                                  {provider.full_name} - {provider.phone_number}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        )}
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">
+                                          Change Status
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Change Request Status</DialogTitle>
+                                          <DialogDescription>Update the status of this service request</DialogDescription>
+                                        </DialogHeader>
+                                        <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select new status" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="pending">Pending</SelectItem>
+                                            <SelectItem value="assigned">Assigned</SelectItem>
+                                            <SelectItem value="in_progress">In Progress</SelectItem>
+                                            <SelectItem value="completed">Completed</SelectItem>
+                                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleDeleteRequest(request.id)}
+                                    >
+                                      Delete
+                                    </Button>
+
+                                    {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button size="sm" variant="outline">Payment</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Record Payment</DialogTitle>
+                                            <DialogDescription>Record mobile money payment for this service</DialogDescription>
+                                          </DialogHeader>
+                                          <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const formData = new FormData(e.currentTarget);
+                                            handleCompletePayment(
+                                              request.id,
+                                              Number(formData.get('amount')),
+                                              Number(formData.get('provider_percentage'))
+                                            );
+                                          }}>
+                                            <div className="space-y-4">
+                                              <div>
+                                                <Label>Amount Received (GHS)</Label>
+                                                <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
+                                              </div>
+                                              <div>
+                                                <Label>Provider Percentage (%)</Label>
+                                                <Input
+                                                  name="provider_percentage"
+                                                  type="number"
+                                                  step="1"
+                                                  min="0"
+                                                  max="100"
+                                                  required
+                                                  defaultValue="70"
+                                                  placeholder="70"
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                  Percentage of payment that goes to the provider
+                                                </p>
+                                              </div>
+                                              <Button type="submit" className="w-full">Confirm Payment</Button>
+                                            </div>
+                                          </form>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
                       {allRequests.filter(request => {
                         const searchLower = adminRequestFilter.toLowerCase();
                         const provider = providers.find(p => p.id === request.provider_id);
@@ -1715,41 +2006,59 @@ const Dashboard = () => {
                         );
                       }).map((request) => {
                         const provider = providers.find(p => p.id === request.provider_id);
-                        
+
                         return (
-                          <TableRow key={request.id}>
-                            <TableCell className="font-medium">{request.service_type}</TableCell>
-                            <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
-                            <TableCell className="max-w-xs truncate">{request.location}</TableCell>
-                            <TableCell>
-                              {provider ? (
+                          <Card key={request.id} className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex justify-between items-start">
                                 <div>
-                                  <p className="font-medium">{provider.full_name}</p>
-                                  <p className="text-xs text-muted-foreground">{provider.phone_number}</p>
+                                  <h3 className="font-semibold text-lg capitalize">{request.service_type.replace('_', ' ')}</h3>
+                                  <p className="text-sm text-muted-foreground">{request.location}</p>
                                 </div>
-                              ) : (
-                                <Badge variant="secondary">Unassigned</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                                : request.status === 'completed' ? 'Pending Payment' : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{new Date(request.created_at).toLocaleDateString()}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</p>
+                                <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
+
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Customer:</span>
+                                  <span>{request.profiles?.full_name || 'Unknown'}</span>
+                                </div>
+
+                                {provider ? (
+                                  <div className="flex items-center gap-2">
+                                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">Provider:</span>
+                                    <span>{provider.full_name}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <UserX className="h-4 w-4 text-muted-foreground" />
+                                    <Badge variant="secondary">Unassigned</Badge>
+                                  </div>
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Amount:</span>
+                                  <span>
+                                    {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                      ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                      : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-muted-foreground" />
+                                  <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                                  <span className="text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2 pt-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">Details</Button>
+                                    <Button size="sm" variant="outline" className="flex-1">Details</Button>
                                   </DialogTrigger>
                                   <DialogContent>
                                     <DialogHeader>
@@ -1822,11 +2131,11 @@ const Dashboard = () => {
                                                       <div className="space-y-4">
                                                         <div>
                                                           <Label>Amount (GHS)</Label>
-                                                          <Input 
-                                                            name="amount" 
-                                                            type="number" 
-                                                            step="0.01" 
-                                                            required 
+                                                          <Input
+                                                            name="amount"
+                                                            type="number"
+                                                            step="0.01"
+                                                            required
                                                             defaultValue={transaction.amount}
                                                             min="0.01"
                                                             max="1000000"
@@ -1834,13 +2143,13 @@ const Dashboard = () => {
                                                         </div>
                                                         <div>
                                                           <Label>Provider Percentage (%)</Label>
-                                                          <Input 
-                                                            name="provider_percentage" 
-                                                            type="number" 
-                                                            step="1" 
-                                                            min="0" 
-                                                            max="100" 
-                                                            required 
+                                                          <Input
+                                                            name="provider_percentage"
+                                                            type="number"
+                                                            step="1"
+                                                            min="0"
+                                                            max="100"
+                                                            required
                                                             defaultValue={transaction.provider_percentage}
                                                           />
                                                         </div>
@@ -1871,12 +2180,12 @@ const Dashboard = () => {
                                     </div>
                                   </DialogContent>
                                 </Dialog>
-                                
+
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
+                                    <Button size="sm" className="flex-1">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
                                   </DialogTrigger>
-                                    <DialogContent>
+                                  <DialogContent>
                                     <DialogHeader>
                                       <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
                                       <DialogDescription>Select an available provider for this service request</DialogDescription>
@@ -1901,7 +2210,9 @@ const Dashboard = () => {
                                     )}
                                   </DialogContent>
                                 </Dialog>
-                                
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <Button size="sm" variant="outline">
@@ -1927,7 +2238,7 @@ const Dashboard = () => {
                                     </Select>
                                   </DialogContent>
                                 </Dialog>
-                                
+
                                 <Button
                                   variant="destructive"
                                   size="sm"
@@ -1935,7 +2246,7 @@ const Dashboard = () => {
                                 >
                                   Delete
                                 </Button>
-                                
+
                                 {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
                                   <Dialog>
                                     <DialogTrigger asChild>
@@ -1950,7 +2261,7 @@ const Dashboard = () => {
                                         e.preventDefault();
                                         const formData = new FormData(e.currentTarget);
                                         handleCompletePayment(
-                                          request.id, 
+                                          request.id,
                                           Number(formData.get('amount')),
                                           Number(formData.get('provider_percentage'))
                                         );
@@ -1962,15 +2273,15 @@ const Dashboard = () => {
                                           </div>
                                           <div>
                                             <Label>Provider Percentage (%)</Label>
-                                            <Input 
-                                              name="provider_percentage" 
-                                              type="number" 
-                                              step="1" 
-                                              min="0" 
-                                              max="100" 
-                                              required 
+                                            <Input
+                                              name="provider_percentage"
+                                              type="number"
+                                              step="1"
+                                              min="0"
+                                              max="100"
+                                              required
                                               defaultValue="70"
-                                              placeholder="70" 
+                                              placeholder="70"
                                             />
                                             <p className="text-xs text-muted-foreground mt-1">
                                               Percentage of payment that goes to the provider
@@ -1983,373 +2294,253 @@ const Dashboard = () => {
                                   </Dialog>
                                 )}
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TableBody>
-                  </Table>
-                </div>
+                    </div>
 
-                {/* Mobile Card View */}
-                <div className="lg:hidden space-y-4">
-                  {allRequests.filter(request => {
-                    const searchLower = adminRequestFilter.toLowerCase();
-                    const provider = providers.find(p => p.id === request.provider_id);
-                    return (
-                      request.service_type?.toLowerCase().includes(searchLower) ||
-                      request.location?.toLowerCase().includes(searchLower) ||
-                      request.status?.toLowerCase().includes(searchLower) ||
-                      request.tracking_code?.toLowerCase().includes(searchLower) ||
-                      request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
-                      provider?.full_name?.toLowerCase().includes(searchLower) ||
-                      request.vehicle_make?.toLowerCase().includes(searchLower) ||
-                      request.vehicle_model?.toLowerCase().includes(searchLower)
-                    );
-                  }).map((request) => {
-                    const provider = providers.find(p => p.id === request.provider_id);
-                    
-                    return (
-                      <Card key={request.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold text-lg capitalize">{request.service_type.replace('_', ' ')}</h3>
-                              <p className="text-sm text-muted-foreground">{request.location}</p>
-                            </div>
-                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                          </div>
-
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">Customer:</span>
-                              <span>{request.profiles?.full_name || 'Unknown'}</span>
-                            </div>
-                            
-                            {provider ? (
-                              <div className="flex items-center gap-2">
-                                <UserCheck className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Provider:</span>
-                                <span>{provider.full_name}</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <UserX className="h-4 w-4 text-muted-foreground" />
-                                <Badge variant="secondary">Unassigned</Badge>
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">Amount:</span>
-                              <span>
-                                {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                  ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}` 
-                                  : request.status === 'completed' ? 'Pending Payment' : '-'}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{new Date(request.created_at).toLocaleDateString()}</span>
-                              <span className="text-muted-foreground">{new Date(request.created_at).toLocaleTimeString()}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 pt-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="flex-1">Details</Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Request Details</DialogTitle>
-                                  <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-muted-foreground">Service Type</Label>
-                                      <p className="font-medium">{request.service_type}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Status</Label>
-                                      <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Customer</Label>
-                                      <p className="font-medium">{request.profiles?.full_name}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Provider</Label>
-                                      <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                      <Label className="text-muted-foreground">Location</Label>
-                                      <p className="font-medium">{request.location}</p>
-                                    </div>
-                                    {request.description && (
-                                      <div className="col-span-2">
-                                        <Label className="text-muted-foreground">Description</Label>
-                                        <p className="font-medium">{request.description}</p>
-                                      </div>
-                                    )}
-                                    <div>
-                                      <Label className="text-muted-foreground">Created</Label>
-                                      <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
-                                    </div>
-                                    {request.completed_at && (
-                                      <div>
-                                        <Label className="text-muted-foreground">Completed</Label>
-                                        <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
-                                      </div>
-                                    )}
-                                    {request.status === 'completed' && (() => {
-                                      const transaction = allTransactions.find(t => t.service_request_id === request.id);
-                                      return transaction ? (
-                                        <div className="col-span-2">
-                                          <div className="flex items-center justify-between mb-2">
-                                            <Label className="text-muted-foreground">Payment Details</Label>
-                                            <Dialog>
-                                              <DialogTrigger asChild>
-                                                <Button size="sm" variant="ghost">
-                                                  <Edit className="h-4 w-4 mr-2" />
-                                                  Edit Payment
-                                                </Button>
-                                              </DialogTrigger>
-                                              <DialogContent>
-                                                <DialogHeader>
-                                                  <DialogTitle>Edit Payment</DialogTitle>
-                                                  <DialogDescription>Update payment amount and provider percentage</DialogDescription>
-                                                </DialogHeader>
-                                                <form onSubmit={(e) => {
-                                                  e.preventDefault();
-                                                  const formData = new FormData(e.currentTarget);
-                                                  const amount = Number(formData.get('amount'));
-                                                  const percentage = Number(formData.get('provider_percentage'));
-                                                  handleUpdateTransaction(transaction.id, amount, percentage);
-                                                }}>
-                                                  <div className="space-y-4">
-                                                    <div>
-                                                      <Label>Amount (GHS)</Label>
-                                                      <Input 
-                                                        name="amount" 
-                                                        type="number" 
-                                                        step="0.01" 
-                                                        required 
-                                                        defaultValue={transaction.amount}
-                                                        min="0.01"
-                                                        max="1000000"
-                                                      />
-                                                    </div>
-                                                    <div>
-                                                      <Label>Provider Percentage (%)</Label>
-                                                      <Input 
-                                                        name="provider_percentage" 
-                                                        type="number" 
-                                                        step="1" 
-                                                        min="0" 
-                                                        max="100" 
-                                                        required 
-                                                        defaultValue={transaction.provider_percentage}
-                                                      />
-                                                    </div>
-                                                    <div className="bg-muted p-3 rounded-md">
-                                                      <p className="text-sm font-medium mb-1">Current Breakdown:</p>
-                                                      <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
-                                                      <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
-                                                    </div>
-                                                    <Button type="submit" className="w-full">Update Payment</Button>
-                                                  </div>
-                                                </form>
-                                              </DialogContent>
-                                            </Dialog>
-                                          </div>
-                                          <div className="space-y-1">
-                                            <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                              Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                              Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      ) : null;
-                                    })()}
-                                  </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                            
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" className="flex-1">{request.provider_id ? 'Reassign' : 'Assign'}</Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>{request.provider_id ? 'Reassign Provider' : 'Assign Provider'}</DialogTitle>
-                                  <DialogDescription>Select an available provider for this service request</DialogDescription>
-                                </DialogHeader>
-                                {providers.filter(p => p.is_available !== false).length === 0 ? (
-                                  <div className="text-center py-6">
-                                    <p className="text-muted-foreground">No available providers at the moment</p>
-                                  </div>
-                                ) : (
-                                  <Select onValueChange={(value) => handleAssignProvider(request.id, value)}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select provider" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {providers.filter(p => p.is_available !== false).map((provider) => (
-                                        <SelectItem key={provider.id} value={provider.id}>
-                                          {provider.full_name} - {provider.phone_number}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">
-                                  Change Status
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Change Request Status</DialogTitle>
-                                  <DialogDescription>Update the status of this service request</DialogDescription>
-                                </DialogHeader>
-                                <Select onValueChange={(value) => handleUpdateRequestStatus(request.id, value)}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select new status" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="assigned">Assigned</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </DialogContent>
-                            </Dialog>
-                            
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteRequest(request.id)}
-                            >
-                              Delete
-                            </Button>
-                            
-                            {request.status === 'completed' && !allTransactions.find(t => t.service_request_id === request.id) && (
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">Payment</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Record Payment</DialogTitle>
-                                    <DialogDescription>Record mobile money payment for this service</DialogDescription>
-                                  </DialogHeader>
-                                  <form onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    handleCompletePayment(
-                                      request.id, 
-                                      Number(formData.get('amount')),
-                                      Number(formData.get('provider_percentage'))
-                                    );
-                                  }}>
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label>Amount Received (GHS)</Label>
-                                        <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
-                                      </div>
-                                      <div>
-                                        <Label>Provider Percentage (%)</Label>
-                                        <Input 
-                                          name="provider_percentage" 
-                                          type="number" 
-                                          step="1" 
-                                          min="0" 
-                                          max="100" 
-                                          required 
-                                          defaultValue="70"
-                                          placeholder="70" 
-                                        />
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                          Percentage of payment that goes to the provider
-                                        </p>
-                                      </div>
-                                      <Button type="submit" className="w-full">Confirm Payment</Button>
-                                    </div>
-                                  </form>
-                                </DialogContent>
-                              </Dialog>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                {allRequests.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No service requests yet
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    {allRequests.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No service requests yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'providers' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Provider Management</CardTitle>
-                <CardDescription>Manage service providers and their details</CardDescription>
-                <div className="flex items-center gap-2 mt-4">
-                  <Input
-                    placeholder="Search by name, email, phone, or location..."
-                    value={adminProviderFilter}
-                    onChange={(e) => setAdminProviderFilter(e.target.value)}
-                    className="max-w-md"
-                  />
-                  {adminProviderFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setAdminProviderFilter('')}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop Table View */}
-                <div className="hidden lg:block">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Jobs Completed</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Provider Management</CardTitle>
+                    <CardDescription>Manage service providers and their details</CardDescription>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Input
+                        placeholder="Search by name, email, phone, or location..."
+                        value={adminProviderFilter}
+                        onChange={(e) => setAdminProviderFilter(e.target.value)}
+                        className="max-w-md"
+                      />
+                      {adminProviderFilter && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setAdminProviderFilter('')}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Jobs Completed</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {providers.filter(provider => {
+                            const searchLower = adminProviderFilter.toLowerCase();
+                            return (
+                              provider.full_name?.toLowerCase().includes(searchLower) ||
+                              provider.email?.toLowerCase().includes(searchLower) ||
+                              provider.phone_number?.toLowerCase().includes(searchLower) ||
+                              provider.location?.toLowerCase().includes(searchLower)
+                            );
+                          }).map((provider) => {
+                            const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
+                            const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
+
+                            return (
+                              <TableRow key={provider.id}>
+                                <TableCell className="font-medium">{provider.full_name}</TableCell>
+                                <TableCell>{provider.email || 'N/A'}</TableCell>
+                                <TableCell>{provider.phone_number || 'N/A'}</TableCell>
+                                <TableCell>{provider.location || 'N/A'}</TableCell>
+                                <TableCell>{completedJobs}</TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col gap-1">
+                                    <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
+                                      {provider.is_available === false ? 'Unavailable' : 'Available'}
+                                    </Badge>
+                                    {activeJobs > 0 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {activeJobs} Active Job{activeJobs > 1 ? 's' : ''}
+                                      </span>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">View Details</Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-2xl">
+                                        <DialogHeader>
+                                          <DialogTitle>Provider Details</DialogTitle>
+                                          <DialogDescription>View and manage provider information</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                              <Label className="text-muted-foreground">Full Name</Label>
+                                              <p className="font-medium">{provider.full_name}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Email</Label>
+                                              <p className="font-medium">{provider.email || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Phone Number</Label>
+                                              <p className="font-medium">{provider.phone_number || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Location</Label>
+                                              <p className="font-medium">{provider.location || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Bio</Label>
+                                              <p className="font-medium">{provider.bio || 'N/A'}</p>
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t pt-4">
+                                            <h4 className="font-semibold mb-2">Statistics</h4>
+                                            <div className="grid grid-cols-3 gap-4">
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">{completedJobs}</p>
+                                                  <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                                                </CardContent>
+                                              </Card>
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">{activeJobs}</p>
+                                                  <p className="text-sm text-muted-foreground">Active Jobs</p>
+                                                </CardContent>
+                                              </Card>
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">
+                                                    ${allTransactions
+                                                      .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                                      .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                                      .toFixed(2)}
+                                                  </p>
+                                                  <p className="text-sm text-muted-foreground">Total Earnings</p>
+                                                </CardContent>
+                                              </Card>
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t pt-4">
+                                            <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
+                                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <div className="flex items-center gap-2">
+                                                    <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                                                    <p className="text-2xl font-bold">
+                                                      {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
+                                                    </p>
+                                                  </div>
+                                                  <p className="text-sm text-muted-foreground">Average Rating</p>
+                                                </CardContent>
+                                              </Card>
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
+                                                  <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                                </CardContent>
+                                              </Card>
+                                            </div>
+                                            {provider.ratings && provider.ratings.length > 0 ? (
+                                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                                {provider.ratings.slice(0, 5).map((rating: any) => (
+                                                  <div key={rating.id} className="p-3 border rounded">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                      <div className="flex">
+                                                        {[...Array(5)].map((_, i) => (
+                                                          <Star
+                                                            key={i}
+                                                            className={`h-4 w-4 ${i < rating.rating
+                                                                ? 'fill-yellow-400 text-yellow-400'
+                                                                : 'text-gray-300'
+                                                              }`}
+                                                          />
+                                                        ))}
+                                                      </div>
+                                                      <span className="text-sm text-muted-foreground">
+                                                        {new Date(rating.created_at).toLocaleDateString()}
+                                                      </span>
+                                                    </div>
+                                                    {rating.review && (
+                                                      <p className="text-sm text-muted-foreground">{rating.review}</p>
+                                                    )}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
+                                            )}
+                                          </div>
+
+                                          <div className="border-t pt-4">
+                                            <h4 className="font-semibold mb-2">Recent Jobs</h4>
+                                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                                              {allRequests
+                                                .filter(r => r.provider_id === provider.id)
+                                                .slice(0, 5)
+                                                .map((job) => (
+                                                  <div key={job.id} className="flex justify-between items-center p-2 border rounded">
+                                                    <div>
+                                                      <p className="font-medium">{job.service_type}</p>
+                                                      <p className="text-sm text-muted-foreground">{job.location}</p>
+                                                    </div>
+                                                    <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
+                                                  </div>
+                                                ))}
+                                              {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
+                                                <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleDeleteProfile(provider.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                      {providers.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No providers registered yet
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
                       {providers.filter(provider => {
                         const searchLower = adminProviderFilter.toLowerCase();
                         return (
@@ -2361,76 +2552,114 @@ const Dashboard = () => {
                       }).map((provider) => {
                         const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
                         const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
-                        
+
                         return (
-                          <TableRow key={provider.id}>
-                            <TableCell className="font-medium">{provider.full_name}</TableCell>
-                            <TableCell>{provider.email || 'N/A'}</TableCell>
-                            <TableCell>{provider.phone_number || 'N/A'}</TableCell>
-                            <TableCell>{provider.location || 'N/A'}</TableCell>
-                            <TableCell>{completedJobs}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col gap-1">
+                          <Card key={provider.id} className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-semibold text-lg">{provider.full_name}</h3>
+                                  <p className="text-sm text-muted-foreground">{provider.email || 'N/A'}</p>
+                                </div>
                                 <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
                                   {provider.is_available === false ? 'Unavailable' : 'Available'}
                                 </Badge>
+                              </div>
+
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-muted-foreground" />
+                                  <span>{provider.phone_number || 'N/A'}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  <span>{provider.location || 'N/A'}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Completed Jobs:</span>
+                                  <span>{completedJobs}</span>
+                                </div>
+
                                 {activeJobs > 0 && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {activeJobs} Active Job{activeJobs > 1 ? 's' : ''}
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">Active Jobs:</span>
+                                    <span>{activeJobs}</span>
+                                  </div>
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Total Earnings:</span>
+                                  <span>
+                                    ${allTransactions
+                                      .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
+                                      .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
+                                      .toFixed(2)}
                                   </span>
+                                </div>
+
+                                {provider.avgRating && (
+                                  <div className="flex items-center gap-2">
+                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-medium">Rating:</span>
+                                    <span>{provider.avgRating.toFixed(1)} ({provider.ratingCount || 0} reviews)</span>
+                                  </div>
                                 )}
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
+
+                              <div className="flex flex-wrap gap-2 pt-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">View Details</Button>
+                                    <Button size="sm" variant="outline" className="flex-1">View Details</Button>
                                   </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle>Provider Details</DialogTitle>
-                                    <DialogDescription>View and manage provider information</DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="text-muted-foreground">Full Name</Label>
-                                        <p className="font-medium">{provider.full_name}</p>
+                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle>Provider Details</DialogTitle>
+                                      <DialogDescription>View and manage provider information</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label className="text-muted-foreground">Full Name</Label>
+                                          <p className="font-medium">{provider.full_name}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Email</Label>
+                                          <p className="font-medium">{provider.email || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Phone Number</Label>
+                                          <p className="font-medium">{provider.phone_number || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Location</Label>
+                                          <p className="font-medium">{provider.location || 'N/A'}</p>
+                                        </div>
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Bio</Label>
+                                          <p className="font-medium">{provider.bio || 'N/A'}</p>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Email</Label>
-                                        <p className="font-medium">{provider.email || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Phone Number</Label>
-                                        <p className="font-medium">{provider.phone_number || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Location</Label>
-                                        <p className="font-medium">{provider.location || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Bio</Label>
-                                        <p className="font-medium">{provider.bio || 'N/A'}</p>
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="border-t pt-4">
-                                      <h4 className="font-semibold mb-2">Statistics</h4>
-                                      <div className="grid grid-cols-3 gap-4">
-                                        <Card>
-                                          <CardContent className="pt-6">
-                                            <p className="text-2xl font-bold">{completedJobs}</p>
-                                            <p className="text-sm text-muted-foreground">Completed Jobs</p>
-                                          </CardContent>
-                                        </Card>
-                                         <Card>
-                                           <CardContent className="pt-6">
-                                             <p className="text-2xl font-bold">{activeJobs}</p>
-                                             <p className="text-sm text-muted-foreground">Active Jobs</p>
-                                           </CardContent>
-                                         </Card>
+
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-semibold mb-2">Statistics</h4>
+                                        <div className="grid grid-cols-3 gap-4">
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">{completedJobs}</p>
+                                              <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                                            </CardContent>
+                                          </Card>
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">{activeJobs}</p>
+                                              <p className="text-sm text-muted-foreground">Active Jobs</p>
+                                            </CardContent>
+                                          </Card>
                                           <Card>
                                             <CardContent className="pt-6">
                                               <p className="text-2xl font-bold">
@@ -2442,85 +2671,85 @@ const Dashboard = () => {
                                               <p className="text-sm text-muted-foreground">Total Earnings</p>
                                             </CardContent>
                                           </Card>
-                                       </div>
-                                     </div>
+                                        </div>
+                                      </div>
 
-                                     <div className="border-t pt-4">
-                                       <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
-                                       <div className="grid grid-cols-2 gap-4 mb-4">
-                                         <Card>
-                                           <CardContent className="pt-6">
-                                             <div className="flex items-center gap-2">
-                                               <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
-                                               <p className="text-2xl font-bold">
-                                                 {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
-                                               </p>
-                                             </div>
-                                             <p className="text-sm text-muted-foreground">Average Rating</p>
-                                           </CardContent>
-                                         </Card>
-                                         <Card>
-                                           <CardContent className="pt-6">
-                                             <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
-                                             <p className="text-sm text-muted-foreground">Total Reviews</p>
-                                           </CardContent>
-                                         </Card>
-                                       </div>
-                                       {provider.ratings && provider.ratings.length > 0 ? (
-                                         <div className="space-y-2 max-h-48 overflow-y-auto">
-                                           {provider.ratings.slice(0, 5).map((rating: any) => (
-                                             <div key={rating.id} className="p-3 border rounded">
-                                               <div className="flex items-center gap-2 mb-1">
-                                                 <div className="flex">
-                                                   {[...Array(5)].map((_, i) => (
-                                                     <Star
-                                                       key={i}
-                                                       className={`h-4 w-4 ${
-                                                         i < rating.rating
-                                                           ? 'fill-yellow-400 text-yellow-400'
-                                                           : 'text-gray-300'
-                                                       }`}
-                                                     />
-                                                   ))}
-                                                 </div>
-                                                 <span className="text-sm text-muted-foreground">
-                                                   {new Date(rating.created_at).toLocaleDateString()}
-                                                 </span>
-                                               </div>
-                                               {rating.review && (
-                                                 <p className="text-sm text-muted-foreground">{rating.review}</p>
-                                               )}
-                                             </div>
-                                           ))}
-                                         </div>
-                                       ) : (
-                                         <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
-                                       )}
-                                     </div>
-
-                                    <div className="border-t pt-4">
-                                      <h4 className="font-semibold mb-2">Recent Jobs</h4>
-                                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                                        {allRequests
-                                          .filter(r => r.provider_id === provider.id)
-                                          .slice(0, 5)
-                                          .map((job) => (
-                                            <div key={job.id} className="flex justify-between items-center p-2 border rounded">
-                                              <div>
-                                                <p className="font-medium">{job.service_type}</p>
-                                                <p className="text-sm text-muted-foreground">{job.location}</p>
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <div className="flex items-center gap-2">
+                                                <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                                                <p className="text-2xl font-bold">
+                                                  {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
+                                                </p>
                                               </div>
-                                              <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
-                                            </div>
-                                          ))}
-                                        {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
-                                          <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
+                                              <p className="text-sm text-muted-foreground">Average Rating</p>
+                                            </CardContent>
+                                          </Card>
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
+                                              <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                            </CardContent>
+                                          </Card>
+                                        </div>
+                                        {provider.ratings && provider.ratings.length > 0 ? (
+                                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                                            {provider.ratings.slice(0, 5).map((rating: any) => (
+                                              <div key={rating.id} className="p-3 border rounded">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                  <div className="flex">
+                                                    {[...Array(5)].map((_, i) => (
+                                                      <Star
+                                                        key={i}
+                                                        className={`h-4 w-4 ${i < rating.rating
+                                                            ? 'fill-yellow-400 text-yellow-400'
+                                                            : 'text-gray-300'
+                                                          }`}
+                                                      />
+                                                    ))}
+                                                  </div>
+                                                  <span className="text-sm text-muted-foreground">
+                                                    {new Date(rating.created_at).toLocaleDateString()}
+                                                  </span>
+                                                </div>
+                                                {rating.review && (
+                                                  <p className="text-sm text-muted-foreground">{rating.review}</p>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
                                         )}
                                       </div>
+
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-semibold mb-2">Recent Jobs</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                                          {allRequests
+                                            .filter(r => r.provider_id === provider.id)
+                                            .slice(0, 5)
+                                            .map((job) => (
+                                              <div key={job.id} className="flex justify-between items-center p-2 border rounded">
+                                                <div>
+                                                  <p className="font-medium">{job.service_type}</p>
+                                                  <p className="text-sm text-muted-foreground">{job.location}</p>
+                                                </div>
+                                                <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
+                                              </div>
+                                            ))}
+                                          {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
+                                            <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                </DialogContent>
+                                  </DialogContent>
                                 </Dialog>
+
                                 <Button
                                   size="sm"
                                   variant="destructive"
@@ -2529,293 +2758,191 @@ const Dashboard = () => {
                                   Delete
                                 </Button>
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TableBody>
-                  </Table>
-                  {providers.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No providers registered yet
+
+                      {providers.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No providers registered yet
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {/* Mobile Card View */}
-                <div className="lg:hidden space-y-4">
-                  {providers.filter(provider => {
-                    const searchLower = adminProviderFilter.toLowerCase();
-                    return (
-                      provider.full_name?.toLowerCase().includes(searchLower) ||
-                      provider.email?.toLowerCase().includes(searchLower) ||
-                      provider.phone_number?.toLowerCase().includes(searchLower) ||
-                      provider.location?.toLowerCase().includes(searchLower)
-                    );
-                  }).map((provider) => {
-                    const completedJobs = allRequests.filter(r => r.provider_id === provider.id && r.status === 'completed').length;
-                    const activeJobs = allRequests.filter(r => r.provider_id === provider.id && ['assigned', 'in_progress'].includes(r.status)).length;
-                    
-                    return (
-                      <Card key={provider.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold text-lg">{provider.full_name}</h3>
-                              <p className="text-sm text-muted-foreground">{provider.email || 'N/A'}</p>
-                            </div>
-                            <Badge variant={provider.is_available === false ? 'secondary' : 'default'}>
-                              {provider.is_available === false ? 'Unavailable' : 'Available'}
-                            </Badge>
-                          </div>
-
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span>{provider.phone_number || 'N/A'}</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{provider.location || 'N/A'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">Completed Jobs:</span>
-                              <span>{completedJobs}</span>
-                            </div>
-
-                            {activeJobs > 0 && (
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Active Jobs:</span>
-                                <span>{activeJobs}</span>
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">Total Earnings:</span>
-                              <span>
-                                ${allTransactions
-                                  .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
-                                  .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
-                                  .toFixed(2)}
-                              </span>
-                            </div>
-
-                            {provider.avgRating && (
-                              <div className="flex items-center gap-2">
-                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                <span className="font-medium">Rating:</span>
-                                <span>{provider.avgRating.toFixed(1)} ({provider.ratingCount || 0} reviews)</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 pt-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="flex-1">View Details</Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                                <DialogHeader>
-                                  <DialogTitle>Provider Details</DialogTitle>
-                                  <DialogDescription>View and manage provider information</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-muted-foreground">Full Name</Label>
-                                      <p className="font-medium">{provider.full_name}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Email</Label>
-                                      <p className="font-medium">{provider.email || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Phone Number</Label>
-                                      <p className="font-medium">{provider.phone_number || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Location</Label>
-                                      <p className="font-medium">{provider.location || 'N/A'}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                      <Label className="text-muted-foreground">Bio</Label>
-                                      <p className="font-medium">{provider.bio || 'N/A'}</p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Statistics</h4>
-                                    <div className="grid grid-cols-3 gap-4">
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">{completedJobs}</p>
-                                          <p className="text-sm text-muted-foreground">Completed Jobs</p>
-                                        </CardContent>
-                                      </Card>
-                                       <Card>
-                                         <CardContent className="pt-6">
-                                           <p className="text-2xl font-bold">{activeJobs}</p>
-                                           <p className="text-sm text-muted-foreground">Active Jobs</p>
-                                         </CardContent>
-                                       </Card>
-                                        <Card>
-                                          <CardContent className="pt-6">
-                                            <p className="text-2xl font-bold">
-                                              ${allTransactions
-                                                .filter(t => allRequests.find(r => r.id === t.service_request_id && r.provider_id === provider.id))
-                                                .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0)
-                                                .toFixed(2)}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">Total Earnings</p>
-                                          </CardContent>
-                                        </Card>
-                                     </div>
-                                   </div>
-
-                                   <div className="border-t pt-4">
-                                     <h4 className="font-semibold mb-2">Ratings & Reviews</h4>
-                                     <div className="grid grid-cols-2 gap-4 mb-4">
-                                       <Card>
-                                         <CardContent className="pt-6">
-                                           <div className="flex items-center gap-2">
-                                             <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
-                                             <p className="text-2xl font-bold">
-                                               {provider.avgRating ? provider.avgRating.toFixed(1) : 'N/A'}
-                                             </p>
-                                           </div>
-                                           <p className="text-sm text-muted-foreground">Average Rating</p>
-                                         </CardContent>
-                                       </Card>
-                                       <Card>
-                                         <CardContent className="pt-6">
-                                           <p className="text-2xl font-bold">{provider.ratingCount || 0}</p>
-                                           <p className="text-sm text-muted-foreground">Total Reviews</p>
-                                         </CardContent>
-                                       </Card>
-                                     </div>
-                                     {provider.ratings && provider.ratings.length > 0 ? (
-                                       <div className="space-y-2 max-h-48 overflow-y-auto">
-                                         {provider.ratings.slice(0, 5).map((rating: any) => (
-                                           <div key={rating.id} className="p-3 border rounded">
-                                             <div className="flex items-center gap-2 mb-1">
-                                               <div className="flex">
-                                                 {[...Array(5)].map((_, i) => (
-                                                   <Star
-                                                     key={i}
-                                                     className={`h-4 w-4 ${
-                                                       i < rating.rating
-                                                         ? 'fill-yellow-400 text-yellow-400'
-                                                         : 'text-gray-300'
-                                                     }`}
-                                                   />
-                                                 ))}
-                                               </div>
-                                               <span className="text-sm text-muted-foreground">
-                                                 {new Date(rating.created_at).toLocaleDateString()}
-                                               </span>
-                                             </div>
-                                             {rating.review && (
-                                               <p className="text-sm text-muted-foreground">{rating.review}</p>
-                                             )}
-                                           </div>
-                                         ))}
-                                       </div>
-                                     ) : (
-                                       <p className="text-sm text-muted-foreground text-center py-4">No reviews yet</p>
-                                     )}
-                                   </div>
-
-                                  <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Recent Jobs</h4>
-                                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                                      {allRequests
-                                        .filter(r => r.provider_id === provider.id)
-                                        .slice(0, 5)
-                                        .map((job) => (
-                                          <div key={job.id} className="flex justify-between items-center p-2 border rounded">
-                                            <div>
-                                              <p className="font-medium">{job.service_type}</p>
-                                              <p className="text-sm text-muted-foreground">{job.location}</p>
-                                            </div>
-                                            <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
-                                          </div>
-                                        ))}
-                                      {allRequests.filter(r => r.provider_id === provider.id).length === 0 && (
-                                        <p className="text-sm text-muted-foreground text-center py-4">No jobs assigned yet</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                            
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteProfile(provider.id)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                  
-                  {providers.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No providers registered yet
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'customers' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer Management</CardTitle>
-                <CardDescription>Manage customers and their service history</CardDescription>
-                <div className="flex items-center gap-2 mt-4">
-                  <Input
-                    placeholder="Search by name, email, phone, or location..."
-                    value={adminCustomerFilter}
-                    onChange={(e) => setAdminCustomerFilter(e.target.value)}
-                    className="max-w-md"
-                  />
-                  {adminCustomerFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setAdminCustomerFilter('')}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop Table View - Hidden on Mobile */}
-                <div className="hidden lg:block">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Total Requests</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Customer Management</CardTitle>
+                    <CardDescription>Manage customers and their service history</CardDescription>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Input
+                        placeholder="Search by name, email, phone, or location..."
+                        value={adminCustomerFilter}
+                        onChange={(e) => setAdminCustomerFilter(e.target.value)}
+                        className="max-w-md"
+                      />
+                      {adminCustomerFilter && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setAdminCustomerFilter('')}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop Table View - Hidden on Mobile */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Total Requests</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {customers.filter(customer => {
+                            const searchLower = adminCustomerFilter.toLowerCase();
+                            return (
+                              customer.full_name?.toLowerCase().includes(searchLower) ||
+                              customer.email?.toLowerCase().includes(searchLower) ||
+                              customer.phone_number?.toLowerCase().includes(searchLower) ||
+                              customer.location?.toLowerCase().includes(searchLower)
+                            );
+                          }).map((customer) => {
+                            const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
+                            const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
+                            const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
+
+                            return (
+                              <TableRow key={customer.id}>
+                                <TableCell className="font-medium">{customer.full_name}</TableCell>
+                                <TableCell>{customer.email || 'N/A'}</TableCell>
+                                <TableCell>{customer.phone_number || 'N/A'}</TableCell>
+                                <TableCell>{customer.location || 'N/A'}</TableCell>
+                                <TableCell>{totalRequests}</TableCell>
+                                <TableCell>
+                                  <Badge variant={activeRequests > 0 ? 'default' : 'secondary'}>
+                                    {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">View Details</Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-2xl">
+                                        <DialogHeader>
+                                          <DialogTitle>Customer Details</DialogTitle>
+                                          <DialogDescription>View customer information and service history</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                              <Label className="text-muted-foreground">Full Name</Label>
+                                              <p className="font-medium">{customer.full_name}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Email</Label>
+                                              <p className="font-medium">{customer.email || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Phone Number</Label>
+                                              <p className="font-medium">{customer.phone_number || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Location</Label>
+                                              <p className="font-medium">{customer.location || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Bio</Label>
+                                              <p className="font-medium">{customer.bio || 'N/A'}</p>
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t pt-4">
+                                            <h4 className="font-semibold mb-2">Statistics</h4>
+                                            <div className="grid grid-cols-3 gap-4">
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">{totalRequests}</p>
+                                                  <p className="text-sm text-muted-foreground">Total Requests</p>
+                                                </CardContent>
+                                              </Card>
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">{completedRequests}</p>
+                                                  <p className="text-sm text-muted-foreground">Completed</p>
+                                                </CardContent>
+                                              </Card>
+                                              <Card>
+                                                <CardContent className="pt-6">
+                                                  <p className="text-2xl font-bold">
+                                                    ${allTransactions
+                                                      .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
+                                                      .reduce((sum, t) => sum + Number(t.amount), 0)
+                                                      .toFixed(2)}
+                                                  </p>
+                                                  <p className="text-sm text-muted-foreground">Total Spent</p>
+                                                </CardContent>
+                                              </Card>
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t pt-4">
+                                            <h4 className="font-semibold mb-2">Service History</h4>
+                                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                                              {allRequests
+                                                .filter(r => r.customer_id === customer.id)
+                                                .slice(0, 5)
+                                                .map((request) => (
+                                                  <div key={request.id} className="flex justify-between items-center p-2 border rounded">
+                                                    <div>
+                                                      <p className="font-medium">{request.service_type}</p>
+                                                      <p className="text-sm text-muted-foreground">{request.location}</p>
+                                                      <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                                  </div>
+                                                ))}
+                                              {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
+                                                <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleDeleteProfile(customer.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
                       {customers.filter(customer => {
                         const searchLower = adminCustomerFilter.toLowerCase();
                         return (
@@ -2828,392 +2955,365 @@ const Dashboard = () => {
                         const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
                         const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
                         const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
-                        
+
                         return (
-                          <TableRow key={customer.id}>
-                            <TableCell className="font-medium">{customer.full_name}</TableCell>
-                            <TableCell>{customer.email || 'N/A'}</TableCell>
-                            <TableCell>{customer.phone_number || 'N/A'}</TableCell>
-                            <TableCell>{customer.location || 'N/A'}</TableCell>
-                            <TableCell>{totalRequests}</TableCell>
-                            <TableCell>
-                              <Badge variant={activeRequests > 0 ? 'default' : 'secondary'}>
-                                {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
+                          <Card key={customer.id} className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="space-y-2">
+                                <div className="flex items-start gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm truncate">{customer.full_name}</p>
+                                  </div>
+                                </div>
+
+                                {customer.email && (
+                                  <div className="flex items-start gap-2">
+                                    <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                                  </div>
+                                )}
+
+                                {customer.phone_number && (
+                                  <div className="flex items-start gap-2">
+                                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground truncate">{customer.phone_number}</p>
+                                  </div>
+                                )}
+
+                                {customer.location && (
+                                  <div className="flex items-start gap-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground truncate">{customer.location}</p>
+                                  </div>
+                                )}
+
+                                <div className="flex items-start gap-2">
+                                  <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <p className="text-xs text-muted-foreground">
+                                    {totalRequests} total requests • {completedRequests} completed
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="pt-2 border-t">
+                                <Badge variant={activeRequests > 0 ? 'default' : 'secondary'} className="text-xs">
+                                  {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
+                                </Badge>
+                              </div>
+
+                              <div className="flex gap-2 pt-2 border-t">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">View Details</Button>
+                                    <Button size="sm" variant="outline" className="flex-1">
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      View
+                                    </Button>
                                   </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle>Customer Details</DialogTitle>
-                                    <DialogDescription>View customer information and service history</DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="text-muted-foreground">Full Name</Label>
-                                        <p className="font-medium">{customer.full_name}</p>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Customer Details</DialogTitle>
+                                      <DialogDescription>View customer information and service history</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label className="text-muted-foreground">Full Name</Label>
+                                          <p className="font-medium">{customer.full_name}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Email</Label>
+                                          <p className="font-medium">{customer.email || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Phone Number</Label>
+                                          <p className="font-medium">{customer.phone_number || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Location</Label>
+                                          <p className="font-medium">{customer.location || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Bio</Label>
+                                          <p className="font-medium">{customer.bio || 'N/A'}</p>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Email</Label>
-                                        <p className="font-medium">{customer.email || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Phone Number</Label>
-                                        <p className="font-medium">{customer.phone_number || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Location</Label>
-                                        <p className="font-medium">{customer.location || 'N/A'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Bio</Label>
-                                        <p className="font-medium">{customer.bio || 'N/A'}</p>
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="border-t pt-4">
-                                      <h4 className="font-semibold mb-2">Statistics</h4>
-                                      <div className="grid grid-cols-3 gap-4">
-                                        <Card>
-                                          <CardContent className="pt-6">
-                                            <p className="text-2xl font-bold">{totalRequests}</p>
-                                            <p className="text-sm text-muted-foreground">Total Requests</p>
-                                          </CardContent>
-                                        </Card>
-                                        <Card>
-                                          <CardContent className="pt-6">
-                                            <p className="text-2xl font-bold">{completedRequests}</p>
-                                            <p className="text-sm text-muted-foreground">Completed</p>
-                                          </CardContent>
-                                        </Card>
-                                        <Card>
-                                          <CardContent className="pt-6">
-                                            <p className="text-2xl font-bold">
-                                              ${allTransactions
-                                                .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
-                                                .reduce((sum, t) => sum + Number(t.amount), 0)
-                                                .toFixed(2)}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">Total Spent</p>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
 
-                                    <div className="border-t pt-4">
-                                      <h4 className="font-semibold mb-2">Service History</h4>
-                                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                                        {allRequests
-                                          .filter(r => r.customer_id === customer.id)
-                                          .slice(0, 5)
-                                          .map((request) => (
-                                            <div key={request.id} className="flex justify-between items-center p-2 border rounded">
-                                              <div>
-                                                <p className="font-medium">{request.service_type}</p>
-                                                <p className="text-sm text-muted-foreground">{request.location}</p>
-                                                <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-semibold mb-2">Statistics</h4>
+                                        <div className="grid grid-cols-3 gap-4">
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">{totalRequests}</p>
+                                              <p className="text-sm text-muted-foreground">Total Requests</p>
+                                            </CardContent>
+                                          </Card>
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">{completedRequests}</p>
+                                              <p className="text-sm text-muted-foreground">Completed</p>
+                                            </CardContent>
+                                          </Card>
+                                          <Card>
+                                            <CardContent className="pt-6">
+                                              <p className="text-2xl font-bold">
+                                                ${allTransactions
+                                                  .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
+                                                  .reduce((sum, t) => sum + Number(t.amount), 0)
+                                                  .toFixed(2)}
+                                              </p>
+                                              <p className="text-sm text-muted-foreground">Total Spent</p>
+                                            </CardContent>
+                                          </Card>
+                                        </div>
+                                      </div>
+
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-semibold mb-2">Service History</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                                          {allRequests
+                                            .filter(r => r.customer_id === customer.id)
+                                            .slice(0, 5)
+                                            .map((request) => (
+                                              <div key={request.id} className="flex justify-between items-center p-2 border rounded">
+                                                <div>
+                                                  <p className="font-medium">{request.service_type}</p>
+                                                  <p className="text-sm text-muted-foreground">{request.location}</p>
+                                                  <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                                <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                               </div>
-                                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                            </div>
-                                          ))}
-                                        {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
-                                          <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
-                                        )}
+                                            ))}
+                                          {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
+                                            <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </DialogContent>
+                                  </DialogContent>
                                 </Dialog>
                                 <Button
                                   size="sm"
                                   variant="destructive"
                                   onClick={() => handleDeleteProfile(customer.id)}
                                 >
+                                  <Trash2 className="h-3 w-3 mr-1" />
                                   Delete
                                 </Button>
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TableBody>
-                  </Table>
-                </div>
+                    </div>
 
-                {/* Mobile Card View */}
-                <div className="lg:hidden space-y-4">
-                  {customers.filter(customer => {
-                    const searchLower = adminCustomerFilter.toLowerCase();
-                    return (
-                      customer.full_name?.toLowerCase().includes(searchLower) ||
-                      customer.email?.toLowerCase().includes(searchLower) ||
-                      customer.phone_number?.toLowerCase().includes(searchLower) ||
-                      customer.location?.toLowerCase().includes(searchLower)
-                    );
-                  }).map((customer) => {
-                    const totalRequests = allRequests.filter(r => r.customer_id === customer.id).length;
-                    const activeRequests = allRequests.filter(r => r.customer_id === customer.id && ['pending', 'assigned', 'in_progress'].includes(r.status)).length;
-                    const completedRequests = allRequests.filter(r => r.customer_id === customer.id && r.status === 'completed').length;
-                    
-                    return (
-                      <Card key={customer.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-2">
-                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm truncate">{customer.full_name}</p>
-                              </div>
-                            </div>
-                            
-                            {customer.email && (
-                              <div className="flex items-start gap-2">
-                                <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
-                              </div>
-                            )}
-                            
-                            {customer.phone_number && (
-                              <div className="flex items-start gap-2">
-                                <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-xs text-muted-foreground truncate">{customer.phone_number}</p>
-                              </div>
-                            )}
-                            
-                            {customer.location && (
-                              <div className="flex items-start gap-2">
-                                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-xs text-muted-foreground truncate">{customer.location}</p>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-start gap-2">
-                              <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-muted-foreground">
-                                {totalRequests} total requests • {completedRequests} completed
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 border-t">
-                            <Badge variant={activeRequests > 0 ? 'default' : 'secondary'} className="text-xs">
-                              {activeRequests > 0 ? `${activeRequests} Active` : 'No Active Requests'}
-                            </Badge>
-                          </div>
-
-                          <div className="flex gap-2 pt-2 border-t">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="flex-1">
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle>Customer Details</DialogTitle>
-                                  <DialogDescription>View customer information and service history</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-muted-foreground">Full Name</Label>
-                                      <p className="font-medium">{customer.full_name}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Email</Label>
-                                      <p className="font-medium">{customer.email || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Phone Number</Label>
-                                      <p className="font-medium">{customer.phone_number || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Location</Label>
-                                      <p className="font-medium">{customer.location || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Bio</Label>
-                                      <p className="font-medium">{customer.bio || 'N/A'}</p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Statistics</h4>
-                                    <div className="grid grid-cols-3 gap-4">
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">{totalRequests}</p>
-                                          <p className="text-sm text-muted-foreground">Total Requests</p>
-                                        </CardContent>
-                                      </Card>
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">{completedRequests}</p>
-                                          <p className="text-sm text-muted-foreground">Completed</p>
-                                        </CardContent>
-                                      </Card>
-                                      <Card>
-                                        <CardContent className="pt-6">
-                                          <p className="text-2xl font-bold">
-                                            ${allTransactions
-                                              .filter(t => allRequests.find(r => r.id === t.service_request_id && r.customer_id === customer.id))
-                                              .reduce((sum, t) => sum + Number(t.amount), 0)
-                                              .toFixed(2)}
-                                          </p>
-                                          <p className="text-sm text-muted-foreground">Total Spent</p>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-
-                                  <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Service History</h4>
-                                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                                      {allRequests
-                                        .filter(r => r.customer_id === customer.id)
-                                        .slice(0, 5)
-                                        .map((request) => (
-                                          <div key={request.id} className="flex justify-between items-center p-2 border rounded">
-                                            <div>
-                                              <p className="font-medium">{request.service_type}</p>
-                                              <p className="text-sm text-muted-foreground">{request.location}</p>
-                                              <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleDateString()}</p>
-                                            </div>
-                                            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                          </div>
-                                        ))}
-                                      {allRequests.filter(r => r.customer_id === customer.id).length === 0 && (
-                                        <p className="text-sm text-muted-foreground text-center py-4">No service requests yet</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteProfile(customer.id)}
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                {customers.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No customers registered yet
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    {customers.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No customers registered yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'users' && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>User Management</CardTitle>
-                    <CardDescription>Create, edit, and manage all users</CardDescription>
-                  </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button>Create User</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create New User</DialogTitle>
-                        <DialogDescription>Add a new user to the system</DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        handleCreateUser(
-                          formData.get('email') as string,
-                          formData.get('password') as string,
-                          formData.get('full_name') as string,
-                          formData.get('phone_number') as string,
-                          formData.get('role') as string
-                        );
-                      }}>
-                        <div className="space-y-4">
-                          <div>
-                            <Label>Full Name</Label>
-                            <Input name="full_name" required />
-                          </div>
-                          <div>
-                            <Label>Email</Label>
-                            <Input name="email" type="email" required />
-                          </div>
-                          <div>
-                            <Label>Password</Label>
-                            <Input name="password" type="password" required minLength={6} />
-                          </div>
-                          <div>
-                            <Label>Phone Number</Label>
-                            <Input name="phone_number" required />
-                          </div>
-                          <div>
-                            <Label>Role</Label>
-                            <Select name="role" required>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select role" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="customer">Customer</SelectItem>
-                                <SelectItem value="provider">Provider</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button type="submit" className="w-full">Create User</Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop Table View - Hidden on Mobile */}
-                <div className="hidden lg:block">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>User Management</CardTitle>
+                        <CardDescription>Create, edit, and manage all users</CardDescription>
+                      </div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button>Create User</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create New User</DialogTitle>
+                            <DialogDescription>Add a new user to the system</DialogDescription>
+                          </DialogHeader>
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            handleCreateUser(
+                              formData.get('email') as string,
+                              formData.get('password') as string,
+                              formData.get('full_name') as string,
+                              formData.get('phone_number') as string,
+                              formData.get('role') as string
+                            );
+                          }}>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Full Name</Label>
+                                <Input name="full_name" required />
+                              </div>
+                              <div>
+                                <Label>Email</Label>
+                                <Input name="email" type="email" required />
+                              </div>
+                              <div>
+                                <Label>Password</Label>
+                                <Input name="password" type="password" required minLength={6} />
+                              </div>
+                              <div>
+                                <Label>Phone Number</Label>
+                                <Input name="phone_number" required />
+                              </div>
+                              <div>
+                                <Label>Role</Label>
+                                <Select name="role" required>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select role" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="customer">Customer</SelectItem>
+                                    <SelectItem value="provider">Provider</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <Button type="submit" className="w-full">Create User</Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop Table View - Hidden on Mobile */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {allUsers.map((user) => {
+                            const userRole = user.user_roles?.[0]?.role || 'N/A';
+                            return (
+                              <TableRow key={user.id}>
+                                <TableCell className="font-medium">{user.full_name}</TableCell>
+                                <TableCell>{user.email || 'N/A'}</TableCell>
+                                <TableCell>{user.phone_number || 'N/A'}</TableCell>
+                                <TableCell>
+                                  <Badge>{userRole}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="outline">Edit</Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Edit User</DialogTitle>
+                                        </DialogHeader>
+                                        <form onSubmit={(e) => {
+                                          e.preventDefault();
+                                          const formData = new FormData(e.currentTarget);
+                                          handleUpdateUser(user.id, {
+                                            full_name: formData.get('full_name') as string,
+                                            phone_number: formData.get('phone_number') as string,
+                                            email: formData.get('email') as string,
+                                            location: formData.get('location') as string,
+                                          });
+                                        }}>
+                                          <div className="space-y-4">
+                                            <div>
+                                              <Label>Full Name</Label>
+                                              <Input name="full_name" defaultValue={user.full_name} required />
+                                            </div>
+                                            <div>
+                                              <Label>Email</Label>
+                                              <Input name="email" type="email" defaultValue={user.email || ''} />
+                                            </div>
+                                            <div>
+                                              <Label>Phone</Label>
+                                              <Input name="phone_number" defaultValue={user.phone_number || ''} />
+                                            </div>
+                                            <div>
+                                              <Label>Location</Label>
+                                              <Input name="location" defaultValue={user.location || ''} />
+                                            </div>
+                                            <div>
+                                              <Label>Change Role</Label>
+                                              <Select
+                                                defaultValue={userRole}
+                                                onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
+                                              >
+                                                <SelectTrigger>
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="customer">Customer</SelectItem>
+                                                  <SelectItem value="provider">Provider</SelectItem>
+                                                  <SelectItem value="admin">Admin</SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                            <Button type="submit" className="w-full">Save Changes</Button>
+                                          </div>
+                                        </form>
+                                      </DialogContent>
+                                    </Dialog>
+                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
                       {allUsers.map((user) => {
                         const userRole = user.user_roles?.[0]?.role || 'N/A';
                         return (
-                          <TableRow key={user.id}>
-                            <TableCell className="font-medium">{user.full_name}</TableCell>
-                            <TableCell>{user.email || 'N/A'}</TableCell>
-                            <TableCell>{user.phone_number || 'N/A'}</TableCell>
-                            <TableCell>
-                              <Badge>{userRole}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
+                          <Card key={user.id} className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="space-y-2">
+                                <div className="flex items-start gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm truncate">{user.full_name}</p>
+                                  </div>
+                                </div>
+
+                                {user.email && (
+                                  <div className="flex items-start gap-2">
+                                    <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                  </div>
+                                )}
+
+                                {user.phone_number && (
+                                  <div className="flex items-start gap-2">
+                                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground truncate">{user.phone_number}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="pt-2 border-t">
+                                <Badge className="text-xs capitalize">{userRole}</Badge>
+                              </div>
+
+                              <div className="flex gap-2 pt-2 border-t">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">Edit</Button>
+                                    <Button size="sm" variant="outline" className="flex-1">
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
                                   </DialogTrigger>
                                   <DialogContent>
                                     <DialogHeader>
@@ -3248,7 +3348,7 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                           <Label>Change Role</Label>
-                                          <Select 
+                                          <Select
                                             defaultValue={userRole}
                                             onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
                                           >
@@ -3267,381 +3367,277 @@ const Dashboard = () => {
                                     </form>
                                   </DialogContent>
                                 </Dialog>
-                                <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteUser(user.id)}
+                                >
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  Delete
+                                </Button>
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Mobile Card View */}
-                <div className="lg:hidden space-y-4">
-                  {allUsers.map((user) => {
-                    const userRole = user.user_roles?.[0]?.role || 'N/A';
-                    return (
-                      <Card key={user.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-2">
-                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm truncate">{user.full_name}</p>
-                              </div>
-                            </div>
-                            
-                            {user.email && (
-                              <div className="flex items-start gap-2">
-                                <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                              </div>
-                            )}
-                            
-                            {user.phone_number && (
-                              <div className="flex items-start gap-2">
-                                <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-xs text-muted-foreground truncate">{user.phone_number}</p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="pt-2 border-t">
-                            <Badge className="text-xs capitalize">{userRole}</Badge>
-                          </div>
-
-                          <div className="flex gap-2 pt-2 border-t">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="flex-1">
-                                  <Edit className="h-3 w-3 mr-1" />
-                                  Edit
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit User</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={(e) => {
-                                  e.preventDefault();
-                                  const formData = new FormData(e.currentTarget);
-                                  handleUpdateUser(user.id, {
-                                    full_name: formData.get('full_name') as string,
-                                    phone_number: formData.get('phone_number') as string,
-                                    email: formData.get('email') as string,
-                                    location: formData.get('location') as string,
-                                  });
-                                }}>
-                                  <div className="space-y-4">
-                                    <div>
-                                      <Label>Full Name</Label>
-                                      <Input name="full_name" defaultValue={user.full_name} required />
-                                    </div>
-                                    <div>
-                                      <Label>Email</Label>
-                                      <Input name="email" type="email" defaultValue={user.email || ''} />
-                                    </div>
-                                    <div>
-                                      <Label>Phone</Label>
-                                      <Input name="phone_number" defaultValue={user.phone_number || ''} />
-                                    </div>
-                                    <div>
-                                      <Label>Location</Label>
-                                      <Input name="location" defaultValue={user.location || ''} />
-                                    </div>
-                                    <div>
-                                      <Label>Change Role</Label>
-                                      <Select 
-                                        defaultValue={userRole}
-                                        onValueChange={(newRole) => handleUpdateUserRole(user.id, newRole, userRole)}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="customer">Customer</SelectItem>
-                                          <SelectItem value="provider">Provider</SelectItem>
-                                          <SelectItem value="admin">Admin</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <Button type="submit" className="w-full">Save Changes</Button>
-                                  </div>
-                                </form>
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'payments' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Transactions</CardTitle>
-                <CardDescription>View and manage all payment transactions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop Table View - Hidden on Mobile */}
-                <div className="hidden lg:block">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Transaction ID</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Method</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Payment Transactions</CardTitle>
+                    <CardDescription>View and manage all payment transactions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Desktop Table View - Hidden on Mobile */}
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Transaction ID</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Service</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Method</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {allTransactions.map((tx) => {
+                            const request = allRequests.find(r => r.id === tx.service_request_id);
+                            const customer = customers.find(c => c.id === request?.customer_id);
+
+                            return (
+                              <TableRow key={tx.id}>
+                                <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}</TableCell>
+                                <TableCell className="font-bold">GHS {Number(tx.amount).toFixed(2)}</TableCell>
+                                <TableCell>{request?.service_type || 'N/A'}</TableCell>
+                                <TableCell>{customer?.full_name || 'Unknown'}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">{tx.transaction_type}</Badge>
+                                </TableCell>
+                                <TableCell className="capitalize">{tx.payment_method.replace('_', ' ')}</TableCell>
+                                <TableCell>
+                                  <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
+                                    {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button size="sm" variant="outline">Details</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Transaction Details</DialogTitle>
+                                        <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="text-muted-foreground">Amount</Label>
+                                            <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Status</Label>
+                                            <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
+                                              {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                            </Badge>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Transaction Type</Label>
+                                            <p className="font-medium">{tx.transaction_type}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Payment Method</Label>
+                                            <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                                          </div>
+                                          {tx.reference_number && (
+                                            <div className="col-span-2">
+                                              <Label className="text-muted-foreground">Reference Number</Label>
+                                              <p className="font-mono font-medium">{tx.reference_number}</p>
+                                            </div>
+                                          )}
+                                          <div className="col-span-2 border-t pt-4">
+                                            <Label className="text-muted-foreground">Service Details</Label>
+                                            <div className="mt-2 space-y-1">
+                                              <p><span className="font-medium">Type:</span> {request?.service_type}</p>
+                                              <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
+                                              <p><span className="font-medium">Location:</span> {request?.location}</p>
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Created</Label>
+                                            <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
+                                          </div>
+                                          {tx.confirmed_at && (
+                                            <div>
+                                              <Label className="text-muted-foreground">Confirmed</Label>
+                                              <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
+                                            </div>
+                                          )}
+                                          {tx.notes && (
+                                            <div className="col-span-2">
+                                              <Label className="text-muted-foreground">Notes</Label>
+                                              <p className="text-sm">{tx.notes}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
                       {allTransactions.map((tx) => {
                         const request = allRequests.find(r => r.id === tx.service_request_id);
                         const customer = customers.find(c => c.id === request?.customer_id);
-                        
+
                         return (
-                          <TableRow key={tx.id}>
-                            <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}</TableCell>
-                            <TableCell className="font-bold">GHS {Number(tx.amount).toFixed(2)}</TableCell>
-                            <TableCell>{request?.service_type || 'N/A'}</TableCell>
-                            <TableCell>{customer?.full_name || 'Unknown'}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{tx.transaction_type}</Badge>
-                            </TableCell>
-                            <TableCell className="capitalize">{tx.payment_method.replace('_', ' ')}</TableCell>
-                            <TableCell>
-                              <Badge variant={tx.confirmed_at ? 'default' : 'secondary'}>
-                                {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline">Details</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Transaction Details</DialogTitle>
-                                    <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="text-muted-foreground">Amount</Label>
-                                        <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Status</Label>
-                                        <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
-                                          {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                                        </Badge>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Transaction Type</Label>
-                                        <p className="font-medium">{tx.transaction_type}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Payment Method</Label>
-                                        <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
-                                      </div>
-                                      {tx.reference_number && (
-                                        <div className="col-span-2">
-                                          <Label className="text-muted-foreground">Reference Number</Label>
-                                          <p className="font-mono font-medium">{tx.reference_number}</p>
-                                        </div>
-                                      )}
-                                      <div className="col-span-2 border-t pt-4">
-                                        <Label className="text-muted-foreground">Service Details</Label>
-                                        <div className="mt-2 space-y-1">
-                                          <p><span className="font-medium">Type:</span> {request?.service_type}</p>
-                                          <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
-                                          <p><span className="font-medium">Location:</span> {request?.location}</p>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <Label className="text-muted-foreground">Created</Label>
-                                        <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
-                                      </div>
-                                      {tx.confirmed_at && (
-                                        <div>
-                                          <Label className="text-muted-foreground">Confirmed</Label>
-                                          <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
-                                        </div>
-                                      )}
-                                      {tx.notes && (
-                                        <div className="col-span-2">
-                                          <Label className="text-muted-foreground">Notes</Label>
-                                          <p className="text-sm">{tx.notes}</p>
-                                        </div>
-                                      )}
+                          <Card key={tx.id} className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 space-y-3">
+                              <div className="space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                                    <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-bold text-sm">GHS {Number(tx.amount).toFixed(2)}</p>
+                                      <p className="text-xs text-muted-foreground font-mono">#{tx.id.slice(0, 8)}</p>
                                     </div>
                                   </div>
-                                </DialogContent>
-                              </Dialog>
-                            </TableCell>
-                          </TableRow>
+                                  <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="text-xs">
+                                    {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                  </Badge>
+                                </div>
+
+                                <div className="flex items-start gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <p className="text-xs text-muted-foreground truncate">{customer?.full_name || 'Unknown'}</p>
+                                </div>
+
+                                <div className="flex items-start gap-2">
+                                  <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <p className="text-xs text-muted-foreground truncate capitalize">{request?.service_type || 'N/A'}</p>
+                                </div>
+
+                                <div className="flex items-start gap-2">
+                                  <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <p className="text-xs text-muted-foreground capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                                </div>
+
+                                <div className="flex items-start gap-2">
+                                  <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="pt-2 border-t">
+                                <Badge variant="outline" className="text-xs capitalize">{tx.transaction_type.replace('_', ' ')}</Badge>
+                              </div>
+
+                              <div className="pt-2 border-t">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline" className="w-full">
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      View Details
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Transaction Details</DialogTitle>
+                                      <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label className="text-muted-foreground">Amount</Label>
+                                          <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Status</Label>
+                                          <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
+                                            {tx.confirmed_at ? 'Confirmed' : 'Pending'}
+                                          </Badge>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Transaction Type</Label>
+                                          <p className="font-medium">{tx.transaction_type}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Payment Method</Label>
+                                          <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
+                                        </div>
+                                        {tx.reference_number && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Reference Number</Label>
+                                            <p className="font-mono font-medium">{tx.reference_number}</p>
+                                          </div>
+                                        )}
+                                        <div className="col-span-2 border-t pt-4">
+                                          <Label className="text-muted-foreground">Service Details</Label>
+                                          <div className="mt-2 space-y-1">
+                                            <p><span className="font-medium">Type:</span> {request?.service_type}</p>
+                                            <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
+                                            <p><span className="font-medium">Location:</span> {request?.location}</p>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Created</Label>
+                                          <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
+                                        </div>
+                                        {tx.confirmed_at && (
+                                          <div>
+                                            <Label className="text-muted-foreground">Confirmed</Label>
+                                            <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
+                                          </div>
+                                        )}
+                                        {tx.notes && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Notes</Label>
+                                            <p className="text-sm">{tx.notes}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TableBody>
-                  </Table>
-                </div>
+                    </div>
 
-                {/* Mobile Card View */}
-                <div className="lg:hidden space-y-4">
-                  {allTransactions.map((tx) => {
-                    const request = allRequests.find(r => r.id === tx.service_request_id);
-                    const customer = customers.find(c => c.id === request?.customer_id);
-                    
-                    return (
-                      <Card key={tx.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="space-y-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2 flex-1 min-w-0">
-                                <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="font-bold text-sm">GHS {Number(tx.amount).toFixed(2)}</p>
-                                  <p className="text-xs text-muted-foreground font-mono">#{tx.id.slice(0, 8)}</p>
-                                </div>
-                              </div>
-                              <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="text-xs">
-                                {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                              </Badge>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-muted-foreground truncate">{customer?.full_name || 'Unknown'}</p>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-muted-foreground truncate capitalize">{request?.service_type || 'N/A'}</p>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-muted-foreground capitalize">{tx.payment_method.replace('_', ' ')}</p>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <div>
-                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 border-t">
-                            <Badge variant="outline" className="text-xs capitalize">{tx.transaction_type.replace('_', ' ')}</Badge>
-                          </div>
-
-                          <div className="pt-2 border-t">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="w-full">
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View Details
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Transaction Details</DialogTitle>
-                                  <DialogDescription>Transaction #{tx.id.slice(0, 8)}</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-muted-foreground">Amount</Label>
-                                      <p className="text-2xl font-bold">GHS {Number(tx.amount).toFixed(2)}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Status</Label>
-                                      <Badge variant={tx.confirmed_at ? 'default' : 'secondary'} className="mt-2">
-                                        {tx.confirmed_at ? 'Confirmed' : 'Pending'}
-                                      </Badge>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Transaction Type</Label>
-                                      <p className="font-medium">{tx.transaction_type}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Payment Method</Label>
-                                      <p className="font-medium capitalize">{tx.payment_method.replace('_', ' ')}</p>
-                                    </div>
-                                    {tx.reference_number && (
-                                      <div className="col-span-2">
-                                        <Label className="text-muted-foreground">Reference Number</Label>
-                                        <p className="font-mono font-medium">{tx.reference_number}</p>
-                                      </div>
-                                    )}
-                                    <div className="col-span-2 border-t pt-4">
-                                      <Label className="text-muted-foreground">Service Details</Label>
-                                      <div className="mt-2 space-y-1">
-                                        <p><span className="font-medium">Type:</span> {request?.service_type}</p>
-                                        <p><span className="font-medium">Customer:</span> {customer?.full_name}</p>
-                                        <p><span className="font-medium">Location:</span> {request?.location}</p>
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <Label className="text-muted-foreground">Created</Label>
-                                      <p className="text-sm">{new Date(tx.created_at).toLocaleString()}</p>
-                                    </div>
-                                    {tx.confirmed_at && (
-                                      <div>
-                                        <Label className="text-muted-foreground">Confirmed</Label>
-                                        <p className="text-sm">{new Date(tx.confirmed_at).toLocaleString()}</p>
-                                      </div>
-                                    )}
-                                    {tx.notes && (
-                                      <div className="col-span-2">
-                                        <Label className="text-muted-foreground">Notes</Label>
-                                        <p className="text-sm">{tx.notes}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                {allTransactions.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No transactions recorded yet
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    {allTransactions.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No transactions recorded yet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
               {currentView === 'applications' && (
@@ -3657,9 +3653,9 @@ const Dashboard = () => {
                         className="max-w-2xl"
                       />
                       {adminApplicationFilter && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setAdminApplicationFilter('')}
                         >
                           Clear
@@ -3702,11 +3698,11 @@ const Dashboard = () => {
                               <TableCell>{app.phone}</TableCell>
                               <TableCell>{app.city}</TableCell>
                               <TableCell>
-                                <Badge 
+                                <Badge
                                   variant={
-                                    app.status === 'approved' ? 'default' : 
-                                    app.status === 'rejected' ? 'destructive' : 
-                                    'secondary'
+                                    app.status === 'approved' ? 'default' :
+                                      app.status === 'rejected' ? 'destructive' :
+                                        'secondary'
                                   }
                                 >
                                   {app.status}
@@ -3752,11 +3748,11 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                           <Label className="text-muted-foreground">Status</Label>
-                                          <Badge 
+                                          <Badge
                                             variant={
-                                              app.status === 'approved' ? 'default' : 
-                                              app.status === 'rejected' ? 'destructive' : 
-                                              'secondary'
+                                              app.status === 'approved' ? 'default' :
+                                                app.status === 'rejected' ? 'destructive' :
+                                                  'secondary'
                                             }
                                             className="mt-2"
                                           >
@@ -3895,11 +3891,11 @@ const Dashboard = () => {
                                   <Building2 className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-semibold">{app.business_name}</span>
                                 </div>
-                                <Badge 
+                                <Badge
                                   variant={
-                                    app.status === 'approved' ? 'default' : 
-                                    app.status === 'rejected' ? 'destructive' : 
-                                    'secondary'
+                                    app.status === 'approved' ? 'default' :
+                                      app.status === 'rejected' ? 'destructive' :
+                                        'secondary'
                                   }
                                   className="text-xs"
                                 >
@@ -3914,25 +3910,25 @@ const Dashboard = () => {
                                 <span className="text-muted-foreground">Contact:</span>
                                 <span className="font-medium">{app.contact_person}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Email:</span>
                                 <span className="font-medium">{app.email}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Phone:</span>
                                 <span className="font-medium">{app.phone}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">City:</span>
                                 <span className="font-medium">{app.city}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Applied:</span>
@@ -3977,11 +3973,11 @@ const Dashboard = () => {
                                       </div>
                                       <div>
                                         <Label className="text-muted-foreground">Status</Label>
-                                        <Badge 
+                                        <Badge
                                           variant={
-                                            app.status === 'approved' ? 'default' : 
-                                            app.status === 'rejected' ? 'destructive' : 
-                                            'secondary'
+                                            app.status === 'approved' ? 'default' :
+                                              app.status === 'rejected' ? 'destructive' :
+                                                'secondary'
                                           }
                                           className="mt-2"
                                         >
@@ -4122,7 +4118,7 @@ const Dashboard = () => {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -4134,7 +4130,7 @@ const Dashboard = () => {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-500/10">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -4146,7 +4142,7 @@ const Dashboard = () => {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -4171,7 +4167,7 @@ const Dashboard = () => {
                           </CardTitle>
                           <CardDescription>Manage messages from the contact form</CardDescription>
                         </div>
-                        
+
                         {/* Search Input */}
                         <div className="relative w-full md:w-80">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -4183,7 +4179,7 @@ const Dashboard = () => {
                           />
                         </div>
                       </div>
-                      
+
                       {/* Status Filter Tabs */}
                       <div className="flex flex-wrap gap-2 mt-4">
                         <Button
@@ -4224,7 +4220,7 @@ const Dashboard = () => {
                         </Button>
                       </div>
                     </CardHeader>
-                    
+
                     <CardContent>
                       {(() => {
                         const filteredMessages = contactMessages
@@ -4233,7 +4229,7 @@ const Dashboard = () => {
                             if (messageStatusFilter !== 'all' && message.status !== messageStatusFilter) {
                               return false;
                             }
-                            
+
                             // Search filter
                             if (messageSearchQuery) {
                               const query = messageSearchQuery.toLowerCase();
@@ -4244,7 +4240,7 @@ const Dashboard = () => {
                                 (message.phone && message.phone.includes(query))
                               );
                             }
-                            
+
                             return true;
                           })
                           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -4254,7 +4250,7 @@ const Dashboard = () => {
                             <div className="text-center py-12">
                               <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                               <p className="text-muted-foreground">
-                                {messageSearchQuery || messageStatusFilter !== 'all' 
+                                {messageSearchQuery || messageStatusFilter !== 'all'
                                   ? 'No messages match your filters'
                                   : 'No contact messages yet'}
                               </p>
@@ -4265,36 +4261,34 @@ const Dashboard = () => {
                         return (
                           <div className="space-y-4">
                             {filteredMessages.map((message) => (
-                              <Card 
-                                key={message.id} 
-                                className={`transition-all hover:shadow-md ${
-                                  message.status === 'new' 
-                                    ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10' 
+                              <Card
+                                key={message.id}
+                                className={`transition-all hover:shadow-md ${message.status === 'new'
+                                    ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10'
                                     : message.status === 'read'
-                                    ? 'border-green-500/20 bg-gradient-to-br from-green-500/5 to-card'
-                                    : 'border-border/50 bg-card/50'
-                                }`}
+                                      ? 'border-green-500/20 bg-gradient-to-br from-green-500/5 to-card'
+                                      : 'border-border/50 bg-card/50'
+                                  }`}
                               >
                                 <CardContent className="p-6">
                                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                     <div className="flex items-start gap-3 flex-1">
-                                      <div className={`p-3 rounded-xl ${
-                                        message.status === 'new' 
-                                          ? 'bg-blue-500/10 text-blue-500' 
+                                      <div className={`p-3 rounded-xl ${message.status === 'new'
+                                          ? 'bg-blue-500/10 text-blue-500'
                                           : message.status === 'read'
-                                          ? 'bg-green-500/10 text-green-500'
-                                          : 'bg-muted text-muted-foreground'
-                                      }`}>
+                                            ? 'bg-green-500/10 text-green-500'
+                                            : 'bg-muted text-muted-foreground'
+                                        }`}>
                                         <Mail className="h-5 w-5" />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                           <p className="font-bold text-lg truncate">{message.name}</p>
-                                          <Badge 
+                                          <Badge
                                             variant={
-                                              message.status === 'new' ? 'default' : 
-                                              message.status === 'read' ? 'secondary' : 
-                                              'outline'
+                                              message.status === 'new' ? 'default' :
+                                                message.status === 'read' ? 'secondary' :
+                                                  'outline'
                                             }
                                             className="shrink-0"
                                           >
@@ -4321,7 +4315,7 @@ const Dashboard = () => {
                                       </div>
                                     </div>
                                   </div>
-                                  
+
                                   <div className="space-y-3 mb-4 pl-14">
                                     <div>
                                       <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Subject</Label>
@@ -4420,7 +4414,7 @@ const Dashboard = () => {
               )}
 
               {currentView === 'profile' && (
-            <ProfileForm onSuccess={fetchData} />
+                <ProfileForm onSuccess={fetchData} />
               )}
             </main>
           </div>

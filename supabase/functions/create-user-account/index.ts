@@ -14,10 +14,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
+
     // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-    
+
     // Verify the caller is authenticated using access token
     const authHeader = req.headers.get('Authorization') || ''
     const accessToken = authHeader.replace('Bearer ', '')
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     // Parse request body
     const { email, password, fullName, phoneNumber, role, applicationId } = await req.json()
 
-    console.log('Creating user account:', { email, fullName, role })
+
 
     // Validate input
     if (!email || !password || !fullName || !role) {
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('User created successfully:', authData.user.id)
+
 
     // Update application status if provided
     if (applicationId) {
@@ -115,11 +115,11 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        user: authData.user 
+        user: authData.user
       }),
-      { 
+      {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }

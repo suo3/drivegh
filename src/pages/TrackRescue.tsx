@@ -30,7 +30,7 @@ const TrackRescue = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [mapsEnabled, setMapsEnabled] = useState(true);
- 
+
   // Robust phone normalization and matching across formats
   const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
   const lastN = (num: string, n: number) => digitsOnly(num).slice(-n);
@@ -62,8 +62,8 @@ const TrackRescue = () => {
     for (const x of va) if (x && vb.has(x)) return true;
     return false;
   };
- 
-   const handleTrack = async (e: React.FormEvent) => {
+
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setSearched(false);
@@ -73,7 +73,6 @@ const TrackRescue = () => {
       const normalizedDigits = digitsOnly(phoneNumber);
       const inputLast10 = lastN(phoneNumber, 10);
       const inputLast9 = lastN(phoneNumber, 9);
-      console.log('Searching for phone:', { normalizedDigits, inputLast10, inputLast9 });
 
       // 1) Load profiles and find any user IDs whose phone matches the input (so logged-in-created requests are discoverable when logged out)
       const { data: profiles, error: profileError } = await supabase
@@ -90,7 +89,6 @@ const TrackRescue = () => {
       profiles?.forEach((p) => {
         if (phonesMatch(p.phone_number || '', phoneNumber)) matchingProfileIds.add(p.id);
       });
-      console.log('Matching profile IDs:', Array.from(matchingProfileIds));
 
       // 2) Fetch candidate requests and ratings in parallel
       const [guestReqRes, profileReqRes, ratingsRes] = await Promise.all([
@@ -106,13 +104,13 @@ const TrackRescue = () => {
         // Requests created while logged in: match by customer_id derived from profile phone
         matchingProfileIds.size
           ? supabase
-              .from('service_requests')
-              .select(`
+            .from('service_requests')
+            .select(`
                 *,
                 profiles!service_requests_provider_id_fkey(full_name, phone_number)
               `)
-              .in('customer_id', Array.from(matchingProfileIds))
-              .order('created_at', { ascending: false })
+            .in('customer_id', Array.from(matchingProfileIds))
+            .order('created_at', { ascending: false })
           : Promise.resolve({ data: [], error: null } as any),
         // Fetch ratings
         supabase.from('ratings').select('*')
@@ -162,7 +160,7 @@ const TrackRescue = () => {
   useEffect(() => {
     const fetchUserRequests = async () => {
       if (!user) return;
-      
+
       setLoading(true);
       try {
         const [requestsRes, ratingsRes] = await Promise.all([
@@ -200,7 +198,7 @@ const TrackRescue = () => {
         .select('*')
         .eq('key', 'maps_enabled')
         .single();
-      
+
       if (data) {
         const settingsValue = data.value as { enabled?: boolean };
         setMapsEnabled(settingsValue?.enabled ?? true);
@@ -225,8 +223,8 @@ const TrackRescue = () => {
           filter: `customer_id=eq.${user.id}`
         },
         async (payload) => {
-          console.log('Real-time update:', payload);
-          
+
+
           // Refresh the service requests data
           const [requestsRes, ratingsRes] = await Promise.all([
             supabase
@@ -243,7 +241,7 @@ const TrackRescue = () => {
           if (requestsRes.data) {
             setServiceRequests(requestsRes.data);
             setRatings(ratingsRes.data || []);
-            
+
             // Show notification for status changes
             if (payload.eventType === 'UPDATE' && payload.new) {
               const newStatus = (payload.new as any).status;
@@ -293,12 +291,12 @@ const TrackRescue = () => {
 
   const filteredAndSortedRequests = useMemo(() => {
     let filtered = serviceRequests;
-    
+
     // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(req => req.status === statusFilter);
     }
-    
+
     // Sort by priority (active requests first, cancelled last)
     return [...filtered].sort((a, b) => {
       const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
@@ -334,7 +332,7 @@ const TrackRescue = () => {
 
     try {
       const existingRating = getRequestRating(requestId);
-      
+
       if (existingRating) {
         const { error } = await supabase
           .from('ratings')
@@ -364,7 +362,7 @@ const TrackRescue = () => {
       // Refresh ratings
       const { data: newRatings } = await supabase.from('ratings').select('*');
       setRatings(newRatings || []);
-      
+
       setRatingDialogOpen(null);
       setCurrentRating(0);
       setReviewText('');
@@ -377,7 +375,7 @@ const TrackRescue = () => {
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       <Navbar />
-      
+
       {/* Compact Banner */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
@@ -389,7 +387,7 @@ const TrackRescue = () => {
       <section className="py-12 lg:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative">
         <div className="absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
-        
+
         <div className="container mx-auto px-4 lg:px-6 relative">
           <div className="w-full">
             {serviceRequests.length === 0 && (
@@ -400,13 +398,13 @@ const TrackRescue = () => {
                   </div>
                   <h2 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-3">Find Your Requests</h2>
                   <p className="text-muted-foreground text-sm lg:text-lg">
-                    {user 
-                      ? "Search for requests by phone number" 
+                    {user
+                      ? "Search for requests by phone number"
                       : "Enter your phone number to track all your service requests"
                     }
                   </p>
                 </div>
-                
+
                 <form onSubmit={handleTrack} className="space-y-4 lg:space-y-6">
                   <div className="space-y-2 lg:space-y-3">
                     <Label htmlFor="phoneNumber" className="text-sm lg:text-base font-semibold">Phone Number</Label>
@@ -424,9 +422,9 @@ const TrackRescue = () => {
                       Enter your phone number with or without formatting
                     </p>
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold text-base lg:text-lg h-12 lg:h-14" 
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold text-base lg:text-lg h-12 lg:h-14"
                     disabled={loading}
                   >
                     {loading ? (
@@ -464,7 +462,7 @@ const TrackRescue = () => {
                 <p className="text-xs lg:text-sm text-muted-foreground mb-4 lg:mb-6">
                   Make sure you're using the same phone number you provided when requesting assistance.
                 </p>
-                <Button 
+                <Button
                   onClick={() => navigate('/request-service')}
                   className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold"
                 >
@@ -487,7 +485,7 @@ const TrackRescue = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 lg:gap-3 glass-dark p-2 lg:p-3 rounded-xl w-full sm:w-auto">
                     <Filter className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -511,256 +509,255 @@ const TrackRescue = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                   {filteredAndSortedRequests.map((request, index) => (
-                  <Card 
-                    key={request.id} 
-                    className="overflow-hidden cursor-pointer hover-lift transition-all border-2 hover:border-primary/30 animate-scale-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                    onClick={() => navigate(`/track/${request.tracking_code || request.id}`)}
-                  >
-                    {/* Status Banner - Enhanced gradient */}
-                    <div className={`${getStatusColor(request.status)} text-white p-4 lg:p-6 relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                      <div className="relative flex items-center justify-between">
-                        <div className="flex items-center gap-3 lg:gap-4">
-                          <div className="bg-white/20 backdrop-blur-sm rounded-lg lg:rounded-xl p-2 lg:p-3">
-                            {getStatusIcon(request.status)}
+                    <Card
+                      key={request.id}
+                      className="overflow-hidden cursor-pointer hover-lift transition-all border-2 hover:border-primary/30 animate-scale-in"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                      onClick={() => navigate(`/track/${request.tracking_code || request.id}`)}
+                    >
+                      {/* Status Banner - Enhanced gradient */}
+                      <div className={`${getStatusColor(request.status)} text-white p-4 lg:p-6 relative overflow-hidden`}>
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                        <div className="relative flex items-center justify-between">
+                          <div className="flex items-center gap-3 lg:gap-4">
+                            <div className="bg-white/20 backdrop-blur-sm rounded-lg lg:rounded-xl p-2 lg:p-3">
+                              {getStatusIcon(request.status)}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg lg:text-xl">
+                                {getStatusLabel(request.status)}
+                              </h3>
+                              <p className="text-xs lg:text-sm opacity-90 capitalize mt-0.5 lg:mt-1">
+                                {request.service_type.replace('_', ' ')} Service
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-bold text-lg lg:text-xl">
-                              {getStatusLabel(request.status)}
-                            </h3>
-                            <p className="text-xs lg:text-sm opacity-90 capitalize mt-0.5 lg:mt-1">
-                              {request.service_type.replace('_', ' ')} Service
-                            </p>
-                          </div>
+                        </div>
+                        <div className="text-xs lg:text-sm opacity-90 mt-2 lg:mt-3 text-right">
+                          {new Date(request.created_at).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
                         </div>
                       </div>
-                      <div className="text-xs lg:text-sm opacity-90 mt-2 lg:mt-3 text-right">
-                        {new Date(request.created_at).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </div>
-                    </div>
 
-                    {/* Request Details - Enhanced spacing and icons */}
-                    <div className="p-4 lg:p-6 space-y-3 lg:space-y-5">
-                      <div className="flex items-start gap-3 lg:gap-4">
-                        <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                          <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Location</p>
-                          <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
-                        </div>
-                       </div>
-
-                       {/* Live Tracking Map */}
-                       {(request.status === 'en_route' || request.status === 'in_progress') && 
-                        request.customer_lat && request.customer_lng && (
-                         <div className="mt-4">
-                           <div className="flex items-center gap-2 mb-3">
-                             <Navigation className="h-5 w-5 text-primary" />
-                             <p className="font-semibold text-sm lg:text-base">Live Tracking</p>
-                           </div>
-                           <LiveTrackingMap
-                             customerLat={request.customer_lat}
-                             customerLng={request.customer_lng}
-                             providerLat={request.provider_lat}
-                             providerLng={request.provider_lng}
-                             customerName="Your Location"
-                             providerName={request.profiles?.full_name || 'Provider'}
-                             showETA={true}
-                           />
-                         </div>
-                       )}
-
-                       {request.description && (
+                      {/* Request Details - Enhanced spacing and icons */}
+                      <div className="p-4 lg:p-6 space-y-3 lg:space-y-5">
                         <div className="flex items-start gap-3 lg:gap-4">
                           <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                            <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                            <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Description</p>
-                            <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.description}</p>
+                            <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Location</p>
+                            <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                           </div>
                         </div>
-                      )}
 
-                      {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
-                        <div className="flex items-start gap-3 lg:gap-4">
-                          <div className="bg-amber-100 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                            <Fuel className="h-4 w-4 lg:h-5 lg:w-5 text-amber-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Fuel Details</p>
-                            <div className="flex gap-2 lg:gap-3 text-xs lg:text-sm text-muted-foreground">
-                              {request.fuel_type && (
-                                <span className="capitalize">{request.fuel_type}</span>
-                              )}
-                              {request.fuel_amount && (
-                                <span>{request.fuel_amount} Liters</span>
-                              )}
+                        {/* Live Tracking Map */}
+                        {(request.status === 'en_route' || request.status === 'in_progress') &&
+                          request.customer_lat && request.customer_lng && (
+                            <div className="mt-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Navigation className="h-5 w-5 text-primary" />
+                                <p className="font-semibold text-sm lg:text-base">Live Tracking</p>
+                              </div>
+                              <LiveTrackingMap
+                                customerLat={request.customer_lat}
+                                customerLng={request.customer_lng}
+                                providerLat={request.provider_lat}
+                                providerLng={request.provider_lng}
+                                customerName="Your Location"
+                                providerName={request.profiles?.full_name || 'Provider'}
+                                showETA={true}
+                              />
                             </div>
-                          </div>
-                        </div>
-                      )}
+                          )}
 
-                      {/* Vehicle Information - Hidden on mobile */}
-                      {(request.vehicle_make || request.vehicle_model) && (
-                        <div className="hidden lg:flex items-start gap-4">
-                          <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
-                            <Car className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold mb-1">Vehicle</p>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {request.vehicle_make} {request.vehicle_model}
-                              {request.vehicle_year && ` (${request.vehicle_year})`}
-                              {request.vehicle_plate && ` - ${request.vehicle_plate}`}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {request.profiles && (
-                        <>
+                        {request.description && (
                           <div className="flex items-start gap-3 lg:gap-4">
                             <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                              <User className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                              <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Service Provider</p>
-                              <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap">
-                                <p className="text-xs lg:text-sm text-muted-foreground">{request.profiles.full_name}</p>
-                                {request.provider_id && getProviderRating(request.provider_id) && (
-                                  <div className="flex items-center gap-0.5 lg:gap-1 bg-yellow-50 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md">
-                                    <Star className="h-3 w-3 lg:h-3.5 lg:w-3.5 fill-yellow-500 text-yellow-500" />
-                                    <span className="text-xs font-bold text-yellow-900">
-                                      {getProviderRating(request.provider_id)?.avgRating}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      ({getProviderRating(request.provider_id)?.count})
-                                    </span>
-                                  </div>
+                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Description</p>
+                              <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.description}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                          <div className="flex items-start gap-3 lg:gap-4">
+                            <div className="bg-amber-100 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                              <Fuel className="h-4 w-4 lg:h-5 lg:w-5 text-amber-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Fuel Details</p>
+                              <div className="flex gap-2 lg:gap-3 text-xs lg:text-sm text-muted-foreground">
+                                {request.fuel_type && (
+                                  <span className="capitalize">{request.fuel_type}</span>
+                                )}
+                                {request.fuel_amount && (
+                                  <span>{request.fuel_amount} Liters</span>
                                 )}
                               </div>
                             </div>
                           </div>
+                        )}
 
-                          {request.profiles.phone_number && (
+                        {/* Vehicle Information - Hidden on mobile */}
+                        {(request.vehicle_make || request.vehicle_model) && (
+                          <div className="hidden lg:flex items-start gap-4">
+                            <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
+                              <Car className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold mb-1">Vehicle</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {request.vehicle_make} {request.vehicle_model}
+                                {request.vehicle_year && ` (${request.vehicle_year})`}
+                                {request.vehicle_plate && ` - ${request.vehicle_plate}`}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {request.profiles && (
+                          <>
                             <div className="flex items-start gap-3 lg:gap-4">
                               <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                                <Phone className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                                <User className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Provider Contact</p>
-                                <a 
-                                  href={`tel:${request.profiles.phone_number}`}
-                                  className="text-xs lg:text-sm text-primary hover:underline font-medium"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {request.profiles.phone_number}
-                                </a>
+                                <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Service Provider</p>
+                                <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap">
+                                  <p className="text-xs lg:text-sm text-muted-foreground">{request.profiles.full_name}</p>
+                                  {request.provider_id && getProviderRating(request.provider_id) && (
+                                    <div className="flex items-center gap-0.5 lg:gap-1 bg-yellow-50 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md">
+                                      <Star className="h-3 w-3 lg:h-3.5 lg:w-3.5 fill-yellow-500 text-yellow-500" />
+                                      <span className="text-xs font-bold text-yellow-900">
+                                        {getProviderRating(request.provider_id)?.avgRating}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        ({getProviderRating(request.provider_id)?.count})
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          )}
-                        </>
-                      )}
 
-                      {/* Status Messages */}
-                      {request.status === 'pending' && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-yellow-900">
-                            ⏳ Your request is pending. We're finding the best provider for you.
-                          </p>
-                        </div>
-                      )}
+                            {request.profiles.phone_number && (
+                              <div className="flex items-start gap-3 lg:gap-4">
+                                <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                                  <Phone className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Provider Contact</p>
+                                  <a
+                                    href={`tel:${request.profiles.phone_number}`}
+                                    className="text-xs lg:text-sm text-primary hover:underline font-medium"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {request.profiles.phone_number}
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
 
-                      {request.status === 'assigned' && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-blue-900">
-                            👤 A provider has been assigned to your request!
-                          </p>
-                        </div>
-                      )}
+                        {/* Status Messages */}
+                        {request.status === 'pending' && (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-yellow-900">
+                              ⏳ Your request is pending. We're finding the best provider for you.
+                            </p>
+                          </div>
+                        )}
 
-                      {request.status === 'accepted' && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-blue-900">
-                            ✅ Provider has accepted your request and will contact you shortly.
-                          </p>
-                        </div>
-                      )}
+                        {request.status === 'assigned' && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-blue-900">
+                              👤 A provider has been assigned to your request!
+                            </p>
+                          </div>
+                        )}
 
-                      {request.status === 'en_route' && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-purple-900">
-                            🚗 <strong>Provider is on the way!</strong> Keep your phone nearby for any updates.
-                          </p>
-                        </div>
-                      )}
+                        {request.status === 'accepted' && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-blue-900">
+                              ✅ Provider has accepted your request and will contact you shortly.
+                            </p>
+                          </div>
+                        )}
 
-                      {request.status === 'in_progress' && (
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-indigo-900">
-                            🔧 <strong>Service in progress.</strong> The provider is working on your vehicle.
-                          </p>
-                        </div>
-                      )}
+                        {request.status === 'en_route' && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-purple-900">
+                              🚗 <strong>Provider is on the way!</strong> Keep your phone nearby for any updates.
+                            </p>
+                          </div>
+                        )}
 
-                      {request.status === 'completed' && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-green-900">
-                            ✅ Service completed. Thank you for using our service!
-                          </p>
-                          {getRequestRating(request.id) && (
-                            <div className="mt-2 pt-2 border-t border-green-200">
-                              <p className="text-xs font-medium text-green-900 mb-1">Your Rating:</p>
-                              <div className="flex items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-3.5 w-3.5 lg:h-4 lg:w-4 ${
-                                      star <= getRequestRating(request.id)!.rating
+                        {request.status === 'in_progress' && (
+                          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-indigo-900">
+                              🔧 <strong>Service in progress.</strong> The provider is working on your vehicle.
+                            </p>
+                          </div>
+                        )}
+
+                        {request.status === 'completed' && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-green-900">
+                              ✅ Service completed. Thank you for using our service!
+                            </p>
+                            {getRequestRating(request.id) && (
+                              <div className="mt-2 pt-2 border-t border-green-200">
+                                <p className="text-xs font-medium text-green-900 mb-1">Your Rating:</p>
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-3.5 w-3.5 lg:h-4 lg:w-4 ${star <= getRequestRating(request.id)!.rating
                                         ? 'fill-yellow-500 text-yellow-500'
                                         : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                                {getRequestRating(request.id)!.review && (
-                                  <span className="text-xs text-green-700 ml-2 line-clamp-1">
-                                    "{getRequestRating(request.id)!.review}"
-                                  </span>
-                                )}
+                                        }`}
+                                    />
+                                  ))}
+                                  {getRequestRating(request.id)!.review && (
+                                    <span className="text-xs text-green-700 ml-2 line-clamp-1">
+                                      "{getRequestRating(request.id)!.review}"
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                            )}
+                          </div>
+                        )}
 
-                      {request.status === 'denied' && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-red-900">
-                            ❌ Request was declined. Please contact support or submit a new request.
-                          </p>
-                        </div>
-                      )}
+                        {request.status === 'denied' && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-red-900">
+                              ❌ Request was declined. Please contact support or submit a new request.
+                            </p>
+                          </div>
+                        )}
 
-                      {request.status === 'cancelled' && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
-                          <p className="text-xs lg:text-sm text-gray-900">
-                            🚫 This request has been cancelled.
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                        {request.status === 'cancelled' && (
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 lg:p-4 mt-3 lg:mt-4">
+                            <p className="text-xs lg:text-sm text-gray-900">
+                              🚫 This request has been cancelled.
+                            </p>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Action Buttons - Enhanced */}
                       {['pending', 'assigned', 'accepted'].includes(request.status) && (
                         <div className="px-6 pb-6 border-t pt-6">
-                          <Button 
+                          <Button
                             variant="destructive"
                             onClick={async (e) => {
                               e.stopPropagation();
@@ -769,13 +766,13 @@ const TrackRescue = () => {
                                   .from('service_requests')
                                   .update({ status: 'cancelled' })
                                   .eq('id', request.id);
-                                
+
                                 if (error) {
                                   toast.error('Failed to cancel request');
                                 } else {
                                   toast.success('Request cancelled successfully');
                                   // Refresh the data
-                                   const { data: requests } = await supabase
+                                  const { data: requests } = await supabase
                                     .from('service_requests')
                                     .select(`
                                       *,
@@ -783,7 +780,7 @@ const TrackRescue = () => {
                                     `)
                                     .eq('customer_id', user?.id)
                                     .order('created_at', { ascending: false });
-                                  
+
                                   if (requests) setServiceRequests(requests);
                                 }
                               }
@@ -818,21 +815,10 @@ const TrackRescue = () => {
                       )}
 
                       {/* Timestamps - Enhanced - Hidden on mobile */}
-                    <div className="hidden lg:flex px-6 pb-4 border-t pt-4 flex-col gap-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3" />
-                        <span>Requested: {new Date(request.created_at).toLocaleString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</span>
-                      </div>
-                      {request.completed_at && (
+                      <div className="hidden lg:flex px-6 pb-4 border-t pt-4 flex-col gap-2 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-3 w-3" />
-                          <span>Completed: {new Date(request.completed_at).toLocaleString('en-GB', {
+                          <Clock className="h-3 w-3" />
+                          <span>Requested: {new Date(request.created_at).toLocaleString('en-GB', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
@@ -840,10 +826,21 @@ const TrackRescue = () => {
                             minute: '2-digit'
                           })}</span>
                         </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+                        {request.completed_at && (
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>Completed: {new Date(request.completed_at).toLocaleString('en-GB', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</span>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               </>
             )}
@@ -881,11 +878,10 @@ const TrackRescue = () => {
                   className="transition-transform hover:scale-110"
                 >
                   <Star
-                    className={`h-8 w-8 ${
-                      star <= (hoverRating || currentRating)
-                        ? 'fill-yellow-500 text-yellow-500'
-                        : 'text-gray-300'
-                    }`}
+                    className={`h-8 w-8 ${star <= (hoverRating || currentRating)
+                      ? 'fill-yellow-500 text-yellow-500'
+                      : 'text-gray-300'
+                      }`}
                   />
                 </button>
               ))}

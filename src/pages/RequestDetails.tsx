@@ -59,7 +59,7 @@ const RequestDetails = () => {
     const fetchRequestDetails = async () => {
       const identifier = code || id;
       if (!identifier) return;
-      
+
       setLoading(true);
       try {
         // Try to fetch by tracking code first, then by ID
@@ -69,17 +69,17 @@ const RequestDetails = () => {
             *,
             profiles!service_requests_provider_id_fkey(full_name, phone_number)
           `);
-        
+
         // If identifier looks like a UUID, search by ID, otherwise by tracking code
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
-        const requestRes = isUUID 
+        const requestRes = isUUID
           ? await query.eq('id', identifier).maybeSingle()
           : await query.eq('tracking_code', identifier.toUpperCase()).maybeSingle();
-        
+
         const ratingsRes = await supabase.from('ratings').select('*');
 
         if (requestRes.error) throw requestRes.error;
-        
+
         if (!requestRes.data) {
           toast.error('Service request not found');
           navigate('/track-rescue');
@@ -91,10 +91,10 @@ const RequestDetails = () => {
 
         // Auto-open rating dialog for completed requests without rating
         const hasRating = ratingsRes.data?.some(r => r.service_request_id === requestRes.data.id);
-        if (requestRes.data.status === 'completed' && 
-            user && 
-            requestRes.data.customer_id === user.id && 
-            !hasRating) {
+        if (requestRes.data.status === 'completed' &&
+          user &&
+          requestRes.data.customer_id === user.id &&
+          !hasRating) {
           setTimeout(() => setRatingDialogOpen(true), 500);
         }
       } catch (error) {
@@ -123,8 +123,8 @@ const RequestDetails = () => {
           filter: `id=eq.${request.id}`
         },
         async (payload) => {
-          console.log('Real-time update:', payload);
-          
+
+
           // Refresh the request data
           const { data } = await supabase
             .from('service_requests')
@@ -137,7 +137,7 @@ const RequestDetails = () => {
 
           if (data) {
             setRequest(data);
-            
+
             if (payload.eventType === 'UPDATE' && payload.new) {
               const newStatus = (payload.new as any).status;
               toast.info(`Status updated to: ${getStatusLabel(newStatus)}`);
@@ -155,7 +155,7 @@ const RequestDetails = () => {
   // Send status change notifications
   useEffect(() => {
     if (!request || permission !== 'granted') return;
-    
+
     if (lastNotifiedStatus && lastNotifiedStatus !== request.status) {
       const statusMessages: Record<string, { title: string; body: string }> = {
         assigned: {
@@ -193,19 +193,19 @@ const RequestDetails = () => {
         });
       }
     }
-    
+
     setLastNotifiedStatus(request.status);
   }, [request?.status, permission, sendNotification, lastNotifiedStatus]);
 
   // Send proximity notifications and sound alerts based on distance changes
   useEffect(() => {
     if (!distance) return;
-    
+
     // Play sound alert when provider is within 500m (0.5km)
     if (distance <= 0.5 && !soundAlertPlayed && request?.status === 'en_route') {
       playProximityAlert();
       setSoundAlertPlayed(true);
-      
+
       if (permission === 'granted') {
         sendNotification('Provider Very Close! 📍', {
           body: `Your provider is only ${formatDistance(distance)} away!`,
@@ -214,7 +214,7 @@ const RequestDetails = () => {
         });
       }
     }
-    
+
     // Regular notification when provider is within 2km and getting closer
     if (
       permission === 'granted' &&
@@ -282,7 +282,7 @@ const RequestDetails = () => {
 
     try {
       const existingRating = getRequestRating();
-      
+
       if (existingRating) {
         const { error } = await supabase
           .from('ratings')
@@ -312,7 +312,7 @@ const RequestDetails = () => {
       // Refresh ratings
       const { data: newRatings } = await supabase.from('ratings').select('*');
       setRatings(newRatings || []);
-      
+
       setRatingDialogOpen(false);
       setCurrentRating(0);
       setReviewText('');
@@ -324,13 +324,13 @@ const RequestDetails = () => {
 
   const handleCancelRequest = async () => {
     if (!request) return;
-    
+
     if (confirm('Are you sure you want to cancel this request?')) {
       const { error } = await supabase
         .from('service_requests')
         .update({ status: 'cancelled' })
         .eq('id', request.id);
-      
+
       if (error) {
         toast.error('Failed to cancel request');
       } else {
@@ -344,7 +344,7 @@ const RequestDetails = () => {
           `)
           .eq('id', request.id)
           .maybeSingle();
-        
+
         if (data) setRequest(data);
       }
     }
@@ -352,7 +352,7 @@ const RequestDetails = () => {
 
   const handleShare = async () => {
     const url = window.location.href;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -412,7 +412,7 @@ const RequestDetails = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       <section className="bg-primary text-white pt-32 pb-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-4">
@@ -500,7 +500,7 @@ const RequestDetails = () => {
                   <Phone className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-semibold text-lg">Customer Contact</p>
-                    <a 
+                    <a
                       href={`tel:${request.phone_number}`}
                       className="text-primary hover:underline text-lg"
                     >
@@ -594,7 +594,7 @@ const RequestDetails = () => {
                       <Phone className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <p className="font-semibold text-lg">Provider Contact</p>
-                        <a 
+                        <a
                           href={`tel:${request.profiles.phone_number}`}
                           className="text-primary hover:underline text-lg"
                         >
@@ -685,11 +685,10 @@ const RequestDetails = () => {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
-                            className={`h-5 w-5 ${
-                              star <= getRequestRating()!.rating
+                            className={`h-5 w-5 ${star <= getRequestRating()!.rating
                                 ? 'fill-yellow-500 text-yellow-500'
                                 : 'text-gray-300'
-                            }`}
+                              }`}
                           />
                         ))}
                       </div>
@@ -704,125 +703,125 @@ const RequestDetails = () => {
               )}
 
               {/* Real-time Distance Indicator */}
-              {(request.status === 'en_route' || request.status === 'in_progress') && 
-               distance !== null && request.provider_lat && request.provider_lng && (
-                <div className="border-t pt-6">
-                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-primary/20 p-4 rounded-full">
-                          <Route className="h-8 w-8 text-primary" />
+              {(request.status === 'en_route' || request.status === 'in_progress') &&
+                distance !== null && request.provider_lat && request.provider_lng && (
+                  <div className="border-t pt-6">
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 mb-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-primary/20 p-4 rounded-full">
+                            <Route className="h-8 w-8 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground font-medium">Distance to You</p>
+                            <p className="text-3xl font-bold text-primary">{formatDistance(distance)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground font-medium">Distance to You</p>
-                          <p className="text-3xl font-bold text-primary">{formatDistance(distance)}</p>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground font-medium">Provider Status</p>
+                          <Badge variant="secondary" className="text-lg mt-1 capitalize">
+                            {request.status.replace('_', ' ')}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground font-medium">Provider Status</p>
-                        <Badge variant="secondary" className="text-lg mt-1 capitalize">
-                          {request.status.replace('_', ' ')}
-                        </Badge>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                        <span>Location updating in real-time</span>
                       </div>
-                    </div>
-                    <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                      <span>Location updating in real-time</span>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Real-time Distance and ETA Card */}
-              {(request.status === 'en_route' || request.status === 'in_progress') && 
-               request.provider_lat && request.provider_lng && request.customer_lat && request.customer_lng && (
-                <div className="border-t pt-6">
-                  <Card className="mb-6 bg-primary/5 border-primary/20">
-                    <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Distance */}
-                        <div className="flex items-center gap-4">
-                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <MapPin className="h-7 w-7 text-primary" />
+              {(request.status === 'en_route' || request.status === 'in_progress') &&
+                request.provider_lat && request.provider_lng && request.customer_lat && request.customer_lng && (
+                  <div className="border-t pt-6">
+                    <Card className="mb-6 bg-primary/5 border-primary/20">
+                      <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {/* Distance */}
+                          <div className="flex items-center gap-4">
+                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <MapPin className="h-7 w-7 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Distance</p>
+                              <p className="text-3xl font-bold text-primary">
+                                {providerDistance !== null ? formatDistance(providerDistance) : '---'}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Distance</p>
-                            <p className="text-3xl font-bold text-primary">
-                              {providerDistance !== null ? formatDistance(providerDistance) : '---'}
-                            </p>
+
+                          {/* Speed */}
+                          <div className="flex items-center gap-4">
+                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Navigation className="h-7 w-7 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Speed</p>
+                              <p className="text-3xl font-bold text-primary">
+                                {providerSpeed !== null ? `${providerSpeed.toFixed(0)}` : '---'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">km/h</p>
+                            </div>
+                          </div>
+
+                          {/* ETA */}
+                          <div className="flex items-center gap-4">
+                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Clock className="h-7 w-7 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">ETA</p>
+                              <p className="text-3xl font-bold text-primary">
+                                {providerETA !== null
+                                  ? providerETA < 1
+                                    ? '< 1m'
+                                    : providerETA < 60
+                                      ? `${Math.round(providerETA)}m`
+                                      : `${Math.floor(providerETA / 60)}h ${Math.round(providerETA % 60)}m`
+                                  : '---'
+                                }
+                              </p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Live tracking
+                              </p>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Speed */}
-                        <div className="flex items-center gap-4">
-                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Navigation className="h-7 w-7 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Speed</p>
-                            <p className="text-3xl font-bold text-primary">
-                              {providerSpeed !== null ? `${providerSpeed.toFixed(0)}` : '---'}
-                            </p>
-                            <p className="text-xs text-muted-foreground">km/h</p>
-                          </div>
-                        </div>
-
-                        {/* ETA */}
-                        <div className="flex items-center gap-4">
-                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Clock className="h-7 w-7 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">ETA</p>
-                            <p className="text-3xl font-bold text-primary">
-                              {providerETA !== null 
-                                ? providerETA < 1 
-                                  ? '< 1m' 
-                                  : providerETA < 60 
-                                    ? `${Math.round(providerETA)}m` 
-                                    : `${Math.floor(providerETA / 60)}h ${Math.round(providerETA % 60)}m`
-                                : '---'
-                              }
-                            </p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                              Live tracking
-                            </p>
-                          </div>
+                        <div className="mt-4 pt-4 border-t border-primary/10">
+                          <Badge variant={request.status === 'en_route' ? 'default' : 'secondary'} className="text-sm">
+                            {request.status === 'en_route' ? '🚗 Provider on the way' : '🔧 Service in progress'}
+                          </Badge>
                         </div>
                       </div>
-
-                      <div className="mt-4 pt-4 border-t border-primary/10">
-                        <Badge variant={request.status === 'en_route' ? 'default' : 'secondary'} className="text-sm">
-                          {request.status === 'en_route' ? '🚗 Provider on the way' : '🔧 Service in progress'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              )}
+                    </Card>
+                  </div>
+                )}
 
               {/* Live Tracking Map */}
-              {(request.status === 'en_route' || request.status === 'in_progress') && 
-               request.customer_lat && request.customer_lng && (
-                <div>
-                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    <Navigation className="h-5 w-5 text-primary" />
-                    Live Tracking
-                  </h3>
-                  <div className="rounded-lg overflow-hidden border-2 border-primary/20">
-                    <LiveTrackingMap
-                      customerLat={request.customer_lat}
-                      customerLng={request.customer_lng}
-                      providerLat={request.provider_lat}
-                      providerLng={request.provider_lng}
-                      customerName="You"
-                      providerName={request.profiles?.full_name || 'Provider'}
-                      showETA={false}
-                    />
+              {(request.status === 'en_route' || request.status === 'in_progress') &&
+                request.customer_lat && request.customer_lng && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Navigation className="h-5 w-5 text-primary" />
+                      Live Tracking
+                    </h3>
+                    <div className="rounded-lg overflow-hidden border-2 border-primary/20">
+                      <LiveTrackingMap
+                        customerLat={request.customer_lat}
+                        customerLng={request.customer_lng}
+                        providerLat={request.provider_lat}
+                        providerLng={request.provider_lng}
+                        customerName="You"
+                        providerName={request.profiles?.full_name || 'Provider'}
+                        showETA={false}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {request.status === 'denied' && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -843,7 +842,7 @@ const RequestDetails = () => {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 {['pending', 'assigned', 'accepted'].includes(request.status) && (
-                  <Button 
+                  <Button
                     variant="destructive"
                     onClick={handleCancelRequest}
                     className="flex-1"
@@ -905,11 +904,10 @@ const RequestDetails = () => {
                   className="transition-transform hover:scale-110"
                 >
                   <Star
-                    className={`h-8 w-8 ${
-                      star <= (hoverRating || currentRating)
+                    className={`h-8 w-8 ${star <= (hoverRating || currentRating)
                         ? 'fill-yellow-500 text-yellow-500'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   />
                 </button>
               ))}
