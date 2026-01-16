@@ -20,7 +20,6 @@ const authSchema = z.object({
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -29,32 +28,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user, userRole } = useAuth();
   const navigate = useNavigate();
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      toast.error('Please enter your email address');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-      
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Password reset email sent! Check your inbox.');
-        setIsForgotPassword(false);
-      }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Redirect authenticated users to their dashboard
   useEffect(() => {
@@ -162,21 +135,19 @@ const Auth = () => {
           <CardHeader className="space-y-1 pb-6">
             <div className="flex items-center justify-between mb-2">
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Get Started'}
+                {isLogin ? 'Welcome Back' : 'Get Started'}
               </CardTitle>
             </div>
             <CardDescription className="text-base">
-              {isForgotPassword
-                ? 'Enter your email to receive a reset link'
-                : isLogin 
-                  ? 'Sign in to access your dashboard' 
-                  : 'Create your account to get started'}
+              {isLogin 
+                ? 'Sign in to access your dashboard' 
+                : 'Create your account to get started'}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-4">
-              {!isLogin && !isForgotPassword && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
@@ -232,35 +203,22 @@ const Auth = () => {
                 </div>
               </div>
               
-              {!isForgotPassword && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                    {isLogin && (
-                      <button
-                        type="button"
-                        onClick={() => setIsForgotPassword(true)}
-                        className="text-xs text-primary hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="pl-10"
-                      placeholder="••••••••"
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="pl-10"
+                    placeholder="••••••••"
+                  />
                 </div>
-              )}
+              </div>
               
               <Button 
                 type="submit" 
@@ -271,31 +229,21 @@ const Auth = () => {
                   'Please wait...'
                 ) : (
                   <>
-                    {isForgotPassword ? 'Send Reset Link' : isLogin ? 'Sign In' : 'Create Account'}
+                    {isLogin ? 'Sign In' : 'Create Account'}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </Button>
             </form>
             
-            <div className="mt-6 text-center space-y-2">
-              {isForgotPassword ? (
-                <button
-                  type="button"
-                  onClick={() => setIsForgotPassword(false)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors story-link"
-                >
-                  Back to sign in
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors story-link"
-                >
-                  {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-                </button>
-              )}
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors story-link"
+              >
+                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              </button>
             </div>
           </CardContent>
         </Card>
