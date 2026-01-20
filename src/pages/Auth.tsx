@@ -20,11 +20,12 @@ const authSchema = z.object({
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user, userRole } = useAuth();
   const navigate = useNavigate();
@@ -36,8 +37,35 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Check your email for the password reset link');
+        setShowForgotPassword(false);
+      }
+    } catch (error: any) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (showForgotPassword) {
+      handleResetPassword(e);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -86,7 +114,7 @@ const Auth = () => {
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTEydi0xMmgxMnYxMnptMTItMTJoLTEyVjZoMTJ2MTJ6TTEyIDQySDBoLTEydjEyaDEyVjQyem0yNCAxMkgyNHYtMTJoMTJ2MTJ6TTM2IDZIMjRWLTZoMTJWNnpNMTIgMThoMTJWNkgxMnYxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
-        
+
         <div className="relative z-10 animate-fade-in">
           <h1 className="text-5xl font-bold text-white mb-4">DriveGH</h1>
           <p className="text-xl text-white/90">Ghana's Premier Auto Rescue Service</p>
@@ -102,7 +130,7 @@ const Auth = () => {
               <p className="text-white/80">Round-the-clock assistance when you need it most</p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
               <CheckCircle className="h-6 w-6 text-white" />
@@ -112,7 +140,7 @@ const Auth = () => {
               <p className="text-white/80">Trusted and certified service providers</p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
               <CheckCircle className="h-6 w-6 text-white" />
@@ -135,19 +163,23 @@ const Auth = () => {
           <CardHeader className="space-y-1 pb-6">
             <div className="flex items-center justify-between mb-2">
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {isLogin ? 'Welcome Back' : 'Get Started'}
+                {showForgotPassword
+                  ? 'Reset Password'
+                  : isLogin ? 'Welcome Back' : 'Get Started'}
               </CardTitle>
             </div>
             <CardDescription className="text-base">
-              {isLogin 
-                ? 'Sign in to access your dashboard' 
-                : 'Create your account to get started'}
+              {showForgotPassword
+                ? 'Enter your email to receive reset instructions'
+                : isLogin
+                  ? 'Sign in to access your dashboard'
+                  : 'Create your account to get started'}
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
+              {!isLogin && !showForgotPassword && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
@@ -165,7 +197,7 @@ const Auth = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
                     <div className="relative">
@@ -182,10 +214,10 @@ const Auth = () => {
                       />
                     </div>
                   </div>
-                  
+
                 </>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <div className="relative">
@@ -202,47 +234,70 @@ const Auth = () => {
                   />
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="pl-10"
-                    placeholder="••••••••"
-                  />
+
+              {!showForgotPassword && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="pl-10"
+                      placeholder="••••••••"
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full h-11 text-base font-medium hover-scale group" 
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-11 text-base font-medium hover-scale group"
                 disabled={loading}
               >
                 {loading ? (
                   'Please wait...'
                 ) : (
                   <>
-                    {isLogin ? 'Sign In' : 'Create Account'}
+                    {showForgotPassword
+                      ? 'Send Reset Link'
+                      : isLogin ? 'Sign In' : 'Create Account'}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  if (showForgotPassword) {
+                    setShowForgotPassword(false);
+                  } else {
+                    setIsLogin(!isLogin);
+                  }
+                }}
                 className="text-sm text-muted-foreground hover:text-primary transition-colors story-link"
               >
-                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                {showForgotPassword
+                  ? 'Back to Sign In'
+                  : isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
             </div>
           </CardContent>
