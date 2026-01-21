@@ -67,7 +67,8 @@ const RequestDetails = () => {
           .from('service_requests')
           .select(`
             *,
-            profiles!service_requests_provider_id_fkey(full_name, phone_number)
+            profiles!service_requests_provider_id_fkey(full_name, phone_number),
+            customer:profiles!service_requests_customer_id_fkey(phone_number)
           `);
 
         // If identifier looks like a UUID, search by ID, otherwise by tracking code
@@ -87,6 +88,7 @@ const RequestDetails = () => {
         }
 
         setRequest(requestRes.data);
+        console.log("Request Data Loaded:", requestRes.data); // Debug: Check vehicle_image_url
         setRatings(ratingsRes.data || []);
 
         // Auto-open rating dialog for completed requests without rating
@@ -495,16 +497,16 @@ const RequestDetails = () => {
               </div>
 
               {/* Customer Contact */}
-              {request.phone_number && (
+              {(request.phone_number || request.customer?.phone_number) && (
                 <div className="flex items-start gap-4">
                   <Phone className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-semibold text-lg">Customer Contact</p>
                     <a
-                      href={`tel:${request.phone_number}`}
+                      href={`tel:${request.phone_number || request.customer?.phone_number}`}
                       className="text-primary hover:underline text-lg"
                     >
-                      {request.phone_number}
+                      {request.phone_number || request.customer?.phone_number}
                     </a>
                   </div>
                 </div>

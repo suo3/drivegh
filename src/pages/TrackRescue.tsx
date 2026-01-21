@@ -607,7 +607,7 @@ const TrackRescue = () => {
 
                         {/* Vehicle Information - Hidden on mobile */}
                         {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
-                          <div className="hidden lg:flex items-start gap-4">
+                          <div className="flex items-start gap-4">
                             <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
                               <Car className="h-5 w-5 text-primary" />
                             </div>

@@ -260,8 +260,8 @@ const ProviderDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${isAvailable
-                  ? 'bg-green-500/20 border-green-500/50 text-green-100'
-                  : 'bg-red-500/20 border-red-500/50 text-red-100'
+                ? 'bg-green-500/20 border-green-500/50 text-green-100'
+                : 'bg-red-500/20 border-red-500/50 text-red-100'
                 }`}>
                 {isAvailable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
                 <span className="text-sm font-medium">{isAvailable ? 'Online' : 'Offline'}</span>
@@ -437,7 +437,7 @@ const ProviderDashboard = () => {
                               {(request.profiles?.phone_number || request.phone_number) && (
                                 <div className="flex items-center gap-2 text-xs md:text-sm">
                                   <Phone className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                                  <span className="font-medium">Phone:</span> <span className="truncate">{request.profiles?.phone_number || request.phone_number}</span>
+                                  <span className="font-medium">Phone:</span> <span className="truncate">{request.phone_number || request.profiles?.phone_number}</span>
                                 </div>
                               )}
                               {getDistance(request) !== null && (

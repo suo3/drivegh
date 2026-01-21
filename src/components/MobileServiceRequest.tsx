@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 import { Phone, MapPin, CheckCircle2, Car, ArrowLeft, Camera, Image as ImageIcon, MapPinned, Navigation, ChevronDown } from 'lucide-react';
 import { geocodeAddress } from '@/lib/geocode';
+import { calculateDistance } from '@/lib/distance';
 import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
 import { useNearbyProviders } from '@/hooks/useNearbyProviders';
 import { ProviderCard } from '@/components/ProviderCard';
@@ -22,9 +23,29 @@ const MobileServiceRequest = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
+  useEffect(() => {
+    if (user) {
+      const fetchProfile = async () => {
+        const { data } = await supabase
+          .from('profiles')
+          .select('phone_number')
+          .eq('id', user.id)
+          .single();
+
+        if (data?.phone_number) {
+          setPhoneNumber(data.phone_number);
+        }
+      };
+      fetchProfile();
+    }
+  }, [user]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [services, setServices] = useState<any[]>([]);
   const [serviceType, setServiceType] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [isCustomFuel, setIsCustomFuel] = useState(false);
+  const [fuelAmount, setFuelAmount] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -155,6 +176,10 @@ const MobileServiceRequest = () => {
           toast.error('Please select a service type');
           return false;
         }
+        if (serviceType === 'fuel_delivery' && !fuelType) {
+          toast.error('Please select a fuel type');
+          return false;
+        }
         return true;
       case 2:
         if (!user && phoneNumber.trim().length < 10) {
@@ -208,8 +233,10 @@ const MobileServiceRequest = () => {
       // 1. Create the request first
       const { data, error } = await supabase.from('service_requests').insert([{
         customer_id: user?.id || null,
-        phone_number: user ? null : phoneNumber.trim(),
-        service_type: serviceType,
+        phone_number: phoneNumber.trim(),
+        service_type: serviceType as any,
+        fuel_type: serviceType === 'fuel_delivery' ? fuelType : null,
+        fuel_amount: serviceType === 'fuel_delivery' && fuelAmount ? parseFloat(fuelAmount) : null,
         location: location.trim(),
         description: description.trim(),
         customer_lat: customerLat,
@@ -234,19 +261,63 @@ const MobileServiceRequest = () => {
         }
       }
 
-      // 3. Auto-assign fallback logic (if no provider selected but coords exist)
+      // 3. Robust Auto-assign fallback logic
       if (!assignedProviderId && customerLat && customerLng) {
-        // RPC call as fallback
-        const { data: closestData } = await supabase.rpc('find_closest_provider', {
-          customer_lat: customerLat,
-          customer_lng: customerLng,
-        });
-        if (closestData && closestData.length > 0) {
+        console.log("Attempting auto-assignment...");
+        let foundProviderId: string | null = null;
+
+        // 3a. Try RPC first (server-side, efficient)
+        try {
+          const { data: closestData } = await supabase.rpc('find_closest_provider', {
+            customer_lat: customerLat,
+            customer_lng: customerLng,
+          });
+
+          if (closestData && closestData.length > 0) {
+            foundProviderId = closestData[0].provider_id;
+            console.log("Found provider via RPC:", foundProviderId);
+          }
+        } catch (rpcError) {
+          console.error("RPC Auto-assign failed:", rpcError);
+        }
+
+        // 3b. Client-side Fallback (if RPC failed to find anyone, e.g. due to strict radius)
+        if (!foundProviderId) {
+          console.log("RPC returned no providers. Trying global fallback...");
+          try {
+            const { data: allProviders, error: providerError } = await supabase
+              .from('profiles')
+              .select('id, current_lat, current_lng, user_roles!inner(role)')
+              .eq('user_roles.role', 'provider')
+              .eq('is_available', true);
+
+            if (!providerError && allProviders && allProviders.length > 0) {
+              // Calculate distances and sort
+              const sortedProviders = allProviders
+                .filter(p => p.current_lat !== null && p.current_lng !== null) // Ensure coords exist
+                .map(p => ({
+                  id: p.id,
+                  distance: calculateDistance(customerLat, customerLng, p.current_lat as number, p.current_lng as number)
+                })).sort((a, b) => a.distance - b.distance);
+
+              if (sortedProviders.length > 0) {
+                foundProviderId = sortedProviders[0].id;
+                console.log("Found provider via Global Fallback:", foundProviderId, "Distance:", sortedProviders[0].distance);
+              }
+            }
+          } catch (fbError) {
+            console.error("Global fallback failed:", fbError);
+          }
+        }
+
+        // 3c. Update if we found someone
+        if (foundProviderId) {
           await supabase.from('service_requests').update({
-            provider_id: closestData[0].provider_id,
+            provider_id: foundProviderId,
             status: 'assigned',
             assigned_at: new Date().toISOString(),
           }).eq('id', data.id);
+          console.log("Auto-assigned provider:", foundProviderId);
         }
       }
 
@@ -282,7 +353,14 @@ const MobileServiceRequest = () => {
                 return (
                   <button
                     key={service.id}
-                    onClick={() => setServiceType(service.slug)}
+                    onClick={() => {
+                      setServiceType(service.slug);
+                      if (service.slug !== 'fuel_delivery') {
+                        setFuelType('');
+                        setFuelAmount('');
+                        setIsCustomFuel(false);
+                      }
+                    }}
                     className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${serviceType === service.slug
                       ? 'border-primary bg-primary/10'
                       : 'border-muted hover:border-primary/50'
@@ -296,7 +374,60 @@ const MobileServiceRequest = () => {
                 );
               })}
             </div>
-            <Button className="w-full h-12 text-base" onClick={handleNext} disabled={!serviceType}>
+
+            {serviceType === 'fuel_delivery' && (
+              <div className="space-y-3 pt-2 animate-in slide-in-from-top-2 duration-300">
+                <hr className="border-gray-200" />
+                <Label className="text-base">Select Fuel Type</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Petrol', 'Diesel', 'Other'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        if (type === 'Other') {
+                          setIsCustomFuel(true);
+                          setFuelType('');
+                        } else {
+                          setIsCustomFuel(false);
+                          setFuelType(type);
+                        }
+                      }}
+                      className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all font-medium text-sm ${(type === 'Other' ? isCustomFuel : (!isCustomFuel && fuelType === type))
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-muted hover:border-primary/50 text-gray-700 bg-white'
+                        }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+
+                {isCustomFuel && (
+                  <div className="space-y-2 pt-1 animate-in slide-in-from-top-2 duration-200">
+                    <Label>Specify Fuel Type</Label>
+                    <Input
+                      placeholder="e.g. Premium, V-Power"
+                      value={fuelType}
+                      onChange={(e) => setFuelType(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-2">
+                  <Label>Amount (GHS) - Optional</Label>
+                  <Input
+                    type="number"
+                    placeholder="E.g. 200"
+                    value={fuelAmount}
+                    onChange={(e) => setFuelAmount(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+              </div>
+            )}
+
+            <Button className="w-full h-12 text-base" onClick={handleNext} disabled={!serviceType || (serviceType === 'fuel_delivery' && !fuelType)}>
               Continue
             </Button>
           </div>
@@ -307,21 +438,19 @@ const MobileServiceRequest = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-bold">Where are you?</h3>
 
-            {!user && (
-              <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="024 123 4567"
-                    className="pl-10 h-12"
-                    type="tel"
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="024 123 4567"
+                  className="pl-10 h-12"
+                  type="tel"
+                />
               </div>
-            )}
+            </div>
 
             <div className="space-y-2">
               <Label>Location</Label>
@@ -407,7 +536,7 @@ const MobileServiceRequest = () => {
               <div className="py-8 text-center text-muted-foreground">Finding nearby drivers...</div>
             ) : providers.length === 0 ? (
               <div className="p-4 bg-amber-50 text-amber-800 rounded-lg text-sm mb-4">
-                No drivers currently nearby. We'll assign the next available one automatically.
+                No drivers nearby. Don't worry, we'll connect you with the closest available driver automatically.
               </div>
             ) : (
               <div className="space-y-2 max-h-[30vh] overflow-y-auto">
@@ -438,6 +567,12 @@ const MobileServiceRequest = () => {
                 <span className="text-muted-foreground">Service</span>
                 <span className="font-semibold">{services.find(s => s.slug === serviceType)?.name}</span>
               </div>
+              {serviceType === 'fuel_delivery' && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Fuel</span>
+                  <span className="font-semibold">{fuelType} {fuelAmount ? `(GHS ${fuelAmount})` : ''}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Location</span>
                 <span className="font-semibold truncate max-w-[200px]">{location}</span>
@@ -602,6 +737,9 @@ const MobileServiceRequest = () => {
                 setVehiclePhotoPreview(null);
                 setSelectedProviderId(null);
                 setServiceType('');
+                setFuelType('');
+                setFuelAmount('');
+                setIsCustomFuel(false);
               }}
               className="w-full"
             >
