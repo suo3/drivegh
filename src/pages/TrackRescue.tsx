@@ -554,6 +554,19 @@ const TrackRescue = () => {
                           </div>
                         </div>
 
+                        {/* Customer Contact - Visible to ensure correctness */}
+                        {request.phone_number && (
+                          <div className="flex items-start gap-3 lg:gap-4">
+                            <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
+                              <Phone className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Contact Number</p>
+                              <p className="text-xs lg:text-sm text-muted-foreground">{request.phone_number}</p>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Live Tracking Map */}
                         {(request.status === 'en_route' || request.status === 'in_progress') &&
                           request.customer_lat && request.customer_lng && (

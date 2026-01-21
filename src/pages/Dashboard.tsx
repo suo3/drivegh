@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle, Fuel } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -1476,7 +1476,33 @@ const Dashboard = () => {
                                               <p className="font-medium">{request.location}</p>
                                             </div>
 
-                                            {(request.vehicle_make || request.vehicle_model) && (
+                                            {/* Fuel Details - Only for fuel_delivery */}
+                                            {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                              <div className="col-span-1 md:col-span-2 bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                                <Label className="text-amber-800 mb-2 block flex items-center gap-2">
+                                                  <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                                    <Fuel className="h-3 w-3 text-amber-600" />
+                                                  </div>
+                                                  Fuel Details
+                                                </Label>
+                                                <div className="flex gap-4">
+                                                  {request.fuel_type && (
+                                                    <div>
+                                                      <span className="text-xs text-amber-600/80 block">Type</span>
+                                                      <span className="font-medium text-amber-900 capitalize">{request.fuel_type}</span>
+                                                    </div>
+                                                  )}
+                                                  {request.fuel_amount && (
+                                                    <div>
+                                                      <span className="text-xs text-amber-600/80 block">Amount</span>
+                                                      <span className="font-medium text-amber-900">{request.fuel_amount} Liters</span>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
                                               <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
                                                 <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
                                                   <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -1484,21 +1510,35 @@ const Dashboard = () => {
                                                   </div>
                                                   Vehicle Details
                                                 </Label>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                   <div>
-                                                    <span className="text-xs text-muted-foreground block">Make/Model</span>
-                                                    <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
-                                                  </div>
-                                                  {request.vehicle_year && (
-                                                    <div>
-                                                      <span className="text-xs text-muted-foreground block">Year</span>
-                                                      <span className="font-medium">{request.vehicle_year}</span>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                      <div>
+                                                        <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                        <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                      </div>
+                                                      {request.vehicle_year && (
+                                                        <div>
+                                                          <span className="text-xs text-muted-foreground block">Year</span>
+                                                          <span className="font-medium">{request.vehicle_year}</span>
+                                                        </div>
+                                                      )}
+                                                      {request.vehicle_plate && (
+                                                        <div>
+                                                          <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                          <span className="font-medium">{request.vehicle_plate}</span>
+                                                        </div>
+                                                      )}
                                                     </div>
-                                                  )}
-                                                  {request.vehicle_plate && (
+                                                  </div>
+                                                  {request.vehicle_image_url && (
                                                     <div>
-                                                      <span className="text-xs text-muted-foreground block">Plate Number</span>
-                                                      <span className="font-medium">{request.vehicle_plate}</span>
+                                                      <span className="text-xs text-muted-foreground block mb-1">Photo</span>
+                                                      <img
+                                                        src={request.vehicle_image_url}
+                                                        alt="Vehicle"
+                                                        className="w-full h-32 object-cover rounded-md border"
+                                                      />
                                                     </div>
                                                   )}
                                                 </div>
@@ -1597,6 +1637,116 @@ const Dashboard = () => {
                               </div>
 
                               <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t mt-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline" className="w-full sm:w-auto">View Details</Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Request Details</DialogTitle>
+                                      <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label className="text-muted-foreground">Service Type</Label>
+                                          <p className="font-medium">{request.service_type}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Status</Label>
+                                          <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Customer</Label>
+                                          <p className="font-medium">{request.profiles?.full_name}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Phone</Label>
+                                          <p className="font-medium">{request.profiles?.phone_number || 'N/A'}</p>
+                                        </div>
+                                        <div className="col-span-2">
+                                          <Label className="text-muted-foreground">Location</Label>
+                                          <p className="font-medium">{request.location}</p>
+                                        </div>
+
+                                        {/* Fuel Details - Only for fuel_delivery */}
+                                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                          <div className="col-span-2 bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                            <Label className="text-amber-800 mb-2 block flex items-center gap-2">
+                                              <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                                <Fuel className="h-3 w-3 text-amber-600" />
+                                              </div>
+                                              Fuel Details
+                                            </Label>
+                                            <div className="flex gap-4">
+                                              {request.fuel_type && (
+                                                <div>
+                                                  <span className="text-xs text-amber-600/80 block">Type</span>
+                                                  <span className="font-medium text-amber-900 capitalize">{request.fuel_type}</span>
+                                                </div>
+                                              )}
+                                              {request.fuel_amount && (
+                                                <div>
+                                                  <span className="text-xs text-amber-600/80 block">Amount</span>
+                                                  <span className="font-medium text-amber-900">{request.fuel_amount} Liters</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
+                                          <div className="col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
+                                            <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
+                                              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                                <ClipboardList className="h-3 w-3 text-primary" />
+                                              </div>
+                                              Vehicle Details
+                                            </Label>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                              <div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  <div>
+                                                    <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                    <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                  </div>
+                                                  {request.vehicle_year && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Year</span>
+                                                      <span className="font-medium">{request.vehicle_year}</span>
+                                                    </div>
+                                                  )}
+                                                  {request.vehicle_plate && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                      <span className="font-medium">{request.vehicle_plate}</span>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              {request.vehicle_image_url && (
+                                                <div>
+                                                  <span className="text-xs text-muted-foreground block mb-1">Photo</span>
+                                                  <img
+                                                    src={request.vehicle_image_url}
+                                                    alt="Vehicle"
+                                                    className="w-full h-32 object-cover rounded-md border"
+                                                  />
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+                                        {request.description && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Description</Label>
+                                            <p className="font-medium">{request.description}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
                                 {request.status === 'assigned' && (
                                   <>
                                     <Button
@@ -1903,6 +2053,75 @@ const Dashboard = () => {
                                               <Label className="text-muted-foreground">Location</Label>
                                               <p className="font-medium">{request.location}</p>
                                             </div>
+
+                                            {/* Fuel Details - Only for fuel_delivery */}
+                                            {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                              <div className="col-span-2 bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                                <Label className="text-amber-800 mb-2 block flex items-center gap-2">
+                                                  <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                                    <Fuel className="h-3 w-3 text-amber-600" />
+                                                  </div>
+                                                  Fuel Details
+                                                </Label>
+                                                <div className="flex gap-4">
+                                                  {request.fuel_type && (
+                                                    <div>
+                                                      <span className="text-xs text-amber-600/80 block">Type</span>
+                                                      <span className="font-medium text-amber-900 capitalize">{request.fuel_type}</span>
+                                                    </div>
+                                                  )}
+                                                  {request.fuel_amount && (
+                                                    <div>
+                                                      <span className="text-xs text-amber-600/80 block">Amount</span>
+                                                      <span className="font-medium text-amber-900">{request.fuel_amount} Liters</span>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
+                                              <div className="col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
+                                                <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
+                                                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <ClipboardList className="h-3 w-3 text-primary" />
+                                                  </div>
+                                                  Vehicle Details
+                                                </Label>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                  <div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                      <div>
+                                                        <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                        <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                      </div>
+                                                      {request.vehicle_year && (
+                                                        <div>
+                                                          <span className="text-xs text-muted-foreground block">Year</span>
+                                                          <span className="font-medium">{request.vehicle_year}</span>
+                                                        </div>
+                                                      )}
+                                                      {request.vehicle_plate && (
+                                                        <div>
+                                                          <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                          <span className="font-medium">{request.vehicle_plate}</span>
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                  {request.vehicle_image_url && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block mb-1">Photo</span>
+                                                      <img
+                                                        src={request.vehicle_image_url}
+                                                        alt="Vehicle"
+                                                        className="w-full h-32 object-cover rounded-md border"
+                                                      />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            )}
                                             {request.description && (
                                               <div className="col-span-2">
                                                 <Label className="text-muted-foreground">Description</Label>
@@ -2214,6 +2433,75 @@ const Dashboard = () => {
                                           <Label className="text-muted-foreground">Location</Label>
                                           <p className="font-medium">{request.location}</p>
                                         </div>
+
+                                        {/* Fuel Details - Only for fuel_delivery */}
+                                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                          <div className="col-span-2 bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                            <Label className="text-amber-800 mb-2 block flex items-center gap-2">
+                                              <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                                <Fuel className="h-3 w-3 text-amber-600" />
+                                              </div>
+                                              Fuel Details
+                                            </Label>
+                                            <div className="flex gap-4">
+                                              {request.fuel_type && (
+                                                <div>
+                                                  <span className="text-xs text-amber-600/80 block">Type</span>
+                                                  <span className="font-medium text-amber-900 capitalize">{request.fuel_type}</span>
+                                                </div>
+                                              )}
+                                              {request.fuel_amount && (
+                                                <div>
+                                                  <span className="text-xs text-amber-600/80 block">Amount</span>
+                                                  <span className="font-medium text-amber-900">{request.fuel_amount} Liters</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
+                                          <div className="col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
+                                            <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
+                                              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                                <ClipboardList className="h-3 w-3 text-primary" />
+                                              </div>
+                                              Vehicle Details
+                                            </Label>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                              <div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  <div>
+                                                    <span className="text-xs text-muted-foreground block">Make/Model</span>
+                                                    <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
+                                                  </div>
+                                                  {request.vehicle_year && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Year</span>
+                                                      <span className="font-medium">{request.vehicle_year}</span>
+                                                    </div>
+                                                  )}
+                                                  {request.vehicle_plate && (
+                                                    <div>
+                                                      <span className="text-xs text-muted-foreground block">Plate Number</span>
+                                                      <span className="font-medium">{request.vehicle_plate}</span>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              {request.vehicle_image_url && (
+                                                <div>
+                                                  <span className="text-xs text-muted-foreground block mb-1">Photo</span>
+                                                  <img
+                                                    src={request.vehicle_image_url}
+                                                    alt="Vehicle"
+                                                    className="w-full h-32 object-cover rounded-md border"
+                                                  />
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
                                         {request.description && (
                                           <div className="col-span-2">
                                             <Label className="text-muted-foreground">Description</Label>

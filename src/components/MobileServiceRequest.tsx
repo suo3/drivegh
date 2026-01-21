@@ -273,8 +273,8 @@ const MobileServiceRequest = () => {
             customer_lng: customerLng,
           });
 
-          if (closestData && closestData.length > 0) {
-            foundProviderId = closestData[0].provider_id;
+          if (closestData && Array.isArray(closestData) && closestData.length > 0) {
+            foundProviderId = (closestData[0] as any).provider_id;
             console.log("Found provider via RPC:", foundProviderId);
           }
         } catch (rpcError) {
@@ -574,14 +574,26 @@ const MobileServiceRequest = () => {
                 </div>
               )}
               <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-semibold">{phoneNumber}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Location</span>
                 <span className="font-semibold truncate max-w-[200px]">{location}</span>
               </div>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-start text-sm">
                 <span className="text-muted-foreground">Vehicle</span>
-                <span className="font-semibold flex items-center gap-1">
-                  <ImageIcon className="w-3 h-3" /> Photo Attached
-                </span>
+                <div className="text-right">
+                  {vehiclePhotoPreview ? (
+                    <img
+                      src={vehiclePhotoPreview}
+                      alt="Vehicle"
+                      className="w-16 h-12 object-cover rounded-md border shadow-sm ml-auto"
+                    />
+                  ) : (
+                    <span className="font-semibold">No photo</span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Provider</span>
