@@ -606,7 +606,7 @@ const TrackRescue = () => {
                         )}
 
                         {/* Vehicle Information - Hidden on mobile */}
-                        {(request.vehicle_make || request.vehicle_model) && (
+                        {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
                           <div className="hidden lg:flex items-start gap-4">
                             <div className="bg-primary/10 rounded-xl p-2.5 mt-0.5 flex-shrink-0">
                               <Car className="h-5 w-5 text-primary" />
@@ -618,6 +618,15 @@ const TrackRescue = () => {
                                 {request.vehicle_year && ` (${request.vehicle_year})`}
                                 {request.vehicle_plate && ` - ${request.vehicle_plate}`}
                               </p>
+                              {request.vehicle_image_url && (
+                                <div className="mt-2">
+                                  <img
+                                    src={request.vehicle_image_url}
+                                    alt="Vehicle"
+                                    className="w-full max-w-[200px] rounded-lg border shadow-sm object-cover h-32"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

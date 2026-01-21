@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,44 +7,67 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Phone, MapPin, CheckCircle2, AlertCircle, Car, Fuel, ArrowRight, ArrowLeft } from 'lucide-react';
-import { ProviderSelectionStep } from '@/components/ProviderSelectionStep';
+import { Phone, MapPin, CheckCircle2, Car, ArrowLeft, Camera, Image as ImageIcon, MapPinned, Navigation, ChevronDown } from 'lucide-react';
 import { geocodeAddress } from '@/lib/geocode';
+import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
+import { useNearbyProviders } from '@/hooks/useNearbyProviders';
+import { ProviderCard } from '@/components/ProviderCard';
+
 const MobileServiceRequest = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [services, setServices] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Form State
   const [currentStep, setCurrentStep] = useState(1);
+  const [services, setServices] = useState<any[]>([]);
   const [serviceType, setServiceType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [vehicleMake, setVehicleMake] = useState('');
-  const [vehicleModel, setVehicleModel] = useState('');
-  const [vehicleYear, setVehicleYear] = useState('');
-  const [vehiclePlate, setVehiclePlate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [fuelType, setFuelType] = useState('');
-  const [customFuelType, setCustomFuelType] = useState('');
-  const [fuelAmount, setFuelAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
+
+  // Vehicle Photo State
+  const [vehiclePhoto, setVehiclePhoto] = useState<File | null>(null);
+  const [vehiclePhotoPreview, setVehiclePhotoPreview] = useState<string | null>(null);
+
+  // Map & Location State
   const [customerLat, setCustomerLat] = useState<number | null>(null);
   const [customerLng, setCustomerLng] = useState<number | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  // UI State
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Provider State
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [autoAssignedProviderId, setAutoAssignedProviderId] = useState<string | null>(null);
 
-  const totalSteps = 5; // Added provider selection step
+  // Fetch nearby providers hook
+  const { providers, closestProvider, hasNearbyProviders, loading: providersLoading } = useNearbyProviders({
+    customerLat,
+    customerLng,
+    radiusKm: 10,
+    enabled: customerLat !== null && customerLng !== null && currentStep >= 4,
+  });
 
   useEffect(() => {
     fetchServices();
     getCurrentLocation();
   }, []);
+
+  // Auto-select closest provider if none selected
+  useEffect(() => {
+    if (currentStep === 4 && !selectedProviderId && closestProvider) {
+      // Optional: Auto-select closest? Or just let user choose.
+      // For now, let's just keep track of it for potential auto-assignment on submit
+    }
+  }, [currentStep, closestProvider, selectedProviderId]);
 
   const fetchServices = async () => {
     const { data } = await supabase
@@ -52,7 +75,6 @@ const MobileServiceRequest = () => {
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
-    
     if (data) setServices(data);
   };
 
@@ -61,26 +83,77 @@ const MobileServiceRequest = () => {
     return Icon || LucideIcons.Settings;
   };
 
+  const getCurrentLocation = () => {
+    if (gettingLocation) return;
+    setGettingLocation(true);
+    if (!navigator.geolocation) {
+      setGettingLocation(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCustomerLat(lat);
+        setCustomerLng(lng);
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+            { headers: { 'User-Agent': 'RoadsideAssistance/1.0' } }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const address = data.display_name || data.address?.road || '';
+            if (address) setLocation(address);
+          }
+        } catch (error) {
+          console.error('Reverse geocoding error:', error);
+        }
+        setGettingLocation(false);
+      },
+      () => setGettingLocation(false),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setVehiclePhoto(file);
+      const objectUrl = URL.createObjectURL(file);
+      setVehiclePhotoPreview(objectUrl);
+    }
+  };
+
+  const uploadPhoto = async (requestId: string): Promise<string | null> => {
+    if (!vehiclePhoto) return null;
+    try {
+      const fileExt = vehiclePhoto.name.split('.').pop();
+      const fileName = `${requestId}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('service-request-images')
+        .upload(fileName, vehiclePhoto);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('service-request-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast.error('Failed to upload vehicle photo');
+      return null;
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
         if (!serviceType) {
           toast.error('Please select a service type');
           return false;
-        }
-        if (serviceType === 'fuel_delivery') {
-          if (!fuelType) {
-            toast.error('Please select a fuel type');
-            return false;
-          }
-          if (fuelType === 'other' && !customFuelType.trim()) {
-            toast.error('Please enter a custom fuel type');
-            return false;
-          }
-          if (!fuelAmount || parseFloat(fuelAmount) <= 0) {
-            toast.error('Please enter a valid fuel amount');
-            return false;
-          }
         }
         return true;
       case 2:
@@ -94,23 +167,15 @@ const MobileServiceRequest = () => {
         }
         return true;
       case 3:
-        if (!vehicleMake.trim() || !vehicleModel.trim()) {
-          toast.error('Please enter vehicle make and model');
+        if (!vehiclePhoto) {
+          toast.error('Please take a photo of your vehicle');
           return false;
         }
-        return true;
-      case 4:
-        // Provider selection step - allow proceeding if provider selected, auto-assigned, or auto-assign mode active
-        // When no nearby providers exist, we auto-assign in the background so user can proceed
         return true;
       default:
         return true;
     }
   };
-
-  const handleAutoAssign = useCallback((providerId: string | null) => {
-    setAutoAssignedProviderId(providerId);
-  }, []);
 
   const handleNext = async () => {
     if (validateStep(currentStep)) {
@@ -125,7 +190,7 @@ const MobileServiceRequest = () => {
         }
         setGettingLocation(false);
       }
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      setCurrentStep(prev => prev + 1);
     }
   };
 
@@ -133,102 +198,65 @@ const MobileServiceRequest = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const getCurrentLocation = () => {
-    if (gettingLocation) return;
-    
-    setGettingLocation(true);
-    
-    if (!navigator.geolocation) {
-      setGettingLocation(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        
-        setCustomerLat(lat);
-        setCustomerLng(lng);
-        
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-            { headers: { 'User-Agent': 'RoadsideAssistance/1.0' } }
-          );
-          
-          if (response.ok) {
-            const data = await response.json();
-            const address = data.display_name || data.address?.road || '';
-            if (address) setLocation(address);
-          }
-        } catch (error) {
-          console.error('Reverse geocoding error:', error);
-        }
-        
-        setGettingLocation(false);
-      },
-      () => setGettingLocation(false),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
-    
     setLoading(true);
 
-    const assignedProviderId = selectedProviderId || autoAssignedProviderId;
+    const assignedProviderId = selectedProviderId || (closestProvider?.provider_id) || null;
 
     try {
+      // 1. Create the request first
       const { data, error } = await supabase.from('service_requests').insert([{
         customer_id: user?.id || null,
         phone_number: user ? null : phoneNumber.trim(),
-        service_type: serviceType as 'towing' | 'tire_change' | 'fuel_delivery' | 'battery_jump' | 'lockout_service' | 'emergency_assistance',
+        service_type: serviceType,
         location: location.trim(),
         description: description.trim(),
-        vehicle_make: vehicleMake.trim(),
-        vehicle_model: vehicleModel.trim(),
-        vehicle_year: vehicleYear.trim() || null,
-        vehicle_plate: vehiclePlate.trim() || null,
         customer_lat: customerLat,
         customer_lng: customerLng,
-        fuel_type: serviceType === 'fuel_delivery' ? (fuelType === 'other' ? customFuelType : fuelType) : null,
-        fuel_amount: serviceType === 'fuel_delivery' && fuelAmount ? parseFloat(fuelAmount) : null,
-        status: assignedProviderId ? 'assigned' as const : 'pending' as const,
-        provider_id: assignedProviderId || null,
+        status: assignedProviderId ? 'assigned' : 'pending',
+        provider_id: assignedProviderId,
         assigned_at: assignedProviderId ? new Date().toISOString() : null,
+        // Default text fields to indicate photo is used
+        vehicle_make: 'See Photo',
+        vehicle_model: 'See Photo',
       }]).select().single();
 
-      if (error) {
-        toast.error('Failed to create service request. Please try again.');
-      } else {
-        // If no provider was assigned, auto-assign the closest one in the background
-        if (!assignedProviderId && customerLat && customerLng) {
-          supabase.rpc('find_closest_provider', {
-            customer_lat: customerLat,
-            customer_lng: customerLng,
-          }).then(({ data: closestData }) => {
-            if (closestData && closestData.length > 0) {
-              supabase.from('service_requests').update({
-                provider_id: closestData[0].provider_id,
-                status: 'assigned',
-                assigned_at: new Date().toISOString(),
-              }).eq('id', data.id).then(() => {
-                toast.success('A provider has been assigned to your request. Help is on the way!');
-              });
-            }
-          });
+      if (error) throw error;
+
+      // 2. Upload photo and update request
+      if (vehiclePhoto) {
+        const publicUrl = await uploadPhoto(data.id);
+        if (publicUrl) {
+          await supabase.from('service_requests')
+            .update({ vehicle_image_url: publicUrl })
+            .eq('id', data.id);
         }
-        
-        setCreatedRequestId(data.tracking_code || data.id);
-        setSuccessDialogOpen(true);
-        toast.success('Service request submitted successfully!');
       }
+
+      // 3. Auto-assign fallback logic (if no provider selected but coords exist)
+      if (!assignedProviderId && customerLat && customerLng) {
+        // RPC call as fallback
+        const { data: closestData } = await supabase.rpc('find_closest_provider', {
+          customer_lat: customerLat,
+          customer_lng: customerLng,
+        });
+        if (closestData && closestData.length > 0) {
+          await supabase.from('service_requests').update({
+            provider_id: closestData[0].provider_id,
+            status: 'assigned',
+            assigned_at: new Date().toISOString(),
+          }).eq('id', data.id);
+        }
+      }
+
+      setCreatedRequestId(data.tracking_code || data.id);
+      setSuccessDialogOpen(true);
+      toast.success('Service request submitted successfully!');
+
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      console.error(error);
+      toast.error('Failed to create service request');
     } finally {
       setLoading(false);
     }
@@ -241,358 +269,297 @@ const MobileServiceRequest = () => {
     }
   };
 
-  const stepData = [
-    { id: 1, title: 'Service' },
-    { id: 2, title: 'Location' },
-    { id: 3, title: 'Vehicle' },
-    { id: 4, title: 'Provider' },
-    { id: 5, title: 'Review' },
-  ];
+  // Bottom Sheet Height & Content based on step
+  const getSheetContent = () => {
+    switch (currentStep) {
+      case 1: // Service Selection
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold">What help do you need?</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {services.map((service) => {
+                const Icon = getIconComponent(service.icon);
+                return (
+                  <button
+                    key={service.id}
+                    onClick={() => setServiceType(service.slug)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${serviceType === service.slug
+                      ? 'border-primary bg-primary/10'
+                      : 'border-muted hover:border-primary/50'
+                      }`}
+                  >
+                    <Icon className={`w-8 h-8 mb-2 ${serviceType === service.slug ? 'text-primary' : 'text-gray-500'}`} />
+                    <span className={`text-sm font-medium ${serviceType === service.slug ? 'text-primary' : 'text-gray-700'}`}>
+                      {service.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <Button className="w-full h-12 text-base" onClick={handleNext} disabled={!serviceType}>
+              Continue
+            </Button>
+          </div>
+        );
+
+      case 2: // Location & Contact
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold">Where are you?</h3>
+
+            {!user && (
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="024 123 4567"
+                    className="pl-10 h-12"
+                    type="tel"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Location</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Search landmark..."
+                    className="pl-10 h-12"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  className="h-12 w-12 p-0"
+                  onClick={getCurrentLocation}
+                  disabled={gettingLocation}
+                >
+                  <Navigation className={`h-5 w-5 ${gettingLocation ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </div>
+
+            <Button className="w-full h-12 text-base" onClick={handleNext}>
+              Confirm Location
+            </Button>
+          </div>
+        );
+
+      case 3: // Vehicle Photo
+        return (
+          <div className="space-y-6 text-center">
+            <h3 className="text-lg font-bold">Vehicle Details</h3>
+            <p className="text-muted-foreground text-sm">
+              Please take a clear photo of your vehicle so our driver can identify you.
+            </p>
+
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {vehiclePhotoPreview ? (
+                <img
+                  src={vehiclePhotoPreview}
+                  alt="Vehicle Preview"
+                  className="w-full h-48 object-cover rounded-lg shadow-md"
+                />
+              ) : (
+                <>
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Camera className="w-8 h-8 text-primary" />
+                  </div>
+                  <span className="text-sm font-semibold text-primary">Tap to take or upload photo</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handlePhotoSelect}
+              />
+            </div>
+
+            <Button className="w-full h-12 text-base" onClick={handleNext} disabled={!vehiclePhoto}>
+              Continue
+            </Button>
+          </div>
+        );
+
+      case 4: // Provider Selection
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Select a Provider</h3>
+              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">
+                {providers.length} nearby
+              </span>
+            </div>
+
+            {providersLoading ? (
+              <div className="py-8 text-center text-muted-foreground">Finding nearby drivers...</div>
+            ) : providers.length === 0 ? (
+              <div className="p-4 bg-amber-50 text-amber-800 rounded-lg text-sm mb-4">
+                No drivers currently nearby. We'll assign the next available one automatically.
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[30vh] overflow-y-auto">
+                {providers.map(provider => (
+                  <ProviderCard
+                    key={provider.provider_id}
+                    provider={provider}
+                    isSelected={selectedProviderId === provider.provider_id}
+                    onSelect={setSelectedProviderId}
+                  />
+                ))}
+              </div>
+            )}
+
+            <Button className="w-full h-12 text-base" onClick={handleNext}>
+              {selectedProviderId ? 'Select Driver' : 'Auto-Assign Driver'}
+            </Button>
+          </div>
+        );
+
+      case 5: // Review
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold">Review Request</h3>
+
+            <Card className="p-4 space-y-3 bg-muted/50 border-0">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Service</span>
+                <span className="font-semibold">{services.find(s => s.slug === serviceType)?.name}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Location</span>
+                <span className="font-semibold truncate max-w-[200px]">{location}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Vehicle</span>
+                <span className="font-semibold flex items-center gap-1">
+                  <ImageIcon className="w-3 h-3" /> Photo Attached
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Provider</span>
+                <span className="font-semibold text-primary">
+                  {selectedProviderId ? 'Selected' : 'Auto-assign'}
+                </span>
+              </div>
+            </Card>
+
+            <div className="space-y-2">
+              <Label>Additional Notes (Optional)</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe your issue..."
+                className="resize-none"
+                rows={2}
+              />
+            </div>
+
+            <Button className="w-full h-14 text-lg bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleSubmit} disabled={loading}>
+              {loading ? 'Submitting...' : 'Confirm Request'}
+            </Button>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <section className="py-8 bg-gradient-to-b from-background to-[hsl(var(--section-bg))]">
-      <div className="container mx-auto px-4">
+    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-gray-100 flex flex-col md:block">
+      {/* Full Screen Map Background */}
+      <div className="absolute inset-0 z-0">
+        <ProviderSelectionMap
+          customerLat={customerLat || 0}
+          customerLng={customerLng || 0}
+          providers={currentStep >= 4 ? providers : []}
+          selectedProviderId={selectedProviderId}
+          onProviderSelect={setSelectedProviderId}
+          className="w-full h-full rounded-none border-0"
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+      </div>
 
-        <Card className="shadow-xl border-2 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b py-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <div className="bg-primary rounded-lg p-1.5">
-                <Car className="h-4 w-4 text-primary-foreground" />
-              </div>
-              Service Request
-            </CardTitle>
-            <CardDescription className="text-sm">
-              Step {currentStep} of {totalSteps}: {stepData[currentStep - 1]?.title}
-            </CardDescription>
-          </CardHeader>
+      {/* Mobile Top Navigation Overlay */}
+      <div className="relative z-10 p-4 flex items-center justify-between md:hidden">
+        {currentStep > 1 ? (
+          <Button size="icon" variant="secondary" className="rounded-full h-10 w-10 shadow-lg bg-white/90 backdrop-blur text-foreground border border-gray-200" onClick={handleBack}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        ) : (
+          <div />
+        )}
+        <div className="px-3 py-1 bg-white/90 backdrop-blur rounded-full shadow-lg text-xs font-bold font-mono">
+          STEP {currentStep}/5
+        </div>
+      </div>
 
-          {/* Progress Indicator */}
-          <div className="px-4 pt-4">
-            <div className="flex items-center justify-between mb-4">
-              {stepData.map((step) => (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all text-xs ${
-                    currentStep >= step.id 
-                      ? 'bg-primary border-primary text-primary-foreground' 
-                      : 'border-muted-foreground/30 text-muted-foreground'
-                  }`}>
-                    {currentStep > step.id ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : (
-                      <span className="font-semibold">{step.id}</span>
-                    )}
-                  </div>
-                  {step.id < 5 && (
-                    <div className={`flex-1 h-1 mx-1 transition-all ${
-                      currentStep > step.id ? 'bg-primary' : 'bg-muted-foreground/20'
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
+      {/* Spacer to push content down on mobile */}
+      <div className="flex-1 md:hidden" />
+
+      {/* Main Content Container: Bottom Sheet (Mobile) vs Floating Card (Desktop) */}
+      <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-t-3xl shadow-[0_-4px_30px_rgba(0,0,0,0.15)] 
+                      md:absolute md:top-6 md:left-6 md:bottom-6 md:w-[480px] md:rounded-2xl md:shadow-2xl md:flex md:flex-col
+                      animate-in slide-in-from-bottom md:slide-in-from-left duration-300 border border-white/20">
+
+        {/* Desktop Header (Inside Card) */}
+        <div className="hidden md:flex items-center justify-between p-6 pb-2 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            {currentStep > 1 && (
+              <Button size="icon" variant="ghost" onClick={handleBack} className="-ml-3 h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <span className="font-bold text-lg">
+              {currentStep === 1 && 'Select Service'}
+              {currentStep === 2 && 'Location'}
+              {currentStep === 3 && 'Vehicle Info'}
+              {currentStep === 4 && 'Choose Provider'}
+              {currentStep === 5 && 'Review'}
+            </span>
           </div>
+          <div className="text-xs font-bold text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
+            STEP {currentStep}/5
+          </div>
+        </div>
 
-          <CardContent className="p-4 pt-0">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Step 1: Service Selection */}
-              {currentStep === 1 && (
-                <div className="space-y-3 animate-fade-in">
-                  <Label className="text-sm font-bold">What service do you need?</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {services.map((service) => {
-                      const Icon = getIconComponent(service.icon);
-                      return (
-                        <Card
-                          key={service.id}
-                          className={`p-3 cursor-pointer transition-all border-2 ${
-                            serviceType === service.slug 
-                              ? 'border-primary bg-primary/5' 
-                              : 'hover:border-primary/30'
-                          }`}
-                          onClick={() => setServiceType(service.slug)}
-                        >
-                          <div className="flex flex-col items-center text-center gap-2">
-                            <div className={`rounded-lg p-2 ${
-                              serviceType === service.slug 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-primary/10 text-primary'
-                            }`}>
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <p className="font-semibold text-xs">{service.name}</p>
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
+        {/* Mobile Drag Handle / Collapse Toggle */}
+        <div
+          className="md:hidden w-full flex flex-col items-center justify-center pt-3 pb-1 cursor-pointer touch-none active:opacity-70"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <div className="w-12 h-1.5 bg-gray-200 rounded-full mb-1" />
+          <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium animate-pulse">
+            {isCollapsed ? 'Tap to expand' : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </div>
 
-                  {/* Fuel Details */}
-                  {serviceType === 'fuel_delivery' && (
-                    <div className="space-y-3 p-3 bg-amber-50 border border-amber-200 rounded-lg animate-fade-in">
-                      <Label className="text-sm font-bold flex items-center gap-2">
-                        <Fuel className="h-4 w-4 text-amber-600" />
-                        Fuel Details
-                      </Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Fuel Type</Label>
-                          <Select value={fuelType} onValueChange={setFuelType}>
-                            <SelectTrigger className="h-10 bg-white text-sm">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="petrol">Petrol</SelectItem>
-                              <SelectItem value="diesel">Diesel</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Amount (L)</Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            max="100"
-                            value={fuelAmount}
-                            onChange={(e) => setFuelAmount(e.target.value)}
-                            placeholder="e.g., 10"
-                            className="h-10 text-sm"
-                          />
-                        </div>
-                      </div>
-                      {fuelType === 'other' && (
-                        <Input
-                          type="text"
-                          value={customFuelType}
-                          onChange={(e) => setCustomFuelType(e.target.value)}
-                          placeholder="Specify fuel type"
-                          className="h-10 text-sm"
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2: Contact & Location */}
-              {currentStep === 2 && (
-                <div className="space-y-4 animate-fade-in">
-                  {!user && (
-                    <div className="space-y-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <Label className="text-sm font-bold flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-primary" />
-                        Your Phone Number
-                      </Label>
-                      <Input
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="e.g., 024 123 4567"
-                        className="h-12"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      Your Location
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="text"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g., Accra Mall, East Legon"
-                        className="h-12 flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={getCurrentLocation}
-                        disabled={gettingLocation}
-                        className="h-12 px-3"
-                      >
-                        {gettingLocation ? (
-                          <LucideIcons.Loader2 className="h-5 w-5 animate-spin" />
-                        ) : (
-                          <LucideIcons.Navigation className="h-5 w-5" />
-                        )}
-                      </Button>
-                    </div>
-                    {customerLat && customerLng && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        GPS captured
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Vehicle Information */}
-              {currentStep === 3 && (
-                <div className="space-y-3 animate-fade-in">
-                  <Label className="text-sm font-bold flex items-center gap-2">
-                    <Car className="h-4 w-4 text-primary" />
-                    Vehicle Information
-                  </Label>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Make *</Label>
-                      <Input
-                        type="text"
-                        value={vehicleMake}
-                        onChange={(e) => setVehicleMake(e.target.value)}
-                        placeholder="e.g., Toyota"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Model *</Label>
-                      <Input
-                        type="text"
-                        value={vehicleModel}
-                        onChange={(e) => setVehicleModel(e.target.value)}
-                        placeholder="e.g., Camry"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Year</Label>
-                      <Input
-                        type="text"
-                        value={vehicleYear}
-                        onChange={(e) => setVehicleYear(e.target.value)}
-                        placeholder="e.g., 2020"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Plate</Label>
-                      <Input
-                        type="text"
-                        value={vehiclePlate}
-                        onChange={(e) => setVehiclePlate(e.target.value)}
-                        placeholder="e.g., GR 1234"
-                        className="h-10"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Provider Selection */}
-              {currentStep === 4 && (
-                <ProviderSelectionStep
-                  customerLat={customerLat}
-                  customerLng={customerLng}
-                  selectedProviderId={selectedProviderId}
-                  onProviderSelect={setSelectedProviderId}
-                  onAutoAssign={handleAutoAssign}
-                />
-              )}
-
-              {/* Step 5: Review & Submit */}
-              {currentStep === 5 && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="space-y-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      Review Your Request
-                    </h3>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Service:</span>
-                        <span className="font-semibold">{services.find(s => s.slug === serviceType)?.name}</span>
-                      </div>
-                      {!user && phoneNumber && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Phone:</span>
-                          <span className="font-semibold">{phoneNumber}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Location:</span>
-                        <span className="font-semibold truncate max-w-[150px]">{location}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Vehicle:</span>
-                        <span className="font-semibold">{vehicleMake} {vehicleModel}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Provider:</span>
-                        <span className="font-semibold text-primary">
-                          {selectedProviderId ? 'Selected' : autoAssignedProviderId ? 'Auto-assigned' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold">Additional Details (Optional)</Label>
-                    <Textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Any additional information..."
-                      rows={3}
-                      className="resize-none text-sm"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-2 pt-2">
-                {currentStep > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleBack}
-                    className="flex-1 h-12"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </Button>
-                )}
-                
-                {currentStep < totalSteps ? (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="flex-1 h-12 bg-primary hover:bg-primary/90"
-                  >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground"
-                  >
-                    {loading ? (
-                      <>
-                        <LucideIcons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Submit Request
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        {/* Scrollable Content */}
+        <div
+          className={`px-6 pb-8 overflow-y-auto custom-scrollbar flex-1 transition-all duration-300 ease-in-out md:max-h-full md:opacity-100
+             ${isCollapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[70vh] opacity-100 pt-2'}`}
+        >
+          {getSheetContent()}
+        </div>
       </div>
 
       {/* Success Dialog */}
-      <Dialog 
-        open={successDialogOpen} 
+      <Dialog
+        open={successDialogOpen}
         onOpenChange={(open) => {
           if (!open && createdRequestId) {
             navigate(`/track-rescue?code=${createdRequestId}`);
@@ -600,57 +567,50 @@ const MobileServiceRequest = () => {
           setSuccessDialogOpen(open);
         }}
       >
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="max-w-sm mx-auto rounded-2xl">
           <DialogHeader>
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <DialogTitle className="text-center text-xl">Request Submitted!</DialogTitle>
+            <DialogTitle className="text-center text-xl">Help is on the way!</DialogTitle>
             <DialogDescription className="text-center">
-              Your tracking code is:
+              Share this code with your driver:
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="flex items-center justify-center gap-2 p-4 bg-muted rounded-lg">
-            <code className="text-lg font-bold">{createdRequestId}</code>
-            <Button variant="ghost" size="sm" onClick={handleCopyCode}>
+
+          <div className="flex items-center justify-center gap-3 p-4 bg-muted rounded-xl border-dashed border-2">
+            <code className="text-2xl font-bold tracking-wider">{createdRequestId}</code>
+            <Button variant="ghost" size="icon" onClick={handleCopyCode}>
               <LucideIcons.Copy className="w-4 h-4" />
             </Button>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Button 
+          <div className="grid gap-3 pt-4">
+            <Button
               onClick={() => navigate(`/track-rescue?code=${createdRequestId}`)}
-              className="w-full"
+              className="w-full h-12 text-base"
             >
-              Track Your Request
+              Track Driver
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => {
                 setSuccessDialogOpen(false);
+                // Reset state
                 setCurrentStep(1);
-                setServiceType('');
-                setLocation('');
-                setDescription('');
-                setVehicleMake('');
-                setVehicleModel('');
-                setVehicleYear('');
-                setVehiclePlate('');
-                setPhoneNumber('');
-                setFuelType('');
-                setFuelAmount('');
+                setVehiclePhoto(null);
+                setVehiclePhotoPreview(null);
                 setSelectedProviderId(null);
-                setAutoAssignedProviderId(null);
+                setServiceType('');
               }}
               className="w-full"
             >
-              Submit Another Request
+              New Request
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </section>
+    </div>
   );
 };
 

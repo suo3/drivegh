@@ -53,7 +53,7 @@ const formatETA = (minutes: number): string => {
 const createProviderIcon = (isSelected: boolean, isAvailable: boolean, distanceKm: number) => {
   const eta = calculateETA(distanceKm);
   const etaText = formatETA(eta);
-  
+
   return new DivIcon({
     className: 'provider-marker',
     html: `
@@ -110,9 +110,10 @@ export function ProviderSelectionMap({
   selectedProviderId,
   onProviderSelect,
   isSearching = false,
-}: ProviderSelectionMapProps) {
+  className = "",
+}: ProviderSelectionMapProps & { className?: string }) {
   return (
-    <div className="relative rounded-xl overflow-hidden border shadow-lg" style={{ height: '200px' }}>
+    <div className={`relative rounded-xl overflow-hidden border shadow-lg ${className}`} style={{ height: className ? '100%' : '200px' }}>
       {/* Searching overlay */}
       {isSearching && (
         <div className="absolute inset-0 z-[1000] bg-background/50 backdrop-blur-sm flex items-center justify-center">
@@ -137,7 +138,7 @@ export function ProviderSelectionMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
+
         {/* Search radius circle */}
         <Circle
           center={[customerLat, customerLng]}

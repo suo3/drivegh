@@ -32,7 +32,7 @@ const ProviderDashboard = () => {
 
   // Track active request (en_route or in_progress)
   useEffect(() => {
-    const activeRequest = requests.find(r => 
+    const activeRequest = requests.find(r =>
       r.status === 'en_route' || r.status === 'in_progress'
     );
     setActiveRequestId(activeRequest?.id || null);
@@ -52,7 +52,7 @@ const ProviderDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const channel = supabase
       .channel('provider_service_requests')
       .on(
@@ -127,7 +127,7 @@ const ProviderDashboard = () => {
   const rejectRequest = async (requestId: string) => {
     const { error } = await supabase
       .from('service_requests')
-      .update({ 
+      .update({
         status: 'pending',
         provider_id: null,
         assigned_at: null,
@@ -150,7 +150,7 @@ const ProviderDashboard = () => {
 
   const updateProviderLocation = async (requestId: string) => {
     setUpdatingLocation(requestId);
-    
+
     if (!navigator.geolocation) {
       toast.error('Geolocation is not supported by your browser');
       setUpdatingLocation(null);
@@ -160,10 +160,10 @@ const ProviderDashboard = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        
+
         const { error } = await supabase
           .from('service_requests')
-          .update({ 
+          .update({
             provider_lat: latitude,
             provider_lng: longitude
           })
@@ -243,7 +243,7 @@ const ProviderDashboard = () => {
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
         <div className="absolute top-20 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-glow/20 rounded-full blur-3xl" />
-        
+
         <div className="max-w-6xl mx-auto relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -259,11 +259,10 @@ const ProviderDashboard = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${
-                isAvailable 
-                  ? 'bg-green-500/20 border-green-500/50 text-green-100' 
+              <div className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${isAvailable
+                  ? 'bg-green-500/20 border-green-500/50 text-green-100'
                   : 'bg-red-500/20 border-red-500/50 text-red-100'
-              }`}>
+                }`}>
                 {isAvailable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
                 <span className="text-sm font-medium">{isAvailable ? 'Online' : 'Offline'}</span>
                 <Switch
@@ -272,9 +271,9 @@ const ProviderDashboard = () => {
                   disabled={isUpdating}
                 />
               </div>
-              <Button 
-                onClick={handleSignOut} 
-                variant="outline" 
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
                 size="lg"
                 className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-primary transition-all duration-300 shadow-lg hover:shadow-xl"
               >
@@ -351,13 +350,13 @@ const ProviderDashboard = () => {
                     <CardDescription className="text-base mt-1">Manage your service requests</CardDescription>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-muted-foreground">Filters:</span>
                   </div>
-                  
+
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[160px]">
                       <SelectValue placeholder="Status" />
@@ -389,9 +388,9 @@ const ProviderDashboard = () => {
                   </Select>
 
                   {(statusFilter !== 'all' || serviceTypeFilter !== 'all') && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={clearFilters}
                       className="text-xs"
                     >
@@ -452,10 +451,21 @@ const ProviderDashboard = () => {
                           </div>
                           <Badge className="capitalize shadow-sm text-xs flex-shrink-0 ml-2">{request.status.replace('_', ' ')}</Badge>
                         </div>
-                        
-                         {request.description && (
+
+                        {request.description && (
                           <div className="md:ml-14 mb-4 p-3 md:p-4 rounded-xl bg-muted/50 border border-muted">
                             <p className="text-xs md:text-sm break-words">{request.description}</p>
+                          </div>
+                        )}
+
+                        {request.vehicle_image_url && (
+                          <div className="md:ml-14 mb-4">
+                            <p className="text-xs font-semibold text-muted-foreground mb-1">Vehicle Photo:</p>
+                            <img
+                              src={request.vehicle_image_url}
+                              alt="Vehicle"
+                              className="w-full max-w-[200px] rounded-lg border shadow-sm object-cover h-32"
+                            />
                           </div>
                         )}
 
@@ -488,8 +498,8 @@ const ProviderDashboard = () => {
                                 <Navigation className="h-4 w-4 mr-2" />
                                 Start Driving (En Route)
                               </Button>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => updateProviderLocation(request.id)}
                                 disabled={updatingLocation === request.id}
@@ -510,8 +520,8 @@ const ProviderDashboard = () => {
                                 <Briefcase className="h-4 w-4 mr-2" />
                                 Arrived - Start Service
                               </Button>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => updateProviderLocation(request.id)}
                                 disabled={updatingLocation === request.id}

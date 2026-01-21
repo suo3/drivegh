@@ -522,7 +522,7 @@ const RequestDetails = () => {
               )}
 
               {/* Vehicle Information */}
-              {(request.vehicle_make || request.vehicle_model) && (
+              {(request.vehicle_make || request.vehicle_model || request.vehicle_image_url) && (
                 <div className="flex items-start gap-4">
                   <Car className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
@@ -535,6 +535,15 @@ const RequestDetails = () => {
                       <p className="text-muted-foreground mt-1">
                         Plate: {request.vehicle_plate}
                       </p>
+                    )}
+                    {request.vehicle_image_url && (
+                      <div className="mt-3">
+                        <img
+                          src={request.vehicle_image_url}
+                          alt="Vehicle"
+                          className="w-full max-w-sm rounded-lg border shadow-sm object-cover max-h-[300px]"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -686,8 +695,8 @@ const RequestDetails = () => {
                           <Star
                             key={star}
                             className={`h-5 w-5 ${star <= getRequestRating()!.rating
-                                ? 'fill-yellow-500 text-yellow-500'
-                                : 'text-gray-300'
+                              ? 'fill-yellow-500 text-yellow-500'
+                              : 'text-gray-300'
                               }`}
                           />
                         ))}
@@ -905,8 +914,8 @@ const RequestDetails = () => {
                 >
                   <Star
                     className={`h-8 w-8 ${star <= (hoverRating || currentRating)
-                        ? 'fill-yellow-500 text-yellow-500'
-                        : 'text-gray-300'
+                      ? 'fill-yellow-500 text-yellow-500'
+                      : 'text-gray-300'
                       }`}
                   />
                 </button>

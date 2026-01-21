@@ -145,10 +145,10 @@ const AdminDashboard = () => {
   const updateApplicationStatus = async (id: string, status: string) => {
     const { error } = await supabase
       .from('partnership_applications')
-      .update({ 
-        status, 
-        reviewed_by: user?.id, 
-        reviewed_at: new Date().toISOString() 
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString()
       })
       .eq('id', id);
 
@@ -362,9 +362,9 @@ const AdminDashboard = () => {
                     className="max-w-2xl bg-background/50 border-primary/20"
                   />
                   {requestFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setRequestFilter('')}
                     >
                       Clear
@@ -386,95 +386,108 @@ const AdminDashboard = () => {
                       Showing {filteredRequests.length} of {requests.length} requests
                     </div>
                     {filteredRequests.map((request) => (
-                    <Card key={request.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <Briefcase className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-lg capitalize">{request.service_type.replace('_', ' ')}</p>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <MapPin className="h-4 w-4" />
-                                {request.location}
+                      <Card key={request.id} className="hover-lift transition-all border-primary/10 bg-gradient-to-br from-card to-card/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Briefcase className="h-5 w-5 text-primary" />
                               </div>
-                              <div className="flex items-center gap-2 text-sm mt-1">
-                                <User className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">Customer:</span> {request.profiles?.full_name || 'Guest User'}
-                              </div>
-                              {(request.profiles?.phone_number || request.phone_number) && (
+                              <div>
+                                <p className="font-bold text-lg capitalize">{request.service_type.replace('_', ' ')}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <MapPin className="h-4 w-4" />
+                                  {request.location}
+                                </div>
                                 <div className="flex items-center gap-2 text-sm mt-1">
-                                  <Phone className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">Phone:</span> {request.profiles?.phone_number || request.phone_number}
-                                </div>
-                              )}
-                              {request.provider && (
-                                <div className="flex items-center gap-2 text-sm">
                                   <User className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">Provider:</span> {request.provider.full_name}
+                                  <span className="font-medium">Customer:</span> {request.profiles?.full_name || 'Guest User'}
                                 </div>
-                              )}
-                             </div>
-                           </div>
-                           <Badge className="capitalize">{request.status.replace('_', ' ')}</Badge>
-                         </div>
-                         {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
-                           <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200 mb-3">
-                             <Fuel className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                             <div className="flex gap-3 text-sm">
-                               {request.fuel_type && <span className="capitalize font-medium">{request.fuel_type}</span>}
-                               {request.fuel_amount && <span className="text-amber-900">{request.fuel_amount} Liters</span>}
-                             </div>
-                           </div>
-                         )}
-                         <div className="flex gap-2 mt-4">
-                          {request.status === 'pending' && (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setAssignDialog(true);
-                              }}
-                              className="hover-scale"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Assign Provider
-                            </Button>
+                                {(request.profiles?.phone_number || request.phone_number) && (
+                                  <div className="flex items-center gap-2 text-sm mt-1">
+                                    <Phone className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">Phone:</span> {request.profiles?.phone_number || request.phone_number}
+                                  </div>
+                                )}
+                                {request.provider && (
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <User className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">Provider:</span> {request.provider.full_name}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <Badge className="capitalize">{request.status.replace('_', ' ')}</Badge>
+                          </div>
+
+                          {request.vehicle_image_url && (
+                            <div className="mb-4">
+                              <p className="text-xs font-semibold text-muted-foreground mb-1">Vehicle Photo:</p>
+                              <a href={request.vehicle_image_url} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={request.vehicle_image_url}
+                                  alt="Vehicle"
+                                  className="w-full max-w-[200px] rounded-lg border shadow-sm object-cover h-32 hover:opacity-90 transition-opacity"
+                                />
+                              </a>
+                            </div>
                           )}
-                          {request.status === 'in_progress' && (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setPaymentType('customer_to_business');
-                                setPaymentDialog(true);
-                              }}
-                              className="hover-scale"
-                            >
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Confirm Payment
-                            </Button>
+                          {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200 mb-3">
+                              <Fuel className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                              <div className="flex gap-3 text-sm">
+                                {request.fuel_type && <span className="capitalize font-medium">{request.fuel_type}</span>}
+                                {request.fuel_amount && <span className="text-amber-900">{request.fuel_amount} Liters</span>}
+                              </div>
+                            </div>
                           )}
-                          {request.status === 'completed' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setPaymentType('business_to_provider');
-                                setPaymentDialog(true);
-                              }}
-                              className="hover-scale"
-                            >
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Pay Provider
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <div className="flex gap-2 mt-4">
+                            {request.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setAssignDialog(true);
+                                }}
+                                className="hover-scale"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Assign Provider
+                              </Button>
+                            )}
+                            {request.status === 'in_progress' && (
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setPaymentType('customer_to_business');
+                                  setPaymentDialog(true);
+                                }}
+                                className="hover-scale"
+                              >
+                                <DollarSign className="h-4 w-4 mr-2" />
+                                Confirm Payment
+                              </Button>
+                            )}
+                            {request.status === 'completed' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setPaymentType('business_to_provider');
+                                  setPaymentDialog(true);
+                                }}
+                                className="hover-scale"
+                              >
+                                <DollarSign className="h-4 w-4 mr-2" />
+                                Pay Provider
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
               </CardContent>
@@ -521,9 +534,9 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                           <Badge variant={
-                            app.status === 'approved' ? 'default' : 
-                            app.status === 'rejected' ? 'destructive' : 
-                            'secondary'
+                            app.status === 'approved' ? 'default' :
+                              app.status === 'rejected' ? 'destructive' :
+                                'secondary'
                           } className="capitalize">
                             {app.status}
                           </Badge>
@@ -539,16 +552,16 @@ const AdminDashboard = () => {
                         </div>
                         {app.status === 'pending' && (
                           <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               onClick={() => updateApplicationStatus(app.id, 'approved')}
                               className="hover-scale"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Approve
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="destructive"
                               onClick={() => updateApplicationStatus(app.id, 'rejected')}
                               className="hover-scale"
@@ -631,9 +644,9 @@ const AdminDashboard = () => {
                     className="max-w-md bg-background/50 border-primary/20"
                   />
                   {customerFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setCustomerFilter('')}
                     >
                       Clear
@@ -718,9 +731,9 @@ const AdminDashboard = () => {
                     className="max-w-md bg-background/50 border-primary/20"
                   />
                   {providerFilter && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setProviderFilter('')}
                     >
                       Clear
@@ -845,14 +858,14 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                             <Badge variant={
-                              message.status === 'new' ? 'destructive' : 
-                              message.status === 'read' ? 'default' : 
-                              'secondary'
+                              message.status === 'new' ? 'destructive' :
+                                message.status === 'read' ? 'default' :
+                                  'secondary'
                             } className="capitalize">
                               {message.status}
                             </Badge>
                           </div>
-                          
+
                           <div className="mb-4">
                             <p className="font-semibold mb-2 flex items-center gap-2">
                               <FileText className="h-4 w-4 text-primary" />
@@ -868,11 +881,11 @@ const AdminDashboard = () => {
                               <Clock className="h-3 w-3" />
                               {new Date(message.created_at).toLocaleString()}
                             </div>
-                            
+
                             <div className="flex gap-2">
                               {message.status === 'new' && (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => updateContactMessageStatus(message.id, 'read')}
                                   className="hover-scale"
@@ -882,8 +895,8 @@ const AdminDashboard = () => {
                                 </Button>
                               )}
                               {message.status === 'read' && (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => updateContactMessageStatus(message.id, 'archived')}
                                   className="hover-scale"
@@ -892,8 +905,8 @@ const AdminDashboard = () => {
                                   Archive
                                 </Button>
                               )}
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="destructive"
                                 onClick={() => deleteContactMessage(message.id)}
                                 className="hover-scale"
