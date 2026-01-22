@@ -16,6 +16,7 @@ import { calculateDistance } from '@/lib/distance';
 import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
 import { useNearbyProviders } from '@/hooks/useNearbyProviders';
 import { ProviderCard } from '@/components/ProviderCard';
+import { useCustomerLocation } from '@/hooks/useCustomerLocation';
 
 const MobileServiceRequest = () => {
   const { user } = useAuth();
@@ -77,6 +78,12 @@ const MobileServiceRequest = () => {
     enabled: customerLat !== null && customerLng !== null && currentStep >= 4,
   });
 
+  // Enable live location tracking for customer when actively requesting service
+  useCustomerLocation({
+    customerId: user?.id,
+    isActive: currentStep >= 4, // Track when on provider selection step and beyond
+  });
+
   useEffect(() => {
     fetchServices();
     getCurrentLocation();
@@ -104,7 +111,7 @@ const MobileServiceRequest = () => {
     return Icon || LucideIcons.Settings;
   };
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = async () => {
     if (gettingLocation) return;
     setGettingLocation(true);
     if (!navigator.geolocation) {
@@ -117,6 +124,29 @@ const MobileServiceRequest = () => {
         const lng = position.coords.longitude;
         setCustomerLat(lat);
         setCustomerLng(lng);
+
+        // Update customer's location in their profile for provider discovery
+        if (user?.id) {
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .update({
+                current_lat: lat,
+                current_lng: lng,
+                location_updated_at: new Date().toISOString(),
+              })
+              .eq('id', user.id);
+
+            if (profileError) {
+              console.error('Error updating customer location in profiles:', profileError);
+            } else {
+              console.log('Customer location updated in profiles:', { lat, lng, userId: user.id });
+            }
+          } catch (error) {
+            console.error('Error updating customer location:', error);
+          }
+        }
+
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
@@ -212,6 +242,28 @@ const MobileServiceRequest = () => {
           setCustomerLat(coords.lat);
           setCustomerLng(coords.lng);
           toast.success('Location coordinates found');
+
+          // Update customer's location in their profile for provider discovery
+          if (user?.id && coords) {
+            try {
+              const { error: profileError } = await supabase
+                .from('profiles')
+                .update({
+                  current_lat: coords.lat,
+                  current_lng: coords.lng,
+                  location_updated_at: new Date().toISOString(),
+                })
+                .eq('id', user.id);
+
+              if (profileError) {
+                console.error('Error updating customer location in profiles:', profileError);
+              } else {
+                console.log('Customer location updated in profiles:', { lat: coords.lat, lng: coords.lng, userId: user.id });
+              }
+            } catch (error) {
+              console.error('Error updating customer location:', error);
+            }
+          }
         }
         setGettingLocation(false);
       }
@@ -230,6 +282,28 @@ const MobileServiceRequest = () => {
     const assignedProviderId = selectedProviderId || (closestProvider?.provider_id) || null;
 
     try {
+      // Update customer's location in their profile for provider discovery before creating request
+      if (user?.id && customerLat && customerLng) {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              current_lat: customerLat,
+              current_lng: customerLng,
+              location_updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id);
+
+          if (profileError) {
+            console.error('Error updating customer location in profiles:', profileError);
+          } else {
+            console.log('Customer location updated in profiles before request submission:', { lat: customerLat, lng: customerLng, userId: user.id });
+          }
+        } catch (error) {
+          console.error('Error updating customer location before request:', error);
+        }
+      }
+
       // 1. Create the request first
       const { data, error } = await supabase.from('service_requests').insert([{
         customer_id: user?.id || null,

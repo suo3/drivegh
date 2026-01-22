@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
+import { useCustomerLocation } from '@/hooks/useCustomerLocation';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -30,6 +31,12 @@ const TrackRescue = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [mapsEnabled, setMapsEnabled] = useState(true);
+
+  // Enable live location tracking for customer when actively tracking rescue
+  useCustomerLocation({
+    customerId: user?.id,
+    isActive: serviceRequests.some(req => req.status === 'en_route' || req.status === 'in_progress'),
+  });
 
   // Robust phone normalization and matching across formats
   const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');

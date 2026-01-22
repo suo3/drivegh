@@ -2,19 +2,18 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface UseProviderLocationProps {
-  requestId: string | null;
-  providerId: string | null; // Add provider ID as a parameter
-  isActive: boolean; // Only track when provider is en route or in progress
+interface UseCustomerLocationProps {
+  customerId: string | null;
+  isActive: boolean; // Only track when actively requesting service
 }
 
-export function useProviderLocation({ requestId, providerId, isActive }: UseProviderLocationProps) {
+export function useCustomerLocation({ customerId, isActive }: UseCustomerLocationProps) {
   const watchIdRef = useRef<number | null>(null);
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastPositionRef = useRef<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    if (!requestId || !isActive) {
+    if (!customerId || !isActive) {
       // Stop tracking if not active
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -36,44 +35,23 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
     // Function to update location in database
     const updateLocation = async (lat: number, lng: number) => {
       try {
-        // Update location in service_requests table
-        const { error: requestError } = await supabase
-          .from('service_requests')
+        // Update location in profiles table so it's available for provider search
+        const { error: profileError } = await supabase
+          .from('profiles')
           .update({
-            provider_lat: lat,
-            provider_lng: lng,
-            updated_at: new Date().toISOString()
+            current_lat: lat,
+            current_lng: lng,
+            location_updated_at: new Date().toISOString(),
           })
-          .eq('id', requestId);
-
-        if (requestError) {
-          console.error('Error updating provider location in service_requests:', requestError);
+          .eq('id', customerId);
+        
+        if (profileError) {
+          console.error('Error updating customer location in profiles:', profileError);
         } else {
-          console.log('Provider location updated in service_requests:', { lat, lng });
-        }
-
-        // Update location in profiles table so it's available for find_nearby_providers function
-        if (providerId) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              current_lat: lat,
-              current_lng: lng,
-              location_updated_at: new Date().toISOString(),
-              is_available: true // Ensure provider is marked as available when updating location
-            })
-            .eq('id', providerId);
-
-          if (profileError) {
-            console.error('Error updating provider location in profiles:', profileError);
-          } else {
-            console.log('Provider location updated in profiles:', { lat, lng, providerId });
-          }
-        } else {
-          console.warn('Provider ID not available, skipping profile location update');
+          console.log('Customer location updated in profiles:', { lat, lng, customerId });
         }
       } catch (error) {
-        console.error('Error updating provider location:', error);
+        console.error('Error updating customer location:', error);
       }
     };
 
@@ -82,7 +60,7 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
       (position) => {
         const { latitude, longitude } = position.coords;
         lastPositionRef.current = { lat: latitude, lng: longitude };
-        console.log('Provider position updated:', { latitude, longitude });
+        console.log('Customer position updated:', { latitude, longitude });
       },
       (error) => {
         console.error('Error getting location:', error);
@@ -97,12 +75,12 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
       }
     );
 
-    // Update database every 10 seconds
+    // Update database every 30 seconds
     updateIntervalRef.current = setInterval(() => {
       if (lastPositionRef.current) {
         updateLocation(lastPositionRef.current.lat, lastPositionRef.current.lng);
       }
-    }, 10000); // Update every 10 seconds
+    }, 30000); // Update every 30 seconds
 
     // Cleanup
     return () => {
@@ -113,5 +91,5 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [requestId, isActive]);
+  }, [customerId, isActive]);
 }

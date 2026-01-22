@@ -23,6 +23,9 @@ import CitiesManager from '@/components/CitiesManager';
 import HomepageSectionsManager from '@/components/HomepageSectionsManager';
 import TestimonialsManager from '@/components/TestimonialsManager';
 import { z } from 'zod';
+import { geocodeAddress } from '@/lib/geocode';
+import { useProviderLocation } from '@/hooks/useProviderLocation';
+import { useCustomerLocation } from '@/hooks/useCustomerLocation';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -319,6 +322,32 @@ const Dashboard = () => {
   };
 
   const handleCreateRequest = async (data: any) => {
+    // First update the customer's location in their profile for provider discovery
+    if (user?.id && data.location) {
+      try {
+        // Attempt to geocode the location to get coordinates
+        const coords = await geocodeAddress(data.location);
+        if (coords) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              current_lat: coords.lat,
+              current_lng: coords.lng,
+              location_updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id);
+
+          if (profileError) {
+            console.error('Error updating customer location in profiles:', profileError);
+          } else {
+            console.log('Customer location updated in profiles:', { lat: coords.lat, lng: coords.lng, userId: user.id });
+          }
+        }
+      } catch (error) {
+        console.error('Error geocoding location for profile update:', error);
+      }
+    }
+
     const { error } = await supabase.from('service_requests').insert([{
       customer_id: user?.id,
       service_type: data.service_type,
@@ -757,6 +786,12 @@ const Dashboard = () => {
 
   // Customer Dashboard
   if (userRole === 'customer') {
+    // Enable live location tracking for customer when actively tracking rescue
+    useCustomerLocation({
+      customerId: user?.id,
+      isActive: requests.some(req => req.status === 'en_route' || req.status === 'in_progress'),
+    });
+
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">
@@ -1276,6 +1311,13 @@ const Dashboard = () => {
 
   // Provider Dashboard
   if (userRole === 'provider') {
+    // Enable live location tracking for provider when actively serving requests
+    useProviderLocation({
+      requestId: null, // Dashboard doesn't track specific request, but provider may be en route to multiple
+      providerId: user?.id,
+      isActive: requests.some(req => req.status === 'en_route' || req.status === 'in_progress'),
+    });
+
     return (
       <SidebarProvider>
         <div className="min-h-screen w-full flex flex-col lg:flex-row">

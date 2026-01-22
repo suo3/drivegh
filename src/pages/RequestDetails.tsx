@@ -88,7 +88,7 @@ const RequestDetails = () => {
         }
 
         setRequest(requestRes.data);
-        console.log("Request Data Loaded:", requestRes.data); // Debug: Check vehicle_image_url
+
         setRatings(ratingsRes.data || []);
 
         // Auto-open rating dialog for completed requests without rating
