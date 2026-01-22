@@ -311,6 +311,7 @@ export type Database = {
           status: Database["public"]["Enums"]["service_status"]
           tracking_code: string | null
           updated_at: string | null
+          vehicle_image_url: string | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_plate: string | null
@@ -338,6 +339,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null
           updated_at?: string | null
+          vehicle_image_url?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
@@ -365,6 +367,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null
           updated_at?: string | null
+          vehicle_image_url?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
