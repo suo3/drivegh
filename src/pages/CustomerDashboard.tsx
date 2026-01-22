@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2, Fuel } from 'lucide-react';
+import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2, Fuel, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import RequestDetailsModal from '@/components/RequestDetailsModal';
 
 const CustomerDashboard = () => {
   const { user, signOut } = useAuth();
@@ -20,6 +21,7 @@ const CustomerDashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedRequestForTracking, setSelectedRequestForTracking] = useState<any | null>(null);
+  const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -295,11 +297,21 @@ const CustomerDashboard = () => {
                             <p className="text-xs text-muted-foreground">
                               Requested: {new Date(request.created_at).toLocaleString()}
                             </p>
-                            {request.status === 'completed' && !request.rating && (
-                              <Button size="sm" variant="outline">
-                                Rate Service
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setSelectedRequestForDetails(request)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Details
                               </Button>
-                            )}
+                              {request.status === 'completed' && !request.rating && (
+                                <Button size="sm" variant="outline">
+                                  Rate Service
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -398,6 +410,12 @@ const CustomerDashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <RequestDetailsModal
+        request={selectedRequestForDetails}
+        open={!!selectedRequestForDetails}
+        onOpenChange={(open) => !open && setSelectedRequestForDetails(null)}
+      />
 
       <Footer />
     </div>

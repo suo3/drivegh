@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ServiceManager from '@/components/ServiceManager';
 import LegalDocumentsManager from '@/components/LegalDocumentsManager';
+import RequestDetailsModal from '@/components/RequestDetailsModal';
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
@@ -37,6 +38,7 @@ const AdminDashboard = () => {
   const [paymentRef, setPaymentRef] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
   const [paymentType, setPaymentType] = useState<'customer_to_business' | 'business_to_provider'>('customer_to_business');
+  const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -441,7 +443,16 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                           )}
-                          <div className="flex gap-2 mt-4">
+                          <div className="flex gap-2 mt-4 flex-wrap">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedRequestForDetails(request)}
+                              className="hover-scale"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
                             {request.status === 'pending' && (
                               <Button
                                 size="sm"
@@ -1025,6 +1036,12 @@ const AdminDashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <RequestDetailsModal
+        request={selectedRequestForDetails}
+        open={!!selectedRequestForDetails}
+        onOpenChange={(open) => !open && setSelectedRequestForDetails(null)}
+      />
     </div>
   );
 };

@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel, Wifi, WifiOff } from 'lucide-react';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel, Wifi, WifiOff, Eye } from 'lucide-react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useProviderLocation } from '@/hooks/useProviderLocation';
 import { useProviderAvailability } from '@/hooks/useProviderAvailability';
+import RequestDetailsModal from '@/components/RequestDetailsModal';
 
 const ProviderDashboard = () => {
   const { user, signOut } = useAuth();
@@ -26,6 +27,7 @@ const ProviderDashboard = () => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
   const [updatingLocation, setUpdatingLocation] = useState<string | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
 
   // Provider availability management
   const { isAvailable, isUpdating, toggleAvailability } = useProviderAvailability({ userId: user?.id });
@@ -480,6 +482,15 @@ const ProviderDashboard = () => {
                         )}
 
                         <div className="md:ml-14 flex flex-col md:flex-row flex-wrap gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setSelectedRequestForDetails(request)}
+                            className="w-full md:w-auto"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </Button>
                           {request.status === 'assigned' && (
                             <>
                               <Button size="sm" onClick={() => updateStatus(request.id, 'accepted')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
@@ -604,6 +615,12 @@ const ProviderDashboard = () => {
           </Card>
         </div>
       </section>
+
+      <RequestDetailsModal
+        request={selectedRequestForDetails}
+        open={!!selectedRequestForDetails}
+        onOpenChange={(open) => !open && setSelectedRequestForDetails(null)}
+      />
     </div>
   );
 };
