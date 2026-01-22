@@ -41,7 +41,6 @@ const ProviderDashboard = () => {
   // Enable live location tracking for active requests
   useProviderLocation({
     requestId: activeRequestId,
-    providerId: user?.id,
     isActive: activeRequestId !== null
   });
 

@@ -16,7 +16,6 @@ import { calculateDistance } from '@/lib/distance';
 import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
 import { useNearbyProviders } from '@/hooks/useNearbyProviders';
 import { ProviderCard } from '@/components/ProviderCard';
-import { useCustomerLocation } from '@/hooks/useCustomerLocation';
 
 const MobileServiceRequest = () => {
   const { user } = useAuth();
@@ -78,12 +77,6 @@ const MobileServiceRequest = () => {
     enabled: customerLat !== null && customerLng !== null && currentStep >= 4,
   });
 
-  // Enable live location tracking for customer when actively requesting service
-  useCustomerLocation({
-    customerId: user?.id,
-    isActive: currentStep >= 4, // Track when on provider selection step and beyond
-  });
-
   useEffect(() => {
     fetchServices();
     getCurrentLocation();
@@ -111,7 +104,7 @@ const MobileServiceRequest = () => {
     return Icon || LucideIcons.Settings;
   };
 
-  const getCurrentLocation = async () => {
+  const getCurrentLocation = () => {
     if (gettingLocation) return;
     setGettingLocation(true);
     if (!navigator.geolocation) {
@@ -124,29 +117,6 @@ const MobileServiceRequest = () => {
         const lng = position.coords.longitude;
         setCustomerLat(lat);
         setCustomerLng(lng);
-
-        // Update customer's location in their profile for provider discovery
-        if (user?.id) {
-          try {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .update({
-                current_lat: lat,
-                current_lng: lng,
-                location_updated_at: new Date().toISOString(),
-              })
-              .eq('id', user.id);
-
-            if (profileError) {
-              console.error('Error updating customer location in profiles:', profileError);
-            } else {
-              console.log('Customer location updated in profiles:', { lat, lng, userId: user.id });
-            }
-          } catch (error) {
-            console.error('Error updating customer location:', error);
-          }
-        }
-
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
@@ -242,28 +212,6 @@ const MobileServiceRequest = () => {
           setCustomerLat(coords.lat);
           setCustomerLng(coords.lng);
           toast.success('Location coordinates found');
-
-          // Update customer's location in their profile for provider discovery
-          if (user?.id && coords) {
-            try {
-              const { error: profileError } = await supabase
-                .from('profiles')
-                .update({
-                  current_lat: coords.lat,
-                  current_lng: coords.lng,
-                  location_updated_at: new Date().toISOString(),
-                })
-                .eq('id', user.id);
-
-              if (profileError) {
-                console.error('Error updating customer location in profiles:', profileError);
-              } else {
-                console.log('Customer location updated in profiles:', { lat: coords.lat, lng: coords.lng, userId: user.id });
-              }
-            } catch (error) {
-              console.error('Error updating customer location:', error);
-            }
-          }
         }
         setGettingLocation(false);
       }
@@ -282,28 +230,6 @@ const MobileServiceRequest = () => {
     const assignedProviderId = selectedProviderId || (closestProvider?.provider_id) || null;
 
     try {
-      // Update customer's location in their profile for provider discovery before creating request
-      if (user?.id && customerLat && customerLng) {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              current_lat: customerLat,
-              current_lng: customerLng,
-              location_updated_at: new Date().toISOString(),
-            })
-            .eq('id', user.id);
-
-          if (profileError) {
-            console.error('Error updating customer location in profiles:', profileError);
-          } else {
-            console.log('Customer location updated in profiles before request submission:', { lat: customerLat, lng: customerLng, userId: user.id });
-          }
-        } catch (error) {
-          console.error('Error updating customer location before request:', error);
-        }
-      }
-
       // 1. Create the request first
       const { data, error } = await supabase.from('service_requests').insert([{
         customer_id: user?.id || null,
@@ -347,8 +273,8 @@ const MobileServiceRequest = () => {
             customer_lng: customerLng,
           });
 
-          if (closestData && Array.isArray(closestData) && closestData.length > 0) {
-            foundProviderId = (closestData[0] as any).provider_id;
+          if (closestData && closestData.length > 0) {
+            foundProviderId = closestData[0].provider_id;
             console.log("Found provider via RPC:", foundProviderId);
           }
         } catch (rpcError) {
@@ -648,26 +574,14 @@ const MobileServiceRequest = () => {
                 </div>
               )}
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Phone</span>
-                <span className="font-semibold">{phoneNumber}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Location</span>
                 <span className="font-semibold truncate max-w-[200px]">{location}</span>
               </div>
-              <div className="flex justify-between items-start text-sm">
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Vehicle</span>
-                <div className="text-right">
-                  {vehiclePhotoPreview ? (
-                    <img
-                      src={vehiclePhotoPreview}
-                      alt="Vehicle"
-                      className="w-16 h-12 object-cover rounded-md border shadow-sm ml-auto"
-                    />
-                  ) : (
-                    <span className="font-semibold">No photo</span>
-                  )}
-                </div>
+                <span className="font-semibold flex items-center gap-1">
+                  <ImageIcon className="w-3 h-3" /> Photo Attached
+                </span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Provider</span>

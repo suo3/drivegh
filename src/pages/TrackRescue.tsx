@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
-import { useCustomerLocation } from '@/hooks/useCustomerLocation';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -31,12 +30,6 @@ const TrackRescue = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [mapsEnabled, setMapsEnabled] = useState(true);
-
-  // Enable live location tracking for customer when actively tracking rescue
-  useCustomerLocation({
-    customerId: user?.id,
-    isActive: serviceRequests.some(req => req.status === 'en_route' || req.status === 'in_progress'),
-  });
 
   // Robust phone normalization and matching across formats
   const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
@@ -560,19 +553,6 @@ const TrackRescue = () => {
                             <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">{request.location}</p>
                           </div>
                         </div>
-
-                        {/* Customer Contact - Visible to ensure correctness */}
-                        {request.phone_number && (
-                          <div className="flex items-start gap-3 lg:gap-4">
-                            <div className="bg-primary/10 rounded-lg lg:rounded-xl p-2 lg:p-2.5 mt-0.5 flex-shrink-0">
-                              <Phone className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-semibold mb-0.5 lg:mb-1 text-sm lg:text-base">Contact Number</p>
-                              <p className="text-xs lg:text-sm text-muted-foreground">{request.phone_number}</p>
-                            </div>
-                          </div>
-                        )}
 
                         {/* Live Tracking Map */}
                         {(request.status === 'en_route' || request.status === 'in_progress') &&

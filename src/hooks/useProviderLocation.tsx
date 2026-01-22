@@ -4,11 +4,10 @@ import { toast } from 'sonner';
 
 interface UseProviderLocationProps {
   requestId: string | null;
-  providerId: string | null; // Add provider ID as a parameter
   isActive: boolean; // Only track when provider is en route or in progress
 }
 
-export function useProviderLocation({ requestId, providerId, isActive }: UseProviderLocationProps) {
+export function useProviderLocation({ requestId, isActive }: UseProviderLocationProps) {
   const watchIdRef = useRef<number | null>(null);
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastPositionRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -36,8 +35,7 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
     // Function to update location in database
     const updateLocation = async (lat: number, lng: number) => {
       try {
-        // Update location in service_requests table
-        const { error: requestError } = await supabase
+        const { error } = await supabase
           .from('service_requests')
           .update({
             provider_lat: lat,
@@ -46,31 +44,10 @@ export function useProviderLocation({ requestId, providerId, isActive }: UseProv
           })
           .eq('id', requestId);
 
-        if (requestError) {
-          console.error('Error updating provider location in service_requests:', requestError);
+        if (error) {
+          console.error('Error updating provider location:', error);
         } else {
-          console.log('Provider location updated in service_requests:', { lat, lng });
-        }
-
-        // Update location in profiles table so it's available for find_nearby_providers function
-        if (providerId) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              current_lat: lat,
-              current_lng: lng,
-              location_updated_at: new Date().toISOString(),
-              is_available: true // Ensure provider is marked as available when updating location
-            })
-            .eq('id', providerId);
-
-          if (profileError) {
-            console.error('Error updating provider location in profiles:', profileError);
-          } else {
-            console.log('Provider location updated in profiles:', { lat, lng, providerId });
-          }
-        } else {
-          console.warn('Provider ID not available, skipping profile location update');
+          console.log('Provider location updated:', { lat, lng });
         }
       } catch (error) {
         console.error('Error updating provider location:', error);
