@@ -256,7 +256,7 @@ const MobileServiceRequest = () => {
         const publicUrl = await uploadPhoto(data.id);
         if (publicUrl) {
           await supabase.from('service_requests')
-            .update({ vehicle_image_url: publicUrl })
+            .update({ vehicle_image_url: publicUrl } as any)
             .eq('id', data.id);
         }
       }

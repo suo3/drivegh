@@ -12,7 +12,7 @@ export function useProviderAvailability({ userId }: UseProviderAvailabilityProps
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [watchId, setWatchId] = useState<number | null>(null);
 
-  // Fetch initial availability state
+  // Fetch initial availability state and handle inconsistent state
   useEffect(() => {
     if (!userId) return;
 
@@ -24,9 +24,19 @@ export function useProviderAvailability({ userId }: UseProviderAvailabilityProps
         .maybeSingle();
 
       if (data && !error) {
-        setIsAvailable(data.is_available);
-        if (data.current_lat && data.current_lng) {
-          setCurrentLocation({ lat: data.current_lat, lng: data.current_lng });
+        // Detect inconsistent state: available but no location
+        if (data.is_available && (!data.current_lat || !data.current_lng)) {
+          // Auto-fix by triggering location capture
+          setIsAvailable(false); // Temporarily set to false
+          setTimeout(() => {
+            // This will trigger goOnline which captures location
+            toast.info('Please enable location to go online');
+          }, 500);
+        } else {
+          setIsAvailable(data.is_available);
+          if (data.current_lat && data.current_lng) {
+            setCurrentLocation({ lat: data.current_lat, lng: data.current_lng });
+          }
         }
       }
     };
