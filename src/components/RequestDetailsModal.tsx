@@ -38,8 +38,14 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
   };
 
   // Get customer phone: prioritize request.phone_number (for guests), then profiles.phone_number
-  const customerPhone = request.phone_number || request.profiles?.phone_number;
-  const customerName = request.profiles?.full_name || 'Guest User';
+  // Handle different query structures (profiles from different dashboard queries)
+  const customerPhone = request.phone_number || request.profiles?.phone_number || request.customer?.phone_number;
+  const customerName = request.profiles?.full_name || request.customer?.full_name || 'Guest User';
+  const customerEmail = request.profiles?.email || request.customer?.email;
+
+  // Vehicle info - these fields should be on the request object directly
+  const hasVehicleInfo = request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate;
+  const hasVehiclePhoto = !!request.vehicle_image_url;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,6 +97,20 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                       className="font-medium text-primary hover:underline"
                     >
                       {customerPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {customerEmail && (
+                <div className="flex items-center gap-3">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <a 
+                      href={`mailto:${customerEmail}`} 
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {customerEmail}
                     </a>
                   </div>
                 </div>

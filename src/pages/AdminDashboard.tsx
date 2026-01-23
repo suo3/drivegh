@@ -50,7 +50,7 @@ const AdminDashboard = () => {
     const [requestsData, providersData, customersData, transactionsData, applicationsData, contactMessagesData] = await Promise.all([
       supabase
         .from('service_requests')
-        .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number), provider:profiles!service_requests_provider_id_fkey(full_name)')
+        .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number, email), provider:profiles!service_requests_provider_id_fkey(full_name, phone_number)')
         .order('created_at', { ascending: false }),
       supabase
         .from('profiles')
