@@ -80,7 +80,7 @@ const ProviderDashboard = () => {
     const [requestsData, earningsData, ratingsData, profileData] = await Promise.all([
       supabase
         .from('service_requests')
-        .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number)')
+        .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number, email)')
         .eq('provider_id', user?.id)
         .order('created_at', { ascending: false }),
       supabase
