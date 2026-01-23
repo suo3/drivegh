@@ -23,6 +23,7 @@ import CitiesManager from '@/components/CitiesManager';
 import HomepageSectionsManager from '@/components/HomepageSectionsManager';
 import TestimonialsManager from '@/components/TestimonialsManager';
 import { z } from 'zod';
+import RequestDetailsModal from '@/components/RequestDetailsModal';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -52,6 +53,8 @@ const Dashboard = () => {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
   const [mapsEnabled, setMapsEnabled] = useState(true);
+
+  const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
 
   // Admin filters
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
@@ -205,7 +208,7 @@ const Dashboard = () => {
         .from('service_requests')
         .select(`
           *, 
-          profiles!service_requests_customer_id_fkey(full_name, phone_number),
+          profiles!service_requests_customer_id_fkey(full_name, phone_number, email),
           transactions(amount, provider_amount)
         `)
         .eq('provider_id', user?.id)
@@ -239,7 +242,7 @@ const Dashboard = () => {
         .from('service_requests')
         .select(`
           *, 
-          profiles!service_requests_customer_id_fkey(full_name),
+          profiles!service_requests_customer_id_fkey(full_name, phone_number, email),
           transactions(amount, provider_amount, platform_amount)
         `)
         .order('created_at', { ascending: false }),
@@ -411,7 +414,7 @@ const Dashboard = () => {
   const fetchServiceRequests = async () => {
     const { data } = await supabase
       .from('service_requests')
-      .select('*, profiles!service_requests_customer_id_fkey(full_name)')
+      .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number, email)')
       .order('created_at', { ascending: false });
     if (data) setAllRequests(data);
   };
@@ -1268,6 +1271,14 @@ const Dashboard = () => {
                 <ProfileForm onSuccess={fetchData} />
               )}
             </main>
+
+            <RequestDetailsModal
+              request={selectedRequestForDetails}
+              open={!!selectedRequestForDetails}
+              onOpenChange={(open) => {
+                if (!open) setSelectedRequestForDetails(null);
+              }}
+            />
           </div>
         </div>
       </SidebarProvider>
@@ -1383,7 +1394,7 @@ const Dashboard = () => {
                               <TableRow key={request.id}>
                                 <TableCell>{request.service_type}</TableCell>
                                 <TableCell>{request.profiles?.full_name || 'Guest'}</TableCell>
-                                <TableCell>{request.profiles?.phone_number || 'N/A'}</TableCell>
+                                <TableCell>{request.phone_number || request.profiles?.phone_number || 'N/A'}</TableCell>
                                 <TableCell>{request.location}</TableCell>
                                 <TableCell>
                                   <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
@@ -1438,133 +1449,13 @@ const Dashboard = () => {
                                       </Dialog>
                                     )}
 
-                                    <Dialog>
-                                      <DialogTrigger asChild>
-                                        <Button size="sm" variant="outline">Details</Button>
-                                      </DialogTrigger>
-                                      <DialogContent className="max-w-2xl">
-                                        <DialogHeader>
-                                          <DialogTitle>Request Details</DialogTitle>
-                                          <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                        </DialogHeader>
-                                        <div className="space-y-6">
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                              <Label className="text-muted-foreground">Service Type</Label>
-                                              <p className="font-medium capitalize">{request.service_type.replace('_', ' ')}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Status</Label>
-                                              <div>
-                                                <Badge className={getStatusColor(request.status)}>{request.status.replace('_', ' ')}</Badge>
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Customer</Label>
-                                              <div className="flex flex-col">
-                                                <span className="font-medium">{request.profiles?.full_name}</span>
-                                                {request.profiles?.phone_number && (
-                                                  <a href={`tel:${request.profiles.phone_number}`} className="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
-                                                    <Phone className="h-3 w-3" />
-                                                    {request.profiles.phone_number}
-                                                  </a>
-                                                )}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Location</Label>
-                                              <p className="font-medium">{request.location}</p>
-                                            </div>
-
-                                            {(request.vehicle_make || request.vehicle_model) && (
-                                              <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg mt-2">
-                                                <Label className="text-muted-foreground mb-2 block flex items-center gap-2">
-                                                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <ClipboardList className="h-3 w-3 text-primary" />
-                                                  </div>
-                                                  Vehicle Details
-                                                </Label>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <div>
-                                                    <span className="text-xs text-muted-foreground block">Make/Model</span>
-                                                    <span className="font-medium">{request.vehicle_make} {request.vehicle_model}</span>
-                                                  </div>
-                                                  {request.vehicle_year && (
-                                                    <div>
-                                                      <span className="text-xs text-muted-foreground block">Year</span>
-                                                      <span className="font-medium">{request.vehicle_year}</span>
-                                                    </div>
-                                                  )}
-                                                  {request.vehicle_plate && (
-                                                    <div>
-                                                      <span className="text-xs text-muted-foreground block">Plate Number</span>
-                                                      <span className="font-medium">{request.vehicle_plate}</span>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {request.description && (
-                                              <div className="col-span-1 md:col-span-2">
-                                                <Label className="text-muted-foreground">Description</Label>
-                                                <p className="text-sm bg-muted/30 p-3 rounded-md mt-1">{request.description}</p>
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          <div className="flex flex-wrap gap-2 justify-end border-t pt-4">
-                                            {request.status === 'assigned' && (
-                                              <>
-                                                <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
-                                                  Accept
-                                                </Button>
-                                                <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
-                                                  Deny
-                                                </Button>
-                                              </>
-                                            )}
-                                            {request.status === 'accepted' && (
-                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
-                                                Start Driving (En Route)
-                                              </Button>
-                                            )}
-                                            {request.status === 'en_route' && (
-                                              <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'in_progress')}>
-                                                Arrived - Start Service
-                                              </Button>
-                                            )}
-                                            {request.status === 'in_progress' && (
-                                              <Dialog>
-                                                <DialogTrigger asChild>
-                                                  <Button size="sm">Complete</Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                  <DialogHeader>
-                                                    <DialogTitle>Complete Service</DialogTitle>
-                                                    <DialogDescription>
-                                                      Ask customer to send payment to business mobile money number
-                                                    </DialogDescription>
-                                                  </DialogHeader>
-                                                  <div className="space-y-4">
-                                                    <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                      Once you receive payment confirmation, the admin will complete the transaction.
-                                                    </p>
-                                                    <Button onClick={() => {
-                                                      toast.success('Customer notified to send payment');
-                                                      handleUpdateRequestStatus(request.id, 'completed');
-                                                    }}>
-                                                      Mark as Awaiting Payment
-                                                    </Button>
-                                                  </div>
-                                                </DialogContent>
-                                              </Dialog>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setSelectedRequestForDetails(request)}
+                                    >
+                                      Details
+                                    </Button>
                                   </div>
                                 </TableCell>
                               </TableRow>
@@ -1585,9 +1476,9 @@ const Dashboard = () => {
                                   <p className="font-semibold text-sm capitalize truncate">{request.service_type}</p>
                                   <p className="text-xs text-muted-foreground truncate">{request.location}</p>
                                   <p className="text-xs text-muted-foreground truncate">
-                                    {request.profiles?.full_name}
-                                    {request.profiles?.phone_number && (
-                                      <span className="ml-1 text-[11px]">({request.profiles.phone_number})</span>
+                                    {request.profiles?.full_name || 'Guest'}
+                                    {(request.phone_number || request.profiles?.phone_number) && (
+                                      <span className="ml-1 text-[11px]">({request.phone_number || request.profiles?.phone_number})</span>
                                     )}
                                   </p>
                                 </div>
@@ -1666,6 +1557,15 @@ const Dashboard = () => {
                                     </DialogContent>
                                   </Dialog>
                                 )}
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full sm:w-auto"
+                                  onClick={() => setSelectedRequestForDetails(request)}
+                                >
+                                  Details
+                                </Button>
                               </div>
                             </CardContent>
                           </Card>
@@ -1893,7 +1793,11 @@ const Dashboard = () => {
                                             </div>
                                             <div>
                                               <Label className="text-muted-foreground">Customer</Label>
-                                              <p className="font-medium">{request.profiles?.full_name}</p>
+                                              <p className="font-medium">{request.profiles?.full_name || 'Guest'}</p>
+                                            </div>
+                                            <div>
+                                              <Label className="text-muted-foreground">Customer Phone</Label>
+                                              <p className="font-medium">{request.phone_number || request.profiles?.phone_number || 'N/A'}</p>
                                             </div>
                                             <div>
                                               <Label className="text-muted-foreground">Provider</Label>
@@ -1902,7 +1806,45 @@ const Dashboard = () => {
                                             <div className="col-span-2">
                                               <Label className="text-muted-foreground">Location</Label>
                                               <p className="font-medium">{request.location}</p>
+                                              {request.customer_lat && request.customer_lng && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                  Coordinates: {Number(request.customer_lat).toFixed(6)}, {Number(request.customer_lng).toFixed(6)}
+                                                </p>
+                                              )}
                                             </div>
+                                            {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
+                                              <div className="col-span-2">
+                                                <Label className="text-muted-foreground">Vehicle</Label>
+                                                <p className="font-medium">
+                                                  {[request.vehicle_make, request.vehicle_model, request.vehicle_year].filter(Boolean).join(' ')}
+                                                </p>
+                                                {request.vehicle_plate && (
+                                                  <p className="text-sm text-muted-foreground">Plate: {request.vehicle_plate}</p>
+                                                )}
+                                              </div>
+                                            )}
+                                            {request.vehicle_image_url && (
+                                              <div className="col-span-2">
+                                                <Label className="text-muted-foreground">Vehicle Photo</Label>
+                                                <a href={request.vehicle_image_url} target="_blank" rel="noreferrer" className="block mt-2">
+                                                  <img
+                                                    src={request.vehicle_image_url}
+                                                    alt="Vehicle"
+                                                    className="w-full max-h-64 rounded-lg border object-cover"
+                                                    loading="lazy"
+                                                  />
+                                                </a>
+                                              </div>
+                                            )}
+                                            {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                              <div className="col-span-2">
+                                                <Label className="text-muted-foreground">Fuel Details</Label>
+                                                <div className="mt-1 text-sm">
+                                                  {request.fuel_type && <p className="font-medium">Type: {request.fuel_type}</p>}
+                                                  {request.fuel_amount && <p className="font-medium">Amount: {request.fuel_amount} Liters</p>}
+                                                </div>
+                                              </div>
+                                            )}
                                             {request.description && (
                                               <div className="col-span-2">
                                                 <Label className="text-muted-foreground">Description</Label>
@@ -2204,7 +2146,11 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                           <Label className="text-muted-foreground">Customer</Label>
-                                          <p className="font-medium">{request.profiles?.full_name}</p>
+                                          <p className="font-medium">{request.profiles?.full_name || 'Guest'}</p>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Customer Phone</Label>
+                                          <p className="font-medium">{request.phone_number || request.profiles?.phone_number || 'N/A'}</p>
                                         </div>
                                         <div>
                                           <Label className="text-muted-foreground">Provider</Label>
@@ -2213,7 +2159,45 @@ const Dashboard = () => {
                                         <div className="col-span-2">
                                           <Label className="text-muted-foreground">Location</Label>
                                           <p className="font-medium">{request.location}</p>
+                                          {request.customer_lat && request.customer_lng && (
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              Coordinates: {Number(request.customer_lat).toFixed(6)}, {Number(request.customer_lng).toFixed(6)}
+                                            </p>
+                                          )}
                                         </div>
+                                        {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Vehicle</Label>
+                                            <p className="font-medium">
+                                              {[request.vehicle_make, request.vehicle_model, request.vehicle_year].filter(Boolean).join(' ')}
+                                            </p>
+                                            {request.vehicle_plate && (
+                                              <p className="text-sm text-muted-foreground">Plate: {request.vehicle_plate}</p>
+                                            )}
+                                          </div>
+                                        )}
+                                        {request.vehicle_image_url && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Vehicle Photo</Label>
+                                            <a href={request.vehicle_image_url} target="_blank" rel="noreferrer" className="block mt-2">
+                                              <img
+                                                src={request.vehicle_image_url}
+                                                alt="Vehicle"
+                                                className="w-full max-h-64 rounded-lg border object-cover"
+                                                loading="lazy"
+                                              />
+                                            </a>
+                                          </div>
+                                        )}
+                                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+                                          <div className="col-span-2">
+                                            <Label className="text-muted-foreground">Fuel Details</Label>
+                                            <div className="mt-1 text-sm">
+                                              {request.fuel_type && <p className="font-medium">Type: {request.fuel_type}</p>}
+                                              {request.fuel_amount && <p className="font-medium">Amount: {request.fuel_amount} Liters</p>}
+                                            </div>
+                                          </div>
+                                        )}
                                         {request.description && (
                                           <div className="col-span-2">
                                             <Label className="text-muted-foreground">Description</Label>
