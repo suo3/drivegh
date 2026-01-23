@@ -243,6 +243,7 @@ const Dashboard = () => {
         .select(`
           *, 
           profiles!service_requests_customer_id_fkey(full_name, phone_number, email),
+          provider_profile:profiles!service_requests_provider_id_fkey(full_name, phone_number, email),
           transactions(amount, provider_amount, platform_amount)
         `)
         .order('created_at', { ascending: false }),
@@ -414,7 +415,11 @@ const Dashboard = () => {
   const fetchServiceRequests = async () => {
     const { data } = await supabase
       .from('service_requests')
-      .select('*, profiles!service_requests_customer_id_fkey(full_name, phone_number, email)')
+      .select(`
+        *, 
+        profiles!service_requests_customer_id_fkey(full_name, phone_number, email),
+        provider_profile:profiles!service_requests_provider_id_fkey(full_name, phone_number, email)
+      `)
       .order('created_at', { ascending: false });
     if (data) setAllRequests(data);
   };
@@ -1615,6 +1620,14 @@ const Dashboard = () => {
                 <ProfileForm onSuccess={fetchData} />
               )}
             </main>
+
+            <RequestDetailsModal
+              request={selectedRequestForDetails}
+              open={!!selectedRequestForDetails}
+              onOpenChange={(open) => {
+                if (!open) setSelectedRequestForDetails(null);
+              }}
+            />
           </div>
         </div>
       </SidebarProvider>
@@ -1772,172 +1785,13 @@ const Dashboard = () => {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-2">
-                                    <Dialog>
-                                      <DialogTrigger asChild>
-                                        <Button size="sm" variant="outline">Details</Button>
-                                      </DialogTrigger>
-                                      <DialogContent>
-                                        <DialogHeader>
-                                          <DialogTitle>Request Details</DialogTitle>
-                                          <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                        </DialogHeader>
-                                        <div className="space-y-4">
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                              <Label className="text-muted-foreground">Service Type</Label>
-                                              <p className="font-medium">{request.service_type}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Status</Label>
-                                              <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Customer</Label>
-                                              <p className="font-medium">{request.profiles?.full_name || 'Guest'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Customer Phone</Label>
-                                              <p className="font-medium">{request.phone_number || request.profiles?.phone_number || 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Provider</Label>
-                                              <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
-                                            </div>
-                                            <div className="col-span-2">
-                                              <Label className="text-muted-foreground">Location</Label>
-                                              <p className="font-medium">{request.location}</p>
-                                              {request.customer_lat && request.customer_lng && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                  Coordinates: {Number(request.customer_lat).toFixed(6)}, {Number(request.customer_lng).toFixed(6)}
-                                                </p>
-                                              )}
-                                            </div>
-                                            {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
-                                              <div className="col-span-2">
-                                                <Label className="text-muted-foreground">Vehicle</Label>
-                                                <p className="font-medium">
-                                                  {[request.vehicle_make, request.vehicle_model, request.vehicle_year].filter(Boolean).join(' ')}
-                                                </p>
-                                                {request.vehicle_plate && (
-                                                  <p className="text-sm text-muted-foreground">Plate: {request.vehicle_plate}</p>
-                                                )}
-                                              </div>
-                                            )}
-                                            {request.vehicle_image_url && (
-                                              <div className="col-span-2">
-                                                <Label className="text-muted-foreground">Vehicle Photo</Label>
-                                                <a href={request.vehicle_image_url} target="_blank" rel="noreferrer" className="block mt-2">
-                                                  <img
-                                                    src={request.vehicle_image_url}
-                                                    alt="Vehicle"
-                                                    className="w-full max-h-64 rounded-lg border object-cover"
-                                                    loading="lazy"
-                                                  />
-                                                </a>
-                                              </div>
-                                            )}
-                                            {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
-                                              <div className="col-span-2">
-                                                <Label className="text-muted-foreground">Fuel Details</Label>
-                                                <div className="mt-1 text-sm">
-                                                  {request.fuel_type && <p className="font-medium">Type: {request.fuel_type}</p>}
-                                                  {request.fuel_amount && <p className="font-medium">Amount: {request.fuel_amount} Liters</p>}
-                                                </div>
-                                              </div>
-                                            )}
-                                            {request.description && (
-                                              <div className="col-span-2">
-                                                <Label className="text-muted-foreground">Description</Label>
-                                                <p className="font-medium">{request.description}</p>
-                                              </div>
-                                            )}
-                                            <div>
-                                              <Label className="text-muted-foreground">Created</Label>
-                                              <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
-                                            </div>
-                                            {request.completed_at && (
-                                              <div>
-                                                <Label className="text-muted-foreground">Completed</Label>
-                                                <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
-                                              </div>
-                                            )}
-                                            {request.status === 'completed' && (() => {
-                                              const transaction = allTransactions.find(t => t.service_request_id === request.id);
-                                              return transaction ? (
-                                                <div className="col-span-2">
-                                                  <div className="flex items-center justify-between mb-2">
-                                                    <Label className="text-muted-foreground">Payment Details</Label>
-                                                    <Dialog>
-                                                      <DialogTrigger asChild>
-                                                        <Button size="sm" variant="ghost">
-                                                          <Edit className="h-4 w-4 mr-2" />
-                                                          Edit Payment
-                                                        </Button>
-                                                      </DialogTrigger>
-                                                      <DialogContent>
-                                                        <DialogHeader>
-                                                          <DialogTitle>Edit Payment</DialogTitle>
-                                                          <DialogDescription>Update payment amount and provider percentage</DialogDescription>
-                                                        </DialogHeader>
-                                                        <form onSubmit={(e) => {
-                                                          e.preventDefault();
-                                                          const formData = new FormData(e.currentTarget);
-                                                          const amount = Number(formData.get('amount'));
-                                                          const percentage = Number(formData.get('provider_percentage'));
-                                                          handleUpdateTransaction(transaction.id, amount, percentage);
-                                                        }}>
-                                                          <div className="space-y-4">
-                                                            <div>
-                                                              <Label>Amount (GHS)</Label>
-                                                              <Input
-                                                                name="amount"
-                                                                type="number"
-                                                                step="0.01"
-                                                                required
-                                                                defaultValue={transaction.amount}
-                                                                min="0.01"
-                                                                max="1000000"
-                                                              />
-                                                            </div>
-                                                            <div>
-                                                              <Label>Provider Percentage (%)</Label>
-                                                              <Input
-                                                                name="provider_percentage"
-                                                                type="number"
-                                                                step="1"
-                                                                min="0"
-                                                                max="100"
-                                                                required
-                                                                defaultValue={transaction.provider_percentage}
-                                                              />
-                                                            </div>
-                                                            <div className="bg-muted p-3 rounded-md">
-                                                              <p className="text-sm font-medium mb-1">Current Breakdown:</p>
-                                                              <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
-                                                              <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
-                                                            </div>
-                                                            <Button type="submit" className="w-full">Update Payment</Button>
-                                                          </div>
-                                                        </form>
-                                                      </DialogContent>
-                                                    </Dialog>
-                                                  </div>
-                                                  <div className="space-y-1">
-                                                    <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                      Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                      Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              ) : null;
-                                            })()}
-                                          </div>
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setSelectedRequestForDetails(request)}
+                                    >
+                                      Details
+                                    </Button>
 
                                     <Dialog>
                                       <DialogTrigger asChild>
@@ -2125,172 +1979,14 @@ const Dashboard = () => {
                               </div>
 
                               <div className="flex flex-wrap gap-2 pt-2">
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline" className="flex-1">Details</Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Request Details</DialogTitle>
-                                      <DialogDescription>Service Request #{request.id.slice(0, 8)}</DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <Label className="text-muted-foreground">Service Type</Label>
-                                          <p className="font-medium">{request.service_type}</p>
-                                        </div>
-                                        <div>
-                                          <Label className="text-muted-foreground">Status</Label>
-                                          <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-                                        </div>
-                                        <div>
-                                          <Label className="text-muted-foreground">Customer</Label>
-                                          <p className="font-medium">{request.profiles?.full_name || 'Guest'}</p>
-                                        </div>
-                                        <div>
-                                          <Label className="text-muted-foreground">Customer Phone</Label>
-                                          <p className="font-medium">{request.phone_number || request.profiles?.phone_number || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                          <Label className="text-muted-foreground">Provider</Label>
-                                          <p className="font-medium">{provider?.full_name || 'Not assigned'}</p>
-                                        </div>
-                                        <div className="col-span-2">
-                                          <Label className="text-muted-foreground">Location</Label>
-                                          <p className="font-medium">{request.location}</p>
-                                          {request.customer_lat && request.customer_lng && (
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                              Coordinates: {Number(request.customer_lat).toFixed(6)}, {Number(request.customer_lng).toFixed(6)}
-                                            </p>
-                                          )}
-                                        </div>
-                                        {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
-                                          <div className="col-span-2">
-                                            <Label className="text-muted-foreground">Vehicle</Label>
-                                            <p className="font-medium">
-                                              {[request.vehicle_make, request.vehicle_model, request.vehicle_year].filter(Boolean).join(' ')}
-                                            </p>
-                                            {request.vehicle_plate && (
-                                              <p className="text-sm text-muted-foreground">Plate: {request.vehicle_plate}</p>
-                                            )}
-                                          </div>
-                                        )}
-                                        {request.vehicle_image_url && (
-                                          <div className="col-span-2">
-                                            <Label className="text-muted-foreground">Vehicle Photo</Label>
-                                            <a href={request.vehicle_image_url} target="_blank" rel="noreferrer" className="block mt-2">
-                                              <img
-                                                src={request.vehicle_image_url}
-                                                alt="Vehicle"
-                                                className="w-full max-h-64 rounded-lg border object-cover"
-                                                loading="lazy"
-                                              />
-                                            </a>
-                                          </div>
-                                        )}
-                                        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
-                                          <div className="col-span-2">
-                                            <Label className="text-muted-foreground">Fuel Details</Label>
-                                            <div className="mt-1 text-sm">
-                                              {request.fuel_type && <p className="font-medium">Type: {request.fuel_type}</p>}
-                                              {request.fuel_amount && <p className="font-medium">Amount: {request.fuel_amount} Liters</p>}
-                                            </div>
-                                          </div>
-                                        )}
-                                        {request.description && (
-                                          <div className="col-span-2">
-                                            <Label className="text-muted-foreground">Description</Label>
-                                            <p className="font-medium">{request.description}</p>
-                                          </div>
-                                        )}
-                                        <div>
-                                          <Label className="text-muted-foreground">Created</Label>
-                                          <p className="text-sm">{new Date(request.created_at).toLocaleString()}</p>
-                                        </div>
-                                        {request.completed_at && (
-                                          <div>
-                                            <Label className="text-muted-foreground">Completed</Label>
-                                            <p className="text-sm">{new Date(request.completed_at).toLocaleString()}</p>
-                                          </div>
-                                        )}
-                                        {request.status === 'completed' && (() => {
-                                          const transaction = allTransactions.find(t => t.service_request_id === request.id);
-                                          return transaction ? (
-                                            <div className="col-span-2">
-                                              <div className="flex items-center justify-between mb-2">
-                                                <Label className="text-muted-foreground">Payment Details</Label>
-                                                <Dialog>
-                                                  <DialogTrigger asChild>
-                                                    <Button size="sm" variant="ghost">
-                                                      <Edit className="h-4 w-4 mr-2" />
-                                                      Edit Payment
-                                                    </Button>
-                                                  </DialogTrigger>
-                                                  <DialogContent>
-                                                    <DialogHeader>
-                                                      <DialogTitle>Edit Payment</DialogTitle>
-                                                      <DialogDescription>Update payment amount and provider percentage</DialogDescription>
-                                                    </DialogHeader>
-                                                    <form onSubmit={(e) => {
-                                                      e.preventDefault();
-                                                      const formData = new FormData(e.currentTarget);
-                                                      const amount = Number(formData.get('amount'));
-                                                      const percentage = Number(formData.get('provider_percentage'));
-                                                      handleUpdateTransaction(transaction.id, amount, percentage);
-                                                    }}>
-                                                      <div className="space-y-4">
-                                                        <div>
-                                                          <Label>Amount (GHS)</Label>
-                                                          <Input
-                                                            name="amount"
-                                                            type="number"
-                                                            step="0.01"
-                                                            required
-                                                            defaultValue={transaction.amount}
-                                                            min="0.01"
-                                                            max="1000000"
-                                                          />
-                                                        </div>
-                                                        <div>
-                                                          <Label>Provider Percentage (%)</Label>
-                                                          <Input
-                                                            name="provider_percentage"
-                                                            type="number"
-                                                            step="1"
-                                                            min="0"
-                                                            max="100"
-                                                            required
-                                                            defaultValue={transaction.provider_percentage}
-                                                          />
-                                                        </div>
-                                                        <div className="bg-muted p-3 rounded-md">
-                                                          <p className="text-sm font-medium mb-1">Current Breakdown:</p>
-                                                          <p className="text-sm">Provider: GHS {Number(transaction.provider_amount || 0).toFixed(2)}</p>
-                                                          <p className="text-sm">Platform: GHS {Number(transaction.platform_amount || 0).toFixed(2)}</p>
-                                                        </div>
-                                                        <Button type="submit" className="w-full">Update Payment</Button>
-                                                      </div>
-                                                    </form>
-                                                  </DialogContent>
-                                                </Dialog>
-                                              </div>
-                                              <div className="space-y-1">
-                                                <p className="font-medium text-lg">GHS {Number(transaction.amount).toFixed(2)}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                  Provider gets {transaction.provider_percentage}% (GHS {Number(transaction.provider_amount || 0).toFixed(2)})
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                  Platform gets GHS {Number(transaction.platform_amount || 0).toFixed(2)}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ) : null;
-                                        })()}
-                                      </div>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1"
+                                  onClick={() => setSelectedRequestForDetails(request)}
+                                >
+                                  Details
+                                </Button>
 
                                 <Dialog>
                                   <DialogTrigger asChild>
@@ -4528,6 +4224,14 @@ const Dashboard = () => {
                 <ProfileForm onSuccess={fetchData} />
               )}
             </main>
+
+            <RequestDetailsModal
+              request={selectedRequestForDetails}
+              open={!!selectedRequestForDetails}
+              onOpenChange={(open) => {
+                if (!open) setSelectedRequestForDetails(null);
+              }}
+            />
           </div>
         </div>
       </SidebarProvider>

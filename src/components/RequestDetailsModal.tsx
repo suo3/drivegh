@@ -232,35 +232,41 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
           )}
 
           {/* Provider Information (if assigned) */}
-          {(request.provider?.full_name || request.provider_profile?.full_name) && (
+          {(request.provider_id || request.provider?.full_name || request.provider_profile?.full_name) && (
             <div className="space-y-3">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Assigned Provider
               </h3>
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Provider Name</p>
-                    <p className="font-medium">
-                      {request.provider?.full_name || request.provider_profile?.full_name}
-                    </p>
-                  </div>
-                </div>
-                {(request.provider?.phone_number || request.provider_profile?.phone_number) && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Provider Phone</p>
-                      <a 
-                        href={`tel:${request.provider?.phone_number || request.provider_profile?.phone_number}`} 
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {request.provider?.phone_number || request.provider_profile?.phone_number}
-                      </a>
+                {(request.provider?.full_name || request.provider_profile?.full_name) ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Provider Name</p>
+                        <p className="font-medium">
+                          {request.provider?.full_name || request.provider_profile?.full_name}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                    {(request.provider?.phone_number || request.provider_profile?.phone_number) && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Provider Phone</p>
+                          <a 
+                            href={`tel:${request.provider?.phone_number || request.provider_profile?.phone_number}`} 
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {request.provider?.phone_number || request.provider_profile?.phone_number}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Provider ID: {request.provider_id}</p>
                 )}
               </div>
             </div>
