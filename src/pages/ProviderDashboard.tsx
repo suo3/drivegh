@@ -260,7 +260,7 @@ const ProviderDashboard = () => {
                 Manage your jobs, track earnings, and deliver excellent service
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="mt-16 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <div className={`flex items-center justify-center gap-3 px-4 py-3 rounded-full border transition-all ${isAvailable
                 ? 'bg-green-500/20 border-green-500/50 text-green-100'
                 : 'bg-red-500/20 border-red-500/50 text-red-100'
