@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 import { 
   MapPin, 
   User, 
@@ -11,7 +13,8 @@ import {
   FileText, 
   Hash, 
   Calendar,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
 
 interface RequestDetailsModalProps {
@@ -19,6 +22,90 @@ interface RequestDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+// Component to fetch and display provider info when not included in the request
+const ProviderInfoDisplay = ({ request }: { request: any }) => {
+  const [providerInfo, setProviderInfo] = useState<{ full_name: string; phone_number: string | null; email: string | null } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Check if provider info is already available from the request
+  const existingName = request.provider?.full_name || request.provider_profile?.full_name;
+  const existingPhone = request.provider?.phone_number || request.provider_profile?.phone_number;
+  const existingEmail = request.provider?.email || request.provider_profile?.email;
+
+  useEffect(() => {
+    // Only fetch if we have provider_id but no provider info
+    if (request.provider_id && !existingName) {
+      setLoading(true);
+      supabase
+        .from('profiles')
+        .select('full_name, phone_number, email')
+        .eq('id', request.provider_id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setProviderInfo(data);
+          setLoading(false);
+        });
+    }
+  }, [request.provider_id, existingName]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm">Loading provider info...</span>
+      </div>
+    );
+  }
+
+  const name = existingName || providerInfo?.full_name;
+  const phone = existingPhone || providerInfo?.phone_number;
+  const email = existingEmail || providerInfo?.email;
+
+  if (!name) {
+    return <p className="text-sm text-muted-foreground">Provider assigned (details unavailable)</p>;
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <User className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="text-xs text-muted-foreground">Provider Name</p>
+          <p className="font-medium">{name}</p>
+        </div>
+      </div>
+      {phone && (
+        <div className="flex items-center gap-3">
+          <Phone className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="text-xs text-muted-foreground">Provider Phone</p>
+            <a 
+              href={`tel:${phone}`} 
+              className="font-medium text-primary hover:underline"
+            >
+              {phone}
+            </a>
+          </div>
+        </div>
+      )}
+      {email && (
+        <div className="flex items-center gap-3">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="text-xs text-muted-foreground">Provider Email</p>
+            <a 
+              href={`mailto:${email}`} 
+              className="font-medium text-primary hover:underline"
+            >
+              {email}
+            </a>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModalProps) => {
   if (!request) return null;
@@ -239,35 +326,7 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                 Assigned Provider
               </h3>
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                {(request.provider?.full_name || request.provider_profile?.full_name) ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Provider Name</p>
-                        <p className="font-medium">
-                          {request.provider?.full_name || request.provider_profile?.full_name}
-                        </p>
-                      </div>
-                    </div>
-                    {(request.provider?.phone_number || request.provider_profile?.phone_number) && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Provider Phone</p>
-                          <a 
-                            href={`tel:${request.provider?.phone_number || request.provider_profile?.phone_number}`} 
-                            className="font-medium text-primary hover:underline"
-                          >
-                            {request.provider?.phone_number || request.provider_profile?.phone_number}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Provider ID: {request.provider_id}</p>
-                )}
+                <ProviderInfoDisplay request={request} />
               </div>
             </div>
           )}
