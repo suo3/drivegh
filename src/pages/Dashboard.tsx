@@ -795,7 +795,7 @@ const Dashboard = () => {
 
             <main className="flex-1 p-3 lg:p-6 lg:pt-24 space-y-3 lg:space-y-6 overflow-auto bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-28 lg:pb-6">
               {/* Mobile: Single CTA button at top */}
-              <div className="lg:hidden">
+              <div className="lg:hidden mt-3">
                 <Button
                   onClick={() => navigate('/')}
                   className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-semibold"
@@ -1320,7 +1320,7 @@ const Dashboard = () => {
             </header>
 
             {/* Mobile header */}
-            <div className="lg:hidden sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
+            <div className="lg:hidden mt-[65px] sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
               <div className="flex items-center justify-between">
                 <h1 className="text-lg font-bold text-primary-foreground truncate">
                   Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 💼
