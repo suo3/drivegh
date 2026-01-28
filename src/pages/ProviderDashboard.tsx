@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useProviderLocation } from '@/hooks/useProviderLocation';
 import { useProviderAvailability } from '@/hooks/useProviderAvailability';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ProviderDashboard = () => {
   const { user, signOut } = useAuth();
@@ -220,8 +221,54 @@ const ProviderDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen pt-16">
+        <section className="relative overflow-hidden bg-muted/20 py-20 px-6">
+          <div className="max-w-6xl mx-auto space-y-6">
+            <Skeleton className="h-8 w-40 rounded-full" />
+            <Skeleton className="h-16 w-3/4 max-w-2xl" />
+            <Skeleton className="h-6 w-1/2 max-w-xl" />
+          </div>
+        </section>
+
+        <section className="py-12 px-6">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border-2 rounded-xl p-6 space-y-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-10 w-10 rounded-xl" />
+                  </div>
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+              ))}
+            </div>
+
+            <div className="border-2 rounded-xl overflow-hidden">
+              <div className="border-b p-6 bg-muted/10">
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-4">
+                    <Skeleton className="h-12 w-12 rounded-xl" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-8 w-48" />
+                      <Skeleton className="h-4 w-64" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-32" />
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                {[1, 2].map((i) => (
+                  <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -482,8 +529,8 @@ const ProviderDashboard = () => {
                         )}
 
                         <div className="md:ml-14 flex flex-col md:flex-row flex-wrap gap-2">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => setSelectedRequestForDetails(request)}
                             className="w-full md:w-auto"

@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
+import { fuzzyPhoneMatch, normalizePhone } from '@/lib/phoneUtils';
 
 const TrackRescue = () => {
   const { user } = useAuth();
@@ -31,37 +32,7 @@ const TrackRescue = () => {
   const [reviewText, setReviewText] = useState('');
   const [mapsEnabled, setMapsEnabled] = useState(true);
 
-  // Robust phone normalization and matching across formats
-  const digitsOnly = (num: string) => (num || '').replace(/\D/g, '');
-  const lastN = (num: string, n: number) => digitsOnly(num).slice(-n);
-  const toGhanaVariants = (num: string) => {
-    const d = digitsOnly(num);
-    const variants = new Set<string>();
-    if (!d) return variants;
-    variants.add(d);
-    variants.add(lastN(d, 10));
-    variants.add(lastN(d, 9));
-    // Convert local Ghana 0XXXXXXXXX to E.164 233XXXXXXXXX
-    if (d.startsWith('0') && d.length >= 10) {
-      variants.add('233' + d.slice(1));
-    }
-    // Convert E.164 Ghana 233XXXXXXXXX to local 0XXXXXXXXX
-    if (d.startsWith('233') && d.length >= 11) {
-      variants.add('0' + d.slice(3));
-    }
-    return variants;
-  };
-  const phonesMatch = (a: string, b: string) => {
-    const va = toGhanaVariants(a);
-    const vb = toGhanaVariants(b);
-    // Include last-10 and last-9 as generic fallbacks
-    va.add(lastN(a, 10));
-    va.add(lastN(a, 9));
-    vb.add(lastN(b, 10));
-    vb.add(lastN(b, 9));
-    for (const x of va) if (x && vb.has(x)) return true;
-    return false;
-  };
+
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,12 +40,8 @@ const TrackRescue = () => {
     setSearched(false);
 
     try {
-      // Normalize input
-      const normalizedDigits = digitsOnly(phoneNumber);
-      const inputLast10 = lastN(phoneNumber, 10);
-      const inputLast9 = lastN(phoneNumber, 9);
-
-      // 1) Load profiles and find any user IDs whose phone matches the input (so logged-in-created requests are discoverable when logged out)
+      // 1) Load profiles and find any user IDs whose phone matches.
+      // We rely on client-side filtering for now as Supabase basic text search on numbers is limited without extensions/RPC.
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, phone_number')
@@ -87,7 +54,7 @@ const TrackRescue = () => {
 
       const matchingProfileIds = new Set<string>();
       profiles?.forEach((p) => {
-        if (phonesMatch(p.phone_number || '', phoneNumber)) matchingProfileIds.add(p.id);
+        if (fuzzyPhoneMatch(p.phone_number || '', phoneNumber)) matchingProfileIds.add(p.id);
       });
 
       // 2) Fetch candidate requests and ratings in parallel
@@ -124,7 +91,7 @@ const TrackRescue = () => {
 
       // 3) Filter guest requests by robust phone matcher
       const guestMatches = (guestReqRes.data || []).filter((r: any) =>
-        r.phone_number ? phonesMatch(r.phone_number, phoneNumber) : false
+        r.phone_number ? fuzzyPhoneMatch(r.phone_number, phoneNumber) : false
       );
 
       const profileMatches = (profileReqRes as any).data || [];
