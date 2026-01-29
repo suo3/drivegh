@@ -1,34 +1,11 @@
 # DRIVEGh
 
-## About
-
-A a roadside assistance platform providing 24/7 help for towing, tire changes, fuel delivery, battery jump starts, and more.
-
-## Technologies
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Supabase
-
-## Getting Started
-
-### Prerequisites
-
 - Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 ### Installation
 
 ```sh
 # Clone the repository
-git clone <YOUR_GIT_URL>
-
-# Navigate to the project directory
-cd <YOUR_PROJECT_NAME>
 
 # Install dependencies
 npm i
