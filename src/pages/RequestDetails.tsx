@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route, Fuel, Bell, BellOff } from 'lucide-react';
+import { MapPin, Clock, User, Phone, Loader2, CheckCircle2, AlertCircle, Car, Navigation, Star, ArrowLeft, Share2, Route, Fuel, Bell, BellOff, CreditCard } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,14 +12,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSoundAlert } from '@/hooks/useSoundAlert';
 import { useProviderETA } from '@/hooks/useProviderETA';
+import PaymentSection from '@/components/PaymentSection';
+import ServiceConfirmation from '@/components/ServiceConfirmation';
 
 const RequestDetails = () => {
   const { id, code } = useParams<{ id?: string; code?: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [request, setRequest] = useState<any>(null);
@@ -32,6 +35,7 @@ const RequestDetails = () => {
   const [lastNotifiedStatus, setLastNotifiedStatus] = useState<string | null>(null);
   const [lastNotifiedDistance, setLastNotifiedDistance] = useState<number | null>(null);
   const [soundAlertPlayed, setSoundAlertPlayed] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { permission, requestPermission, sendNotification, isSupported } = useNotifications();
   const { playProximityAlert, playArrivalAlert } = useSoundAlert();
 
@@ -240,14 +244,53 @@ const RequestDetails = () => {
     }
   }, [distance, request?.status]);
 
+  // Verify payment on page load if coming from Paystack callback
+  useEffect(() => {
+    const verifyPayment = async () => {
+      const reference = searchParams.get('reference') || searchParams.get('trxref');
+      if (!reference || !request?.id) return;
+
+      try {
+        const { data, error } = await supabase.functions.invoke('paystack-verify', {
+          body: { reference },
+        });
+
+        if (data?.success) {
+          toast.success('Payment verified successfully!');
+          // Refresh request data
+          const { data: refreshedRequest } = await supabase
+            .from('service_requests')
+            .select(`
+              *,
+              profiles!service_requests_provider_id_fkey(full_name, phone_number)
+            `)
+            .eq('id', request.id)
+            .maybeSingle();
+          
+          if (refreshedRequest) {
+            setRequest(refreshedRequest);
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+      }
+    };
+
+    verifyPayment();
+  }, [searchParams, request?.id]);
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: 'bg-yellow-500',
       assigned: 'bg-blue-500',
+      quoted: 'bg-indigo-500',
+      awaiting_payment: 'bg-orange-500',
+      paid: 'bg-teal-500',
       accepted: 'bg-blue-600',
       denied: 'bg-red-500',
       en_route: 'bg-purple-500',
       in_progress: 'bg-indigo-500',
+      awaiting_confirmation: 'bg-amber-500',
       completed: 'bg-green-600',
       cancelled: 'bg-gray-500',
     };
@@ -643,6 +686,29 @@ const RequestDetails = () => {
                 </div>
               </div>
 
+              {/* Payment Section - Show for quoted/awaiting_payment statuses */}
+              {(request.status === 'quoted' || request.status === 'awaiting_payment' || 
+                (request.quoted_amount && ['paid', 'en_route', 'in_progress', 'awaiting_confirmation', 'completed'].includes(request.status))) && (
+                <PaymentSection 
+                  request={request}
+                  customerEmail={user?.email || request.profiles?.email || request.customer?.email}
+                  onPaymentComplete={() => {
+                    // Refresh request data
+                    supabase
+                      .from('service_requests')
+                      .select(`
+                        *,
+                        profiles!service_requests_provider_id_fkey(full_name, phone_number)
+                      `)
+                      .eq('id', request.id)
+                      .maybeSingle()
+                      .then(({ data }) => {
+                        if (data) setRequest(data);
+                      });
+                  }}
+                />
+              )}
+
               {/* Status Messages */}
               {request.status === 'pending' && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -655,7 +721,31 @@ const RequestDetails = () => {
               {request.status === 'assigned' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    👤 A provider has been assigned to your request!
+                    👤 A provider has been assigned and is preparing a quote for you.
+                  </p>
+                </div>
+              )}
+
+              {request.status === 'quoted' && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                  <p className="text-sm text-indigo-900">
+                    💰 Your provider has submitted a quote. Please review and approve it above.
+                  </p>
+                </div>
+              )}
+
+              {request.status === 'awaiting_payment' && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <p className="text-sm text-orange-900">
+                    💳 Quote approved! Complete payment above to start your service.
+                  </p>
+                </div>
+              )}
+
+              {request.status === 'paid' && (
+                <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                  <p className="text-sm text-teal-900">
+                    ✅ Payment received! Your provider has been notified and will start heading to you.
                   </p>
                 </div>
               )}
@@ -681,6 +771,21 @@ const RequestDetails = () => {
                   <p className="text-sm text-indigo-900">
                     🔧 <strong>Service in progress.</strong> The provider is working on your vehicle.
                   </p>
+                </div>
+              )}
+
+              {request.status === 'awaiting_confirmation' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-amber-900">
+                    ✨ <strong>Service completed!</strong> Please confirm completion and rate your provider.
+                  </p>
+                  <Button 
+                    onClick={() => setConfirmationOpen(true)}
+                    className="w-full sm:w-auto"
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Confirm Service Completion
+                  </Button>
                 </div>
               )}
 
@@ -943,6 +1048,28 @@ const RequestDetails = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Service Confirmation Modal */}
+      <ServiceConfirmation
+        request={request}
+        open={confirmationOpen}
+        onOpenChange={setConfirmationOpen}
+        onConfirmed={() => {
+          // Refresh request data
+          supabase
+            .from('service_requests')
+            .select(`
+              *,
+              profiles!service_requests_provider_id_fkey(full_name, phone_number)
+            `)
+            .eq('id', request.id)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (data) setRequest(data);
+            });
+        }}
+        userType="customer"
+      />
     </div>
   );
 };

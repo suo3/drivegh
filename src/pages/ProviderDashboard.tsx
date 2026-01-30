@@ -6,13 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel, Wifi, WifiOff, Eye } from 'lucide-react';
+import { Loader2, Star, DollarSign, TrendingUp, Briefcase, MapPin, User, Phone, Clock, CheckCircle, XCircle, Award, Filter, Navigation, Fuel, Wifi, WifiOff, Eye, Calculator, CreditCard } from 'lucide-react';
 import { calculateDistance, formatDistance } from '@/lib/distance';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useProviderLocation } from '@/hooks/useProviderLocation';
 import { useProviderAvailability } from '@/hooks/useProviderAvailability';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
+import QuoteModal from '@/components/QuoteModal';
+import ServiceConfirmation from '@/components/ServiceConfirmation';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ProviderDashboard = () => {
@@ -29,6 +31,8 @@ const ProviderDashboard = () => {
   const [updatingLocation, setUpdatingLocation] = useState<string | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
+  const [quoteModalRequest, setQuoteModalRequest] = useState<any | null>(null);
+  const [confirmPaymentRequest, setConfirmPaymentRequest] = useState<any | null>(null);
 
   // Provider availability management
   const { isAvailable, isUpdating, toggleAvailability } = useProviderAvailability({ userId: user?.id });
@@ -113,16 +117,27 @@ const ProviderDashboard = () => {
     setLoading(false);
   };
 
-  const updateStatus = async (requestId: string, status: 'pending' | 'assigned' | 'accepted' | 'denied' | 'en_route' | 'in_progress' | 'completed' | 'cancelled') => {
+  const updateStatus = async (requestId: string, status: 'pending' | 'assigned' | 'accepted' | 'denied' | 'en_route' | 'in_progress' | 'completed' | 'cancelled' | 'awaiting_confirmation') => {
+    const updateData: any = { status };
+    
+    // For "awaiting_confirmation" status, mark as waiting for customer confirmation
+    if (status === 'awaiting_confirmation') {
+      updateData.completed_at = new Date().toISOString();
+    }
+    
     const { error } = await supabase
       .from('service_requests')
-      .update({ status })
+      .update(updateData)
       .eq('id', requestId);
 
     if (error) {
       toast.error('Failed to update status');
     } else {
-      toast.success('Status updated successfully');
+      if (status === 'awaiting_confirmation') {
+        toast.success('Marked as complete! Waiting for customer confirmation.');
+      } else {
+        toast.success('Status updated successfully');
+      }
       fetchData();
     }
   };
@@ -209,9 +224,13 @@ const ProviderDashboard = () => {
     const colors: any = {
       pending: 'border-l-yellow-500',
       assigned: 'border-l-blue-500',
+      quoted: 'border-l-indigo-500',
+      awaiting_payment: 'border-l-orange-500',
+      paid: 'border-l-teal-500',
       accepted: 'border-l-blue-600',
       en_route: 'border-l-purple-500',
       in_progress: 'border-l-purple-600',
+      awaiting_confirmation: 'border-l-amber-500',
       completed: 'border-l-green-500',
       cancelled: 'border-l-red-500',
       denied: 'border-l-red-600'
@@ -538,11 +557,16 @@ const ProviderDashboard = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </Button>
+                          {/* Assigned - Provider must submit quote first */}
                           {request.status === 'assigned' && (
                             <>
-                              <Button size="sm" onClick={() => updateStatus(request.id, 'accepted')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Accept
+                              <Button 
+                                size="sm" 
+                                onClick={() => setQuoteModalRequest(request)} 
+                                className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
+                              >
+                                <Calculator className="h-4 w-4 mr-2" />
+                                Submit Quote
                               </Button>
                               <Button size="sm" variant="destructive" onClick={() => rejectRequest(request.id)} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
                                 <XCircle className="h-4 w-4 mr-2" />
@@ -550,6 +574,52 @@ const ProviderDashboard = () => {
                               </Button>
                             </>
                           )}
+
+                          {/* Quoted - Waiting for customer approval */}
+                          {request.status === 'quoted' && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200">
+                              <Clock className="h-4 w-4 text-indigo-600" />
+                              <span className="text-sm text-indigo-800">
+                                Quote submitted (GHS {Number(request.quoted_amount).toFixed(2)}) - Awaiting customer approval
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Awaiting Payment - Customer approved, waiting for payment */}
+                          {request.status === 'awaiting_payment' && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 rounded-lg border border-orange-200">
+                              <CreditCard className="h-4 w-4 text-orange-600" />
+                              <span className="text-sm text-orange-800">
+                                Quote approved - Awaiting customer payment
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Paid - Customer paid, provider can start */}
+                          {request.status === 'paid' && (
+                            <>
+                              <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="w-full md:w-auto bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-md hover:shadow-lg transition-all">
+                                <Navigation className="h-4 w-4 mr-2" />
+                                Payment Received - Start Driving
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateProviderLocation(request.id)}
+                                disabled={updatingLocation === request.id}
+                                className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
+                              >
+                                {updatingLocation === request.id ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Navigation className="h-4 w-4 mr-2" />
+                                )}
+                                Update Location
+                              </Button>
+                            </>
+                          )}
+
+                          {/* Legacy accepted status - for backward compatibility */}
                           {request.status === 'accepted' && (
                             <>
                               <Button size="sm" onClick={() => updateStatus(request.id, 'en_route')} className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 shadow-md hover:shadow-lg transition-all">
@@ -572,6 +642,7 @@ const ProviderDashboard = () => {
                               </Button>
                             </>
                           )}
+
                           {request.status === 'en_route' && (
                             <>
                               <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md hover:shadow-lg transition-all">
@@ -594,10 +665,48 @@ const ProviderDashboard = () => {
                               </Button>
                             </>
                           )}
+
                           {request.status === 'in_progress' && (
-                            <Button size="sm" onClick={() => updateStatus(request.id, 'completed')} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
-                              Complete Job
+                            <Button 
+                              size="sm" 
+                              onClick={() => updateStatus(request.id, 'awaiting_confirmation')} 
+                              className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Mark as Complete
                             </Button>
+                          )}
+
+                          {/* Awaiting customer confirmation */}
+                          {request.status === 'awaiting_confirmation' && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+                              <Clock className="h-4 w-4 text-amber-600" />
+                              <span className="text-sm text-amber-800">
+                                Awaiting customer confirmation
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Completed - Provider can confirm payment */}
+                          {request.status === 'completed' && !request.provider_confirmed_payment_at && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setConfirmPaymentRequest(request)} 
+                              className="w-full md:w-auto border-green-300 text-green-700 hover:bg-green-50"
+                            >
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Confirm Payment Received
+                            </Button>
+                          )}
+
+                          {request.status === 'completed' && request.provider_confirmed_payment_at && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm text-green-800">
+                                Completed & Payment Confirmed
+                              </span>
+                            </div>
                           )}
                         </div>
                       </CardContent>
@@ -667,6 +776,21 @@ const ProviderDashboard = () => {
         request={selectedRequestForDetails}
         open={!!selectedRequestForDetails}
         onOpenChange={(open) => !open && setSelectedRequestForDetails(null)}
+      />
+
+      <QuoteModal
+        request={quoteModalRequest}
+        open={!!quoteModalRequest}
+        onOpenChange={(open) => !open && setQuoteModalRequest(null)}
+        onQuoteSubmitted={fetchData}
+      />
+
+      <ServiceConfirmation
+        request={confirmPaymentRequest}
+        open={!!confirmPaymentRequest}
+        onOpenChange={(open) => !open && setConfirmPaymentRequest(null)}
+        onConfirmed={fetchData}
+        userType="provider"
       />
     </div>
   );
