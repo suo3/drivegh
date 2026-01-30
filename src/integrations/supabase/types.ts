@@ -195,6 +195,8 @@ export type Database = {
           is_available: boolean
           location: string | null
           location_updated_at: string | null
+          payout_details: Json | null
+          paystack_subaccount_code: string | null
           phone_number: string | null
           updated_at: string | null
           years_experience: number | null
@@ -211,6 +213,8 @@ export type Database = {
           is_available?: boolean
           location?: string | null
           location_updated_at?: string | null
+          payout_details?: Json | null
+          paystack_subaccount_code?: string | null
           phone_number?: string | null
           updated_at?: string | null
           years_experience?: number | null
@@ -227,6 +231,8 @@ export type Database = {
           is_available?: boolean
           location?: string | null
           location_updated_at?: string | null
+          payout_details?: Json | null
+          paystack_subaccount_code?: string | null
           phone_number?: string | null
           updated_at?: string | null
           years_experience?: number | null
@@ -303,6 +309,7 @@ export type Database = {
           fuel_type: string | null
           id: string
           location: string
+          payment_status: string | null
           phone_number: string | null
           provider_id: string | null
           provider_lat: number | null
@@ -331,6 +338,7 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           location: string
+          payment_status?: string | null
           phone_number?: string | null
           provider_id?: string | null
           provider_lat?: number | null
@@ -359,6 +367,7 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           location?: string
+          payment_status?: string | null
           phone_number?: string | null
           provider_id?: string | null
           provider_lat?: number | null
@@ -470,8 +479,10 @@ export type Database = {
           proof_url: string | null
           provider_amount: number | null
           provider_percentage: number
+          reference: string | null
           reference_number: string | null
           service_request_id: string
+          status: string | null
           transaction_type: Database["public"]["Enums"]["transaction_type"]
         }
         Insert: {
@@ -486,8 +497,10 @@ export type Database = {
           proof_url?: string | null
           provider_amount?: number | null
           provider_percentage?: number
+          reference?: string | null
           reference_number?: string | null
           service_request_id: string
+          status?: string | null
           transaction_type: Database["public"]["Enums"]["transaction_type"]
         }
         Update: {
@@ -502,8 +515,10 @@ export type Database = {
           proof_url?: string | null
           provider_amount?: number | null
           provider_percentage?: number
+          reference?: string | null
           reference_number?: string | null
           service_request_id?: string
+          status?: string | null
           transaction_type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [
