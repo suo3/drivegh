@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle, Calculator, Navigation, XCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -24,6 +24,7 @@ import HomepageSectionsManager from '@/components/HomepageSectionsManager';
 import TestimonialsManager from '@/components/TestimonialsManager';
 import { z } from 'zod';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
+import QuoteModal from '@/components/QuoteModal';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -55,6 +56,7 @@ const Dashboard = () => {
   const [mapsEnabled, setMapsEnabled] = useState(true);
 
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
+  const [quoteModalRequest, setQuoteModalRequest] = useState<any | null>(null);
 
   // Admin filters
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
@@ -347,6 +349,25 @@ const Dashboard = () => {
       toast.error('Failed to update status');
     } else {
       toast.success('Status updated successfully');
+      fetchData();
+    }
+  };
+
+  const handleRejectRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('service_requests')
+      .update({
+        status: 'pending',
+        provider_id: null,
+        assigned_at: null,
+        assigned_by: null
+      })
+      .eq('id', requestId);
+
+    if (error) {
+      toast.error('Failed to reject request');
+    } else {
+      toast.success('Request rejected successfully');
       fetchData();
     }
   };
@@ -1406,18 +1427,52 @@ const Dashboard = () => {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-2 items-center flex-wrap">
+                                    {/* Assigned - Provider must submit quote first */}
                                     {request.status === 'assigned' && (
                                       <>
-                                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
-                                          Accept
+                                        <Button size="sm" onClick={() => setQuoteModalRequest(request)}>
+                                          <Calculator className="h-4 w-4 mr-1" />
+                                          Submit Quote
                                         </Button>
-                                        <Button size="sm" variant="destructive" onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}>
-                                          Deny
+                                        <Button size="sm" variant="destructive" onClick={() => handleRejectRequest(request.id)}>
+                                          <XCircle className="h-4 w-4 mr-1" />
+                                          Reject
                                         </Button>
                                       </>
                                     )}
+
+                                    {/* Quoted - Waiting for customer approval */}
+                                    {request.status === 'quoted' && (
+                                      <div className="flex items-center gap-2 px-2 py-1 bg-indigo-50 rounded border border-indigo-200">
+                                        <Clock className="h-4 w-4 text-indigo-600" />
+                                        <span className="text-xs text-indigo-800">
+                                          Quote (GHS {Number(request.quoted_amount).toFixed(2)}) - Awaiting approval
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {/* Awaiting Payment */}
+                                    {request.status === 'awaiting_payment' && (
+                                      <div className="flex items-center gap-2 px-2 py-1 bg-orange-50 rounded border border-orange-200">
+                                        <CreditCard className="h-4 w-4 text-orange-600" />
+                                        <span className="text-xs text-orange-800">
+                                          Awaiting customer payment
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {/* Paid - Provider can start */}
+                                    {request.status === 'paid' && (
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                        <Navigation className="h-4 w-4 mr-1" />
+                                        Payment Received - Start Driving
+                                      </Button>
+                                    )}
+
+                                    {/* Legacy accepted status */}
                                     {request.status === 'accepted' && (
                                       <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}>
+                                        <Navigation className="h-4 w-4 mr-1" />
                                         Start Driving
                                       </Button>
                                     )}
@@ -1427,31 +1482,19 @@ const Dashboard = () => {
                                       </Button>
                                     )}
                                     {request.status === 'in_progress' && (
-                                      <Dialog>
-                                        <DialogTrigger asChild>
-                                          <Button size="sm">Complete</Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                          <DialogHeader>
-                                            <DialogTitle>Complete Service</DialogTitle>
-                                            <DialogDescription>
-                                              Ask customer to send payment to business mobile money number
-                                            </DialogDescription>
-                                          </DialogHeader>
-                                          <div className="space-y-4">
-                                            <p className="text-sm">Business Mobile Money: <strong>+256-XXX-XXXXXX</strong></p>
-                                            <p className="text-sm text-muted-foreground">
-                                              Once you receive payment confirmation, the admin will complete the transaction.
-                                            </p>
-                                            <Button onClick={() => {
-                                              toast.success('Customer notified to send payment');
-                                              handleUpdateRequestStatus(request.id, 'completed');
-                                            }}>
-                                              Mark as Awaiting Payment
-                                            </Button>
-                                          </div>
-                                        </DialogContent>
-                                      </Dialog>
+                                      <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'awaiting_confirmation')}>
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Mark Complete
+                                      </Button>
+                                    )}
+
+                                    {request.status === 'awaiting_confirmation' && (
+                                      <div className="flex items-center gap-2 px-2 py-1 bg-amber-50 rounded border border-amber-200">
+                                        <Clock className="h-4 w-4 text-amber-600" />
+                                        <span className="text-xs text-amber-800">
+                                          Awaiting customer confirmation
+                                        </span>
+                                      </div>
                                     )}
 
                                     <Button
@@ -1493,32 +1536,69 @@ const Dashboard = () => {
                               </div>
 
                               <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t mt-2">
+                                {/* Assigned - Provider must submit quote first */}
                                 {request.status === 'assigned' && (
                                   <>
                                     <Button
                                       size="sm"
                                       className="w-full sm:w-auto"
-                                      onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}
+                                      onClick={() => setQuoteModalRequest(request)}
                                     >
-                                      Accept
+                                      <Calculator className="h-4 w-4 mr-1" />
+                                      Submit Quote
                                     </Button>
                                     <Button
                                       size="sm"
                                       variant="destructive"
                                       className="w-full sm:w-auto"
-                                      onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')}
+                                      onClick={() => handleRejectRequest(request.id)}
                                     >
-                                      Deny
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                      Reject
                                     </Button>
                                   </>
                                 )}
 
+                                {/* Quoted - Waiting for customer approval */}
+                                {request.status === 'quoted' && (
+                                  <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200 w-full">
+                                    <Clock className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+                                    <span className="text-sm text-indigo-800">
+                                      Quote (GHS {Number(request.quoted_amount).toFixed(2)}) - Awaiting approval
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Awaiting Payment */}
+                                {request.status === 'awaiting_payment' && (
+                                  <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 rounded-lg border border-orange-200 w-full">
+                                    <CreditCard className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                                    <span className="text-sm text-orange-800">
+                                      Awaiting customer payment
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Paid - Provider can start */}
+                                {request.status === 'paid' && (
+                                  <Button
+                                    size="sm"
+                                    className="w-full sm:w-auto"
+                                    onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}
+                                  >
+                                    <Navigation className="h-4 w-4 mr-1" />
+                                    Payment Received - Start Driving
+                                  </Button>
+                                )}
+
+                                {/* Legacy accepted status */}
                                 {request.status === 'accepted' && (
                                   <Button
                                     size="sm"
                                     className="w-full sm:w-auto"
                                     onClick={() => handleUpdateRequestStatus(request.id, 'en_route')}
                                   >
+                                    <Navigation className="h-4 w-4 mr-1" />
                                     Start Driving (En Route)
                                   </Button>
                                 )}
@@ -1534,33 +1614,23 @@ const Dashboard = () => {
                                 )}
 
                                 {request.status === 'in_progress' && (
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button size="sm" className="w-full sm:w-auto">Complete</Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Complete Service</DialogTitle>
-                                        <DialogDescription>
-                                          Ask customer to send payment to business mobile money number
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <p className="text-sm">Business Mobile Money: <strong></strong></p>
-                                        <p className="text-sm text-muted-foreground">
-                                          Once you receive payment confirmation, the admin will complete the transaction.
-                                        </p>
-                                        <Button
-                                          onClick={() => {
-                                            toast.success('Customer notified to send payment');
-                                            handleUpdateRequestStatus(request.id, 'completed');
-                                          }}
-                                        >
-                                          Mark as Awaiting Payment
-                                        </Button>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
+                                  <Button
+                                    size="sm"
+                                    className="w-full sm:w-auto"
+                                    onClick={() => handleUpdateRequestStatus(request.id, 'awaiting_confirmation')}
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Mark Complete
+                                  </Button>
+                                )}
+
+                                {request.status === 'awaiting_confirmation' && (
+                                  <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200 w-full">
+                                    <Clock className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                                    <span className="text-sm text-amber-800">
+                                      Awaiting customer confirmation
+                                    </span>
+                                  </div>
                                 )}
 
                                 <Button
@@ -4231,6 +4301,15 @@ const Dashboard = () => {
               onOpenChange={(open) => {
                 if (!open) setSelectedRequestForDetails(null);
               }}
+            />
+
+            <QuoteModal
+              request={quoteModalRequest}
+              open={!!quoteModalRequest}
+              onOpenChange={(open) => {
+                if (!open) setQuoteModalRequest(null);
+              }}
+              onQuoteSubmitted={fetchData}
             />
           </div>
         </div>
