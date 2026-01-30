@@ -1946,9 +1946,11 @@ const Dashboard = () => {
                                   <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                  {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                    ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
-                                    : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                  {request.quoted_amount
+                                    ? `GHS ${Number(request.quoted_amount).toFixed(2)}`
+                                    : request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                      ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                      : '-'}
                                 </TableCell>
                                 <TableCell>
                                   <div>
@@ -2014,7 +2016,12 @@ const Dashboard = () => {
                                           <SelectContent>
                                             <SelectItem value="pending">Pending</SelectItem>
                                             <SelectItem value="assigned">Assigned</SelectItem>
+                                            <SelectItem value="quoted">Quoted</SelectItem>
+                                            <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+                                            <SelectItem value="paid">Paid</SelectItem>
+                                            <SelectItem value="en_route">En Route</SelectItem>
                                             <SelectItem value="in_progress">In Progress</SelectItem>
+                                            <SelectItem value="awaiting_confirmation">Awaiting Confirmation</SelectItem>
                                             <SelectItem value="completed">Completed</SelectItem>
                                             <SelectItem value="cancelled">Cancelled</SelectItem>
                                           </SelectContent>
@@ -2138,9 +2145,11 @@ const Dashboard = () => {
                                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                                   <span className="font-medium">Amount:</span>
                                   <span>
-                                    {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                      ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
-                                      : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                    {request.quoted_amount
+                                      ? `GHS ${Number(request.quoted_amount).toFixed(2)}`
+                                      : request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                        ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                        : '-'}
                                   </span>
                                 </div>
 
@@ -2211,7 +2220,12 @@ const Dashboard = () => {
                                       <SelectContent>
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="assigned">Assigned</SelectItem>
+                                        <SelectItem value="quoted">Quoted</SelectItem>
+                                        <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+                                        <SelectItem value="paid">Paid</SelectItem>
+                                        <SelectItem value="en_route">En Route</SelectItem>
                                         <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="awaiting_confirmation">Awaiting Confirmation</SelectItem>
                                         <SelectItem value="completed">Completed</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                       </SelectContent>
