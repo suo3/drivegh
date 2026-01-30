@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle, Calculator, Navigation, XCircle } from 'lucide-react';
+import { Loader2, Star, DollarSign, ClipboardList, Users, UserCheck, UserX, Edit, Trash2, MessageSquare, Mail, Eye, Archive, Search, Filter, Phone, User, Clock, MapPin, CreditCard, Calendar, Building2, CheckCircle, Calculator, Navigation, XCircle, Check, FileText, Wallet } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
 import ServiceManager from '@/components/ServiceManager';
@@ -727,9 +727,15 @@ const Dashboard = () => {
     const colors: any = {
       pending: 'bg-yellow-500',
       assigned: 'bg-blue-500',
-      in_progress: 'bg-purple-500',
+      quoted: 'bg-indigo-500',
+      awaiting_payment: 'bg-amber-500',
+      paid: 'bg-teal-500',
+      en_route: 'bg-purple-500',
+      in_progress: 'bg-purple-600',
+      awaiting_confirmation: 'bg-orange-500',
       completed: 'bg-green-500',
-      cancelled: 'bg-red-500'
+      cancelled: 'bg-red-500',
+      denied: 'bg-red-600'
     };
     return colors[status] || 'bg-gray-500';
   };
@@ -738,9 +744,13 @@ const Dashboard = () => {
     const colors: any = {
       pending: 'border-l-yellow-500',
       assigned: 'border-l-blue-500',
+      quoted: 'border-l-indigo-500',
+      awaiting_payment: 'border-l-amber-500',
+      paid: 'border-l-teal-500',
       accepted: 'border-l-blue-600',
       en_route: 'border-l-purple-500',
       in_progress: 'border-l-purple-600',
+      awaiting_confirmation: 'border-l-orange-500',
       completed: 'border-l-green-500',
       cancelled: 'border-l-red-500',
       denied: 'border-l-red-600'
@@ -987,12 +997,58 @@ const Dashboard = () => {
                                     <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                   </TableCell>
                                   <TableCell>
-                                    {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                      ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
-                                      : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                    {request.quoted_amount
+                                      ? `GHS ${Number(request.quoted_amount).toFixed(2)}`
+                                      : request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                        ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                        : '-'}
                                   </TableCell>
                                   <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
-                                  <TableCell>
+                                  <TableCell className="space-x-2">
+                                    {/* Quoted - Show approve button */}
+                                    {request.status === 'quoted' && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                      >
+                                        <Check className="h-4 w-4 mr-1" />
+                                        Review Quote
+                                      </Button>
+                                    )}
+                                    {/* Awaiting payment - Show pay button */}
+                                    {request.status === 'awaiting_payment' && (
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                      >
+                                        <CreditCard className="h-4 w-4 mr-1" />
+                                        Pay Now
+                                      </Button>
+                                    )}
+                                    {/* Paid/En route/In progress - Show track button */}
+                                    {['paid', 'en_route', 'in_progress'].includes(request.status) && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                      >
+                                        <MapPin className="h-4 w-4 mr-1" />
+                                        Track
+                                      </Button>
+                                    )}
+                                    {/* Awaiting confirmation - Show confirm button */}
+                                    {request.status === 'awaiting_confirmation' && (
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Confirm
+                                      </Button>
+                                    )}
+                                    {/* Pending/Assigned/Accepted - Can cancel */}
                                     {['pending', 'assigned', 'accepted'].includes(request.status) && (
                                       <Button
                                         variant="outline"
@@ -1012,7 +1068,6 @@ const Dashboard = () => {
                                             }
                                           }
                                         }}
-                                        className="mr-2"
                                       >
                                         Cancel
                                       </Button>
@@ -1142,9 +1197,11 @@ const Dashboard = () => {
                                   <div className="flex items-center gap-2">
                                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                                     <span>
-                                      {request.transactions && request.transactions.length > 0 && request.transactions[0].amount
-                                        ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
-                                        : request.status === 'completed' ? 'Pending Payment' : '-'}
+                                      {request.quoted_amount
+                                        ? `GHS ${Number(request.quoted_amount).toFixed(2)}`
+                                        : request.transactions && request.transactions.length > 0 && request.transactions[0].amount
+                                          ? `GHS ${Number(request.transactions[0].amount).toFixed(2)}`
+                                          : '-'}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1153,7 +1210,53 @@ const Dashboard = () => {
                                   </div>
                                 </div>
 
-                                <div className="flex gap-2 pt-2 border-t">
+                                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                                  {/* Quoted - Show approve button */}
+                                  {request.status === 'quoted' && (
+                                    <Button
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                    >
+                                      <Check className="h-4 w-4 mr-1" />
+                                      Review Quote
+                                    </Button>
+                                  )}
+                                  {/* Awaiting payment - Show pay button */}
+                                  {request.status === 'awaiting_payment' && (
+                                    <Button
+                                      size="sm"
+                                      className="flex-1 bg-green-600 hover:bg-green-700"
+                                      onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                    >
+                                      <CreditCard className="h-4 w-4 mr-1" />
+                                      Pay Now
+                                    </Button>
+                                  )}
+                                  {/* Paid/En route/In progress - Show track button */}
+                                  {['paid', 'en_route', 'in_progress'].includes(request.status) && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex-1"
+                                      onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                    >
+                                      <MapPin className="h-4 w-4 mr-1" />
+                                      Track
+                                    </Button>
+                                  )}
+                                  {/* Awaiting confirmation - Show confirm button */}
+                                  {request.status === 'awaiting_confirmation' && (
+                                    <Button
+                                      size="sm"
+                                      className="flex-1 bg-green-600 hover:bg-green-700"
+                                      onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Confirm
+                                    </Button>
+                                  )}
+                                  {/* Pending/Assigned/Accepted - Can cancel */}
                                   {['pending', 'assigned', 'accepted'].includes(request.status) && (
                                     <Button
                                       variant="outline"
