@@ -66,7 +66,8 @@ serve(async (req) => {
       ],
     };
 
-    // Prepare Paystack payload
+    // Prepare Paystack payload - Collect full amount to platform account
+    // Funds will be held until customer confirms service completion, then transferred to provider
     const paystackPayload: any = {
       email,
       amount: totalAmount,
@@ -75,16 +76,10 @@ serve(async (req) => {
       metadata,
     };
 
-    // If provider has subaccount, use split payment
-    const providerSubaccountCode = request.profiles?.paystack_subaccount_code;
-    if (providerSubaccountCode) {
-      paystackPayload.subaccount = providerSubaccountCode;
-      paystackPayload.bearer = "account"; // Platform bears the fees
-      paystackPayload.transaction_charge = Math.round(totalAmount * (platformCommission / 100)); // Platform's cut
-      console.log("Using split payment with subaccount:", providerSubaccountCode);
-    } else {
-      console.log("Provider has no subaccount, payment goes to main account for manual split");
-    }
+    // NOTE: We intentionally do NOT use split payments here
+    // Funds are collected to the main platform account and held as escrow
+    // After customer confirms service completion, we initiate a transfer to the provider
+    console.log("Collecting payment to platform account (escrow model)");
 
     console.log("Initializing Paystack transaction:", JSON.stringify(paystackPayload, null, 2));
 

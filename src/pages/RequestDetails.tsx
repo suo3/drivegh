@@ -774,25 +774,54 @@ const RequestDetails = () => {
                 </div>
               )}
 
-              {request.status === 'awaiting_confirmation' && (
+              {request.status === 'awaiting_confirmation' && !request.customer_confirmed_at && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
                   <p className="text-sm text-amber-900">
-                    ✨ <strong>Service completed!</strong> Please confirm completion and rate your provider.
+                    ✨ <strong>Service completed!</strong> Please confirm completion and rate your provider to release their payment.
                   </p>
                   <Button 
                     onClick={() => setConfirmationOpen(true)}
                     className="w-full sm:w-auto"
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Confirm Service Completion
+                    Confirm & Release Payment
                   </Button>
+                </div>
+              )}
+
+              {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-900">
+                    ✅ <strong>You've confirmed the service!</strong> Payment is being transferred to your provider. Waiting for them to confirm receipt.
+                  </p>
+                  {getRequestRating() && (
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <p className="text-sm font-semibold text-blue-900 mb-2">Your Rating:</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-5 w-5 ${star <= getRequestRating()!.rating
+                              ? 'fill-yellow-500 text-yellow-500'
+                              : 'text-gray-300'
+                              }`}
+                          />
+                        ))}
+                      </div>
+                      {getRequestRating()!.review && (
+                        <p className="text-sm text-blue-700 italic">
+                          "{getRequestRating()!.review}"
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {request.status === 'completed' && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm text-green-900">
-                    ✅ Service completed. Thank you for using our service!
+                    ✅ <strong>Service fully completed!</strong> Provider has confirmed payment receipt. Thank you for using DriveGhana!
                   </p>
                   {getRequestRating() && (
                     <div className="mt-3 pt-3 border-t border-green-200">
