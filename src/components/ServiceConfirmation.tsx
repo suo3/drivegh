@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Star, CheckCircle } from 'lucide-react';
+import { Loader2, Star, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface ServiceConfirmationProps {
   request: any;
@@ -20,24 +20,26 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
   const [review, setReview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [transferError, setTransferError] = useState<string | null>(null);
 
   const handleCustomerConfirm = async () => {
     setIsSubmitting(true);
+    setTransferError(null);
 
     try {
-      // Update service request
+      // Step 1: Update service request with customer confirmation
+      // Status changes to 'awaiting_provider_confirmation' - waiting for provider to confirm funds
       const { error: updateError } = await supabase
         .from('service_requests')
         .update({
           customer_confirmed_at: new Date().toISOString(),
-          status: 'completed',
-          completed_at: new Date().toISOString(),
+          // Don't mark as completed yet - need provider to confirm funds first
         })
         .eq('id', request.id);
 
       if (updateError) throw updateError;
 
-      // Submit rating if provided
+      // Step 2: Submit rating if provided
       if (rating > 0 && request.provider_id && request.customer_id) {
         const { error: ratingError } = await supabase
           .from('ratings')
@@ -55,6 +57,23 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
         }
       }
 
+      // Step 3: Trigger transfer to provider
+      console.log('Initiating transfer to provider...');
+      const { data: transferData, error: transferError } = await supabase.functions.invoke(
+        'paystack-transfer-to-provider',
+        {
+          body: { serviceRequestId: request.id },
+        }
+      );
+
+      if (transferError) {
+        console.error('Transfer initiation failed:', transferError);
+        setTransferError('Service confirmed, but transfer initiation failed. The admin will process your provider\'s payment manually.');
+        // Still show success for customer - admin can handle transfer manually
+      } else if (transferData?.success) {
+        console.log('Transfer initiated successfully:', transferData);
+      }
+
       toast.success('Service confirmed! Thank you for using DriveGhana.');
       onConfirmed();
       onOpenChange(false);
@@ -70,16 +89,19 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
     setIsSubmitting(true);
 
     try {
+      // Mark service as fully completed only after provider confirms fund receipt
       const { error } = await supabase
         .from('service_requests')
         .update({
           provider_confirmed_payment_at: new Date().toISOString(),
+          status: 'completed', // NOW we mark as completed
+          completed_at: new Date().toISOString(),
         })
         .eq('id', request.id);
 
       if (error) throw error;
 
-      toast.success('Payment receipt confirmed!');
+      toast.success('Payment receipt confirmed! Job is now complete.');
       onConfirmed();
       onOpenChange(false);
     } catch (error) {
@@ -92,6 +114,8 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
 
   if (!request) return null;
 
+  const providerAmount = (Number(request.amount || request.quoted_amount || 0) * 0.85).toFixed(2);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -102,8 +126,8 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
           </DialogTitle>
           <DialogDescription>
             {userType === 'customer'
-              ? 'Please confirm that the service was completed to your satisfaction and rate your provider.'
-              : 'Confirm that you have received your payment for this service.'}
+              ? 'Please confirm that the service was completed to your satisfaction and rate your provider. This will release payment to your provider.'
+              : 'Confirm that you have received your payment to finalize this job.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,13 +139,20 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
               <span className="font-medium capitalize">{request.service_type?.replace('_', ' ')}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Amount</span>
+              <span className="text-muted-foreground">Total Amount</span>
               <span className="font-bold text-primary">GHS {Number(request.amount || request.quoted_amount || 0).toFixed(2)}</span>
             </div>
           </div>
 
           {userType === 'customer' && (
             <>
+              {/* Payment Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>📤 Payment Release:</strong> Confirming will release the provider's payment (GHS {providerAmount}) to their registered account.
+                </p>
+              </div>
+
               {/* Rating */}
               <div className="space-y-2">
                 <Label>Rate your provider</Label>
@@ -158,15 +189,25 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
                   rows={3}
                 />
               </div>
+
+              {/* Transfer Error Alert */}
+              {transferError && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800">{transferError}</p>
+                </div>
+              )}
             </>
           )}
 
           {userType === 'provider' && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-800">
-                By confirming, you acknowledge that you have received your payment share 
-                (85% of GHS {Number(request.amount || request.quoted_amount || 0).toFixed(2)} = 
-                <span className="font-bold"> GHS {(Number(request.amount || request.quoted_amount || 0) * 0.85).toFixed(2)}</span>).
+                By confirming, you acknowledge that you have received your payment share of{' '}
+                <span className="font-bold">GHS {providerAmount}</span> (85% of total after platform fee).
+              </p>
+              <p className="text-xs text-green-600 mt-2">
+                This will finalize the job and mark it as completed.
               </p>
             </div>
           )}
@@ -184,12 +225,12 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Confirming...
+                {userType === 'customer' ? 'Confirming & Releasing Payment...' : 'Confirming...'}
               </>
             ) : (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Confirm
+                {userType === 'customer' ? 'Confirm & Release Payment' : 'Confirm Payment Received'}
               </>
             )}
           </Button>

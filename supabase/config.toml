@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.paystack-banks]
 verify_jwt = false
+
+[functions.paystack-transfer-to-provider]
+verify_jwt = false
