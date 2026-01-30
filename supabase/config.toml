@@ -1,1 +1,19 @@
 project_id = "tjexthvltximqybdipuq"
+
+[functions.create-user-account]
+verify_jwt = false
+
+[functions.paystack-initialize]
+verify_jwt = false
+
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.paystack-verify]
+verify_jwt = false
+
+[functions.paystack-create-subaccount]
+verify_jwt = false
+
+[functions.paystack-banks]
+verify_jwt = false

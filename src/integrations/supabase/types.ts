@@ -301,6 +301,7 @@ export type Database = {
           assigned_by: string | null
           completed_at: string | null
           created_at: string | null
+          customer_confirmed_at: string | null
           customer_id: string | null
           customer_lat: number | null
           customer_lng: number | null
@@ -309,11 +310,18 @@ export type Database = {
           fuel_type: string | null
           id: string
           location: string
+          paid_at: string | null
           payment_status: string | null
+          paystack_reference: string | null
           phone_number: string | null
+          provider_confirmed_payment_at: string | null
           provider_id: string | null
           provider_lat: number | null
           provider_lng: number | null
+          quote_approved_at: string | null
+          quote_description: string | null
+          quoted_amount: number | null
+          quoted_at: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["service_status"]
           tracking_code: string | null
@@ -330,6 +338,7 @@ export type Database = {
           assigned_by?: string | null
           completed_at?: string | null
           created_at?: string | null
+          customer_confirmed_at?: string | null
           customer_id?: string | null
           customer_lat?: number | null
           customer_lng?: number | null
@@ -338,11 +347,18 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           location: string
+          paid_at?: string | null
           payment_status?: string | null
+          paystack_reference?: string | null
           phone_number?: string | null
+          provider_confirmed_payment_at?: string | null
           provider_id?: string | null
           provider_lat?: number | null
           provider_lng?: number | null
+          quote_approved_at?: string | null
+          quote_description?: string | null
+          quoted_amount?: number | null
+          quoted_at?: string | null
           service_type: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null
@@ -359,6 +375,7 @@ export type Database = {
           assigned_by?: string | null
           completed_at?: string | null
           created_at?: string | null
+          customer_confirmed_at?: string | null
           customer_id?: string | null
           customer_lat?: number | null
           customer_lng?: number | null
@@ -367,11 +384,18 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           location?: string
+          paid_at?: string | null
           payment_status?: string | null
+          paystack_reference?: string | null
           phone_number?: string | null
+          provider_confirmed_payment_at?: string | null
           provider_id?: string | null
           provider_lat?: number | null
           provider_lng?: number | null
+          quote_approved_at?: string | null
+          quote_description?: string | null
+          quoted_amount?: number | null
+          quoted_at?: string | null
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["service_status"]
           tracking_code?: string | null
@@ -475,6 +499,8 @@ export type Database = {
           id: string
           notes: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          paystack_transfer_code: string | null
+          paystack_transfer_status: string | null
           platform_amount: number | null
           proof_url: string | null
           provider_amount: number | null
@@ -484,6 +510,8 @@ export type Database = {
           service_request_id: string
           status: string | null
           transaction_type: Database["public"]["Enums"]["transaction_type"]
+          transfer_completed_at: string | null
+          transfer_initiated_at: string | null
         }
         Insert: {
           amount: number
@@ -493,6 +521,8 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          paystack_transfer_code?: string | null
+          paystack_transfer_status?: string | null
           platform_amount?: number | null
           proof_url?: string | null
           provider_amount?: number | null
@@ -502,6 +532,8 @@ export type Database = {
           service_request_id: string
           status?: string | null
           transaction_type: Database["public"]["Enums"]["transaction_type"]
+          transfer_completed_at?: string | null
+          transfer_initiated_at?: string | null
         }
         Update: {
           amount?: number
@@ -511,6 +543,8 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          paystack_transfer_code?: string | null
+          paystack_transfer_status?: string | null
           platform_amount?: number | null
           proof_url?: string | null
           provider_amount?: number | null
@@ -520,6 +554,8 @@ export type Database = {
           service_request_id?: string
           status?: string | null
           transaction_type?: Database["public"]["Enums"]["transaction_type"]
+          transfer_completed_at?: string | null
+          transfer_initiated_at?: string | null
         }
         Relationships: [
           {
@@ -608,10 +644,14 @@ export type Database = {
       service_status:
         | "pending"
         | "assigned"
+        | "quoted"
+        | "awaiting_payment"
+        | "paid"
         | "accepted"
         | "denied"
         | "en_route"
         | "in_progress"
+        | "awaiting_confirmation"
         | "completed"
         | "cancelled"
       service_type:
@@ -756,10 +796,14 @@ export const Constants = {
       service_status: [
         "pending",
         "assigned",
+        "quoted",
+        "awaiting_payment",
+        "paid",
         "accepted",
         "denied",
         "en_route",
         "in_progress",
+        "awaiting_confirmation",
         "completed",
         "cancelled",
       ],
