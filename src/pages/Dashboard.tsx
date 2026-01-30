@@ -1801,6 +1801,15 @@ const Dashboard = () => {
                 if (!open) setSelectedRequestForDetails(null);
               }}
             />
+
+            <QuoteModal
+              request={quoteModalRequest}
+              open={!!quoteModalRequest}
+              onOpenChange={(open) => {
+                if (!open) setQuoteModalRequest(null);
+              }}
+              onQuoteSubmitted={fetchData}
+            />
           </div>
         </div>
       </SidebarProvider>
