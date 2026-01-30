@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2, Fuel, Eye } from 'lucide-react';
+import { Loader2, MapPin, Clock, User, Phone, RefreshCw, TrendingUp, CheckCircle2, Fuel, Eye, CreditCard, Calculator, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
+import ServiceConfirmation from '@/components/ServiceConfirmation';
 
 const CustomerDashboard = () => {
   const { user, signOut } = useAuth();
@@ -22,6 +23,7 @@ const CustomerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRequestForTracking, setSelectedRequestForTracking] = useState<any | null>(null);
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
+  const [confirmationRequest, setConfirmationRequest] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -100,8 +102,13 @@ const CustomerDashboard = () => {
     const colors: Record<string, string> = {
       pending: 'bg-warning/90 text-warning-foreground',
       assigned: 'bg-blue-500/90 text-white',
+      quoted: 'bg-indigo-500/90 text-white',
+      awaiting_payment: 'bg-orange-500/90 text-white',
+      paid: 'bg-teal-500/90 text-white',
       en_route: 'bg-purple-500/90 text-white',
       accepted: 'bg-blue-600/90 text-white',
+      in_progress: 'bg-purple-600/90 text-white',
+      awaiting_confirmation: 'bg-amber-500/90 text-white',
       completed: 'bg-success/90 text-success-foreground',
       cancelled: 'bg-muted text-muted-foreground',
     };
@@ -293,6 +300,65 @@ const CustomerDashboard = () => {
                               </div>
                             </div>
                           </div>
+
+                          {/* Payment Status Indicators */}
+                          {request.quoted_amount && (
+                            <div className="mb-4 p-3 rounded-lg bg-muted/30 border">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-primary" />
+                                  <span className="text-sm font-medium">Quote: GHS {Number(request.quoted_amount).toFixed(2)}</span>
+                                </div>
+                                {request.payment_status === 'paid' && (
+                                  <Badge className="bg-green-500/90 text-white">Paid</Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Action buttons based on status */}
+                          {(request.status === 'quoted' || request.status === 'awaiting_payment') && (
+                            <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <CreditCard className="h-4 w-4 text-primary" />
+                                  <span className="text-sm">
+                                    {request.status === 'quoted' 
+                                      ? 'Review and approve quote to proceed' 
+                                      : 'Complete payment to start service'}
+                                  </span>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                >
+                                  {request.status === 'quoted' ? 'Review Quote' : 'Pay Now'}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Customer confirmation prompt */}
+                          {request.status === 'awaiting_confirmation' && !request.customer_confirmed_at && (
+                            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle2 className="h-4 w-4 text-amber-600" />
+                                  <span className="text-sm text-amber-800">
+                                    Service marked complete - please confirm
+                                  </span>
+                                </div>
+                                <Button 
+                                  size="sm"
+                                  onClick={() => setConfirmationRequest(request)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Confirm & Release Payment
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="flex justify-between items-center pt-4 border-t">
                             <p className="text-xs text-muted-foreground">
                               Requested: {new Date(request.created_at).toLocaleString()}
@@ -415,6 +481,17 @@ const CustomerDashboard = () => {
         request={selectedRequestForDetails}
         open={!!selectedRequestForDetails}
         onOpenChange={(open) => !open && setSelectedRequestForDetails(null)}
+      />
+
+      <ServiceConfirmation
+        request={confirmationRequest}
+        open={!!confirmationRequest}
+        onOpenChange={(open) => !open && setConfirmationRequest(null)}
+        onConfirmed={() => {
+          fetchData();
+          setConfirmationRequest(null);
+        }}
+        userType="customer"
       />
 
       <Footer />

@@ -14,7 +14,10 @@ import {
   Hash, 
   Calendar,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  CreditCard,
+  DollarSign,
+  CheckCircle
 } from 'lucide-react';
 
 interface RequestDetailsModalProps {
@@ -114,9 +117,13 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
     const colors: Record<string, string> = {
       pending: 'bg-warning/90 text-warning-foreground',
       assigned: 'bg-blue-500/90 text-white',
+      quoted: 'bg-indigo-500/90 text-white',
+      awaiting_payment: 'bg-orange-500/90 text-white',
+      paid: 'bg-teal-500/90 text-white',
       accepted: 'bg-blue-600/90 text-white',
       en_route: 'bg-purple-500/90 text-white',
       in_progress: 'bg-purple-600/90 text-white',
+      awaiting_confirmation: 'bg-amber-500/90 text-white',
       completed: 'bg-success/90 text-success-foreground',
       cancelled: 'bg-muted text-muted-foreground',
       denied: 'bg-destructive/90 text-destructive-foreground',
@@ -331,8 +338,34 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
             </div>
           )}
 
-          {/* Amount */}
-          {request.amount && (
+          {/* Quote/Payment Information */}
+          {request.quoted_amount && (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Quote & Payment
+              </h3>
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Quoted Amount</span>
+                  <span className="text-2xl font-bold text-primary">GHS {Number(request.quoted_amount).toFixed(2)}</span>
+                </div>
+                {request.quote_description && (
+                  <p className="text-sm text-muted-foreground border-t pt-2">{request.quote_description}</p>
+                )}
+                <div className="flex items-center gap-2 pt-2 border-t">
+                  <DollarSign className="h-4 w-4" />
+                  <span className="text-sm">Payment Status:</span>
+                  <Badge className={request.payment_status === 'paid' ? 'bg-green-500/90 text-white' : 'bg-muted'}>
+                    {request.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Service Amount (legacy fallback) */}
+          {request.amount && !request.quoted_amount && (
             <div className="space-y-3">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                 Service Amount
@@ -360,6 +393,20 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Assigned:</span>
                   <span>{new Date(request.assigned_at).toLocaleString()}</span>
+                </div>
+              )}
+              {request.quoted_at && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Quote Submitted:</span>
+                  <span>{new Date(request.quoted_at).toLocaleString()}</span>
+                </div>
+              )}
+              {request.paid_at && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-muted-foreground">Paid:</span>
+                  <span>{new Date(request.paid_at).toLocaleString()}</span>
                 </div>
               )}
               {request.completed_at && (
