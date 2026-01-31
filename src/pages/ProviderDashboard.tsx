@@ -72,12 +72,19 @@ const ProviderDashboard = () => {
           filter: `provider_id=eq.${user.id}`
         },
         (payload) => {
-          const newStatus = (payload.new as any)?.status;
-          const oldStatus = (payload.old as any)?.status;
+          const newData = payload.new as any;
+          const oldData = payload.old as any;
           
           // Notify provider when payment is received
-          if (newStatus === 'paid' && oldStatus !== 'paid') {
+          if (newData?.status === 'paid' && oldData?.status !== 'paid') {
             toast.success('🎉 Payment received! You can now start heading to the customer location.', {
+              duration: 10000,
+            });
+          }
+          
+          // Notify provider when customer has confirmed service & funds are being transferred
+          if (newData?.customer_confirmed_at && !oldData?.customer_confirmed_at) {
+            toast.success('✅ Customer confirmed service completion! Funds are being transferred to your account. Please confirm once received.', {
               duration: 10000,
             });
           }
