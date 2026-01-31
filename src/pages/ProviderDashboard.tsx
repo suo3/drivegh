@@ -15,6 +15,7 @@ import { useProviderAvailability } from '@/hooks/useProviderAvailability';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
 import QuoteModal from '@/components/QuoteModal';
 import ServiceConfirmation from '@/components/ServiceConfirmation';
+import PayoutSettings from '@/components/PayoutSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ProviderDashboard = () => {
@@ -376,6 +377,10 @@ const ProviderDashboard = () => {
 
       <section className="py-12 px-6 bg-gradient-to-b from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto space-y-8">
+          {/* Payout Settings - shown prominently if not set up */}
+          {user?.id && (
+            <PayoutSettings userId={user.id} onComplete={fetchData} />
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
