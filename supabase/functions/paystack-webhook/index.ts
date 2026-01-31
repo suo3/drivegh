@@ -152,7 +152,8 @@ async function processSuccessfulPayment(
 ) {
   console.log("Processing successful payment for request:", serviceRequestId);
 
-  // Update service request status
+  // Update service request status to 'paid' - this will trigger realtime notification to provider
+  // The provider's dashboard listens for changes and will see the status update
   const { error: updateError } = await supabase
     .from("service_requests")
     .update({
@@ -168,10 +169,12 @@ async function processSuccessfulPayment(
     return;
   }
 
+  console.log("Service request status updated to 'paid' - provider will be notified via realtime subscription");
+
   // Get request details for transaction
   const { data: request, error: requestError } = await supabase
     .from("service_requests")
-    .select("provider_id, quoted_amount")
+    .select("provider_id, quoted_amount, tracking_code")
     .eq("id", serviceRequestId)
     .single();
 
@@ -203,6 +206,6 @@ async function processSuccessfulPayment(
   if (transactionError) {
     console.error("Error creating transaction:", transactionError);
   } else {
-    console.log("Transaction record created successfully");
+    console.log("Transaction record created successfully for request:", request.tracking_code);
   }
 }
