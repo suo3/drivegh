@@ -65,7 +65,29 @@ const ProviderDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'service_requests',
+          filter: `provider_id=eq.${user.id}`
+        },
+        (payload) => {
+          const newStatus = (payload.new as any)?.status;
+          const oldStatus = (payload.old as any)?.status;
+          
+          // Notify provider when payment is received
+          if (newStatus === 'paid' && oldStatus !== 'paid') {
+            toast.success('🎉 Payment received! You can now start heading to the customer location.', {
+              duration: 10000,
+            });
+          }
+          
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
           schema: 'public',
           table: 'service_requests',
           filter: `provider_id=eq.${user.id}`
