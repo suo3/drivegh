@@ -28,12 +28,12 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
 
     try {
       // Step 1: Update service request with customer confirmation
-      // Status changes to 'awaiting_provider_confirmation' - waiting for provider to confirm funds
+      // Status changes to 'awaiting_confirmation' - waiting for provider to confirm funds receipt
       const { error: updateError } = await supabase
         .from('service_requests')
         .update({
           customer_confirmed_at: new Date().toISOString(),
-          // Don't mark as completed yet - need provider to confirm funds first
+          status: 'awaiting_confirmation', // Provider needs to confirm fund receipt
         })
         .eq('id', request.id);
 
