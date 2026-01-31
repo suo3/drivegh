@@ -466,9 +466,13 @@ const ProviderDashboard = () => {
                     <SelectContent className="z-50 bg-background">
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="assigned">Assigned</SelectItem>
+                      <SelectItem value="quoted">Quoted</SelectItem>
+                      <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
                       <SelectItem value="accepted">Accepted</SelectItem>
                       <SelectItem value="en_route">En Route</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="awaiting_confirmation">Awaiting Confirmation</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
