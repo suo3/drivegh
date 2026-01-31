@@ -25,6 +25,7 @@ import TestimonialsManager from '@/components/TestimonialsManager';
 import { z } from 'zod';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
 import QuoteModal from '@/components/QuoteModal';
+import ServiceConfirmation from '@/components/ServiceConfirmation';
 
 const Dashboard = () => {
   const { user, userRole, loading: authLoading } = useAuth();
@@ -57,6 +58,7 @@ const Dashboard = () => {
 
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
   const [quoteModalRequest, setQuoteModalRequest] = useState<any | null>(null);
+  const [confirmPaymentRequest, setConfirmPaymentRequest] = useState<any | null>(null);
 
   // Admin filters
   const [adminRequestFilter, setAdminRequestFilter] = useState('');
@@ -1591,13 +1593,26 @@ const Dashboard = () => {
                                       </Button>
                                     )}
 
-                                    {request.status === 'awaiting_confirmation' && (
+                                    {/* Awaiting customer confirmation */}
+                                    {request.status === 'awaiting_confirmation' && !request.customer_confirmed_at && (
                                       <div className="flex items-center gap-2 px-2 py-1 bg-amber-50 rounded border border-amber-200">
                                         <Clock className="h-4 w-4 text-amber-600" />
                                         <span className="text-xs text-amber-800">
                                           Awaiting customer confirmation
                                         </span>
                                       </div>
+                                    )}
+
+                                    {/* Customer confirmed - Provider can confirm payment receipt */}
+                                    {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        onClick={() => setConfirmPaymentRequest(request)}
+                                      >
+                                        <DollarSign className="h-4 w-4 mr-1" />
+                                        Confirm Payment Received
+                                      </Button>
                                     )}
 
                                     <Button
@@ -1727,13 +1742,26 @@ const Dashboard = () => {
                                   </Button>
                                 )}
 
-                                {request.status === 'awaiting_confirmation' && (
+                                {/* Awaiting customer confirmation */}
+                                {request.status === 'awaiting_confirmation' && !request.customer_confirmed_at && (
                                   <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200 w-full">
                                     <Clock className="h-4 w-4 text-amber-600 flex-shrink-0" />
                                     <span className="text-sm text-amber-800">
                                       Awaiting customer confirmation
                                     </span>
                                   </div>
+                                )}
+
+                                {/* Customer confirmed - Provider can confirm payment receipt */}
+                                {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
+                                  <Button
+                                    size="sm"
+                                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                                    onClick={() => setConfirmPaymentRequest(request)}
+                                  >
+                                    <DollarSign className="h-4 w-4 mr-1" />
+                                    Confirm Payment Received
+                                  </Button>
                                 )}
 
                                 <Button
@@ -4436,6 +4464,16 @@ const Dashboard = () => {
                 if (!open) setQuoteModalRequest(null);
               }}
               onQuoteSubmitted={fetchData}
+            />
+
+            <ServiceConfirmation
+              request={confirmPaymentRequest}
+              open={!!confirmPaymentRequest}
+              onOpenChange={(open) => {
+                if (!open) setConfirmPaymentRequest(null);
+              }}
+              onConfirmed={fetchData}
+              userType="provider"
             />
           </div>
         </div>
