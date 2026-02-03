@@ -86,6 +86,7 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
   };
 
   const handleProviderConfirmPayment = async () => {
+    console.log('Provider confirming payment for request:', request.id);
     setIsSubmitting(true);
 
     try {
@@ -167,11 +168,10 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
                       className="p-1 transition-transform hover:scale-110"
                     >
                       <Star
-                        className={`h-8 w-8 transition-colors ${
-                          star <= (hoveredRating || rating)
+                        className={`h-8 w-8 transition-colors ${star <= (hoveredRating || rating)
                             ? 'fill-yellow-400 text-yellow-400'
                             : 'text-gray-300'
-                        }`}
+                          }`}
                       />
                     </button>
                   ))}
@@ -217,8 +217,8 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button 
-            onClick={userType === 'customer' ? handleCustomerConfirm : handleProviderConfirmPayment} 
+          <Button
+            onClick={userType === 'customer' ? handleCustomerConfirm : handleProviderConfirmPayment}
             disabled={isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >

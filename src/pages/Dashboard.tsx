@@ -1520,7 +1520,7 @@ const Dashboard = () => {
                         </TableHeader>
                         <TableBody>
                           {requests
-                            .filter(r => r.status !== 'completed' && r.status !== 'cancelled')
+                            .filter(r => (r.status !== 'completed' || (r.status === 'completed' && !r.provider_confirmed_payment_at)) && r.status !== 'cancelled')
                             .map((request) => (
                               <TableRow key={request.id}>
                                 <TableCell>{request.service_type}</TableCell>
@@ -1604,11 +1604,14 @@ const Dashboard = () => {
                                     )}
 
                                     {/* Customer confirmed - Provider can confirm payment receipt */}
-                                    {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
+                                    {(request.status === 'awaiting_confirmation' || request.status === 'completed' || request.status === 'paid') && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
                                       <Button
                                         size="sm"
                                         className="bg-green-600 hover:bg-green-700"
-                                        onClick={() => setConfirmPaymentRequest(request)}
+                                        onClick={() => {
+                                          console.log('Clicked Confirm Payment (Desktop) for:', request);
+                                          setConfirmPaymentRequest(request);
+                                        }}
                                       >
                                         <DollarSign className="h-4 w-4 mr-1" />
                                         Confirm Payment Received
@@ -1633,7 +1636,7 @@ const Dashboard = () => {
                     {/* Mobile cards (shown on mobile only) */}
                     <div className="md:hidden space-y-4 mt-4">
                       {requests
-                        .filter(r => r.status !== 'completed' && r.status !== 'cancelled')
+                        .filter(r => (r.status !== 'completed' || (r.status === 'completed' && !r.provider_confirmed_payment_at)) && r.status !== 'cancelled')
                         .map((request) => (
                           <Card key={request.id} className={`border-2 border-l-4 ${getStatusBorderColor(request.status)} shadow-sm`}>
                             <CardContent className="p-4 space-y-3">
@@ -1753,11 +1756,14 @@ const Dashboard = () => {
                                 )}
 
                                 {/* Customer confirmed - Provider can confirm payment receipt */}
-                                {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
+                                {(request.status === 'awaiting_confirmation' || request.status === 'completed' || request.status === 'paid') && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
                                   <Button
                                     size="sm"
                                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-                                    onClick={() => setConfirmPaymentRequest(request)}
+                                    onClick={() => {
+                                      console.log('Clicked Confirm Payment (Mobile) for:', request);
+                                      setConfirmPaymentRequest(request);
+                                    }}
                                   >
                                     <DollarSign className="h-4 w-4 mr-1" />
                                     Confirm Payment Received
@@ -1837,6 +1843,16 @@ const Dashboard = () => {
                 if (!open) setQuoteModalRequest(null);
               }}
               onQuoteSubmitted={fetchData}
+            />
+
+            <ServiceConfirmation
+              request={confirmPaymentRequest}
+              open={!!confirmPaymentRequest}
+              onOpenChange={(open) => {
+                if (!open) setConfirmPaymentRequest(null);
+              }}
+              onConfirmed={fetchData}
+              userType="provider"
             />
           </div>
         </div>

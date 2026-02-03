@@ -74,21 +74,21 @@ const ProviderDashboard = () => {
         (payload) => {
           const newData = payload.new as any;
           const oldData = payload.old as any;
-          
+
           // Notify provider when payment is received
           if (newData?.status === 'paid' && oldData?.status !== 'paid') {
             toast.success('🎉 Payment received! You can now start heading to the customer location.', {
               duration: 10000,
             });
           }
-          
+
           // Notify provider when customer has confirmed service & funds are being transferred
           if (newData?.customer_confirmed_at && !oldData?.customer_confirmed_at) {
             toast.success('✅ Customer confirmed service completion! Funds are being transferred to your account. Please confirm once received.', {
               duration: 10000,
             });
           }
-          
+
           fetchData();
         }
       )
@@ -149,12 +149,12 @@ const ProviderDashboard = () => {
 
   const updateStatus = async (requestId: string, status: 'pending' | 'assigned' | 'accepted' | 'denied' | 'en_route' | 'in_progress' | 'completed' | 'cancelled' | 'awaiting_confirmation') => {
     const updateData: any = { status };
-    
+
     // For "awaiting_confirmation" status, mark as waiting for customer confirmation
     if (status === 'awaiting_confirmation') {
       updateData.completed_at = new Date().toISOString();
     }
-    
+
     const { error } = await supabase
       .from('service_requests')
       .update(updateData)
@@ -598,9 +598,9 @@ const ProviderDashboard = () => {
                           {/* Assigned - Provider must submit quote first */}
                           {request.status === 'assigned' && (
                             <>
-                              <Button 
-                                size="sm" 
-                                onClick={() => setQuoteModalRequest(request)} 
+                              <Button
+                                size="sm"
+                                onClick={() => setQuoteModalRequest(request)}
                                 className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
                               >
                                 <Calculator className="h-4 w-4 mr-2" />
@@ -705,9 +705,9 @@ const ProviderDashboard = () => {
                           )}
 
                           {request.status === 'in_progress' && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => updateStatus(request.id, 'awaiting_confirmation')} 
+                            <Button
+                              size="sm"
+                              onClick={() => updateStatus(request.id, 'awaiting_confirmation')}
                               className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
@@ -726,10 +726,13 @@ const ProviderDashboard = () => {
                           )}
 
                           {/* Customer confirmed - Provider can now confirm payment receipt */}
-                          {request.status === 'awaiting_confirmation' && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => setConfirmPaymentRequest(request)} 
+                          {(request.status === 'awaiting_confirmation' || request.status === 'completed' || request.status === 'paid') && request.customer_confirmed_at && !request.provider_confirmed_payment_at && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                console.log('Clicked Confirm Payment button for request:', request);
+                                setConfirmPaymentRequest(request);
+                              }}
                               className="w-full md:w-auto bg-green-600 hover:bg-green-700"
                             >
                               <DollarSign className="h-4 w-4 mr-2" />

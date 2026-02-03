@@ -80,7 +80,13 @@ serve(async (req) => {
     // Calculate provider's share (85% minus Paystack fees)
     const totalAmount = Number(request.amount || request.quoted_amount);
     const platformCommission = 0.15; // 15%
-    const providerShare = totalAmount * (1 - platformCommission);
+
+    // Estimate Paystack fee (1.95% is standard for GHS) - we deduct this from provider's share as requested
+    const paystackFeePercentage = 0.0195;
+    const estimatedFee = totalAmount * paystackFeePercentage;
+
+    // Provider gets 85% MINUS the fee
+    const providerShare = (totalAmount * (1 - platformCommission)) - estimatedFee;
     const providerAmountKobo = Math.round(providerShare * 100);
 
     console.log(`Total: GHS ${totalAmount}, Provider share: GHS ${providerShare}`);
@@ -90,7 +96,7 @@ serve(async (req) => {
 
     if (!recipientCode) {
       console.log("Creating new transfer recipient for provider");
-      
+
       const recipientResponse = await fetch("https://api.paystack.co/transferrecipient", {
         method: "POST",
         headers: {
@@ -107,7 +113,7 @@ serve(async (req) => {
       });
 
       const recipientData = await recipientResponse.json();
-      
+
       if (!recipientResponse.ok || !recipientData.status) {
         console.error("Failed to create recipient:", recipientData);
         throw new Error(recipientData.message || "Failed to create transfer recipient");
@@ -129,7 +135,7 @@ serve(async (req) => {
 
     // Initiate transfer to provider
     const transferReference = `transfer_${serviceRequestId}_${Date.now()}`;
-    
+
     const transferResponse = await fetch("https://api.paystack.co/transfer", {
       method: "POST",
       headers: {

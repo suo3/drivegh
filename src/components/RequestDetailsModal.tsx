@@ -3,22 +3,25 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
-import { 
-  MapPin, 
-  User, 
-  Phone, 
-  Clock, 
-  Car, 
-  Fuel, 
-  FileText, 
-  Hash, 
+import {
+  MapPin,
+  User,
+  Phone,
+  Clock,
+  Car,
+  Fuel,
+  FileText,
+  Hash,
   Calendar,
   Image as ImageIcon,
   Loader2,
   CreditCard,
   DollarSign,
-  CheckCircle
+  CheckCircle,
+  ThumbsUp,
+  Wallet
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface RequestDetailsModalProps {
   request: any;
@@ -83,8 +86,8 @@ const ProviderInfoDisplay = ({ request }: { request: any }) => {
           <Phone className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs text-muted-foreground">Provider Phone</p>
-            <a 
-              href={`tel:${phone}`} 
+            <a
+              href={`tel:${phone}`}
               className="font-medium text-primary hover:underline"
             >
               {phone}
@@ -97,8 +100,8 @@ const ProviderInfoDisplay = ({ request }: { request: any }) => {
           <FileText className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs text-muted-foreground">Provider Email</p>
-            <a 
-              href={`mailto:${email}`} 
+            <a
+              href={`mailto:${email}`}
               className="font-medium text-primary hover:underline"
             >
               {email}
@@ -111,7 +114,104 @@ const ProviderInfoDisplay = ({ request }: { request: any }) => {
 };
 
 const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModalProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Fetch current user profile to determine if they are customer or provider
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+          .then(({ data: profile }) => setUserProfile(profile));
+      }
+    });
+  }, []);
+
   if (!request) return null;
+
+  const isProvider = userProfile?.role === 'service_provider';
+  const isCustomer = userProfile?.role === 'customer' || !isProvider; // Default to customer view if not provider
+
+  const handleConfirmService = async () => {
+    if (!confirm("Are you sure the service has been completed to your satisfaction? This will release funds to the provider.")) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // 1. Update status to completed locally first
+      const { error: updateError } = await supabase
+        .from('service_requests')
+        .update({
+          status: 'completed',
+          customer_confirmed_at: new Date().toISOString(),
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', request.id);
+
+      if (updateError) throw updateError;
+
+      // 2. Trigger the transfer to provider
+      const { error: funcError } = await supabase.functions.invoke('paystack-transfer-to-provider', {
+        body: { serviceRequestId: request.id }
+      });
+
+      if (funcError) {
+        console.error('Transfer initiation failed:', funcError);
+        toast.warning('Service marked completed, but payment transfer failed. Support has been notified.');
+      } else {
+        toast.success('Service confirmed! Payment has been released to the provider.');
+      }
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error confirming service:', error);
+      toast.error('Failed to confirm service');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleConfirmReceipt = async () => {
+    console.log('Confirming receipt for request:', request.id);
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase
+        .from('service_requests')
+        .update({
+          // status is already 'completed', but reinforce it
+          status: 'completed',
+          provider_confirmed_payment_at: new Date().toISOString()
+        })
+        .eq('id', request.id)
+        .select();
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Update result:', data);
+
+      if (!data || data.length === 0) {
+        console.warn('Update succeeded but no rows returned. RLS might be blocking update.');
+        toast.error('Could not verify update. Are you the assigned provider?');
+      } else {
+        toast.success('Receipt confirmed. Transaction closed.');
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error('Error confirming receipt:', error);
+      toast.error('Failed to confirm receipt: ' + (error as any).message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -186,8 +286,8 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Phone Number</p>
-                    <a 
-                      href={`tel:${customerPhone}`} 
+                    <a
+                      href={`tel:${customerPhone}`}
                       className="font-medium text-primary hover:underline"
                     >
                       {customerPhone}
@@ -200,8 +300,8 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Email</p>
-                    <a 
-                      href={`mailto:${customerEmail}`} 
+                    <a
+                      href={`mailto:${customerEmail}`}
                       className="font-medium text-primary hover:underline"
                     >
                       {customerEmail}
@@ -211,6 +311,75 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
               )}
             </div>
           </div>
+
+          {/* Action Buttons for Escrow Flow */}
+          {/* Customer: Confirm Service Completion */}
+          {isCustomer && request.status === 'paid' && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <ThumbsUp className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-primary">Confirm Service Completion</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Only click this after the provider has successfully completed the service. This will release the held funds to the provider.
+              </p>
+              <Button
+                onClick={handleConfirmService}
+                className="w-full"
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Confirm Service Completed
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Provider: Confirm Payment Received */}
+          {isProvider && (request.status === 'completed' || request.status === 'paid') && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <Wallet className="h-5 w-5 text-green-600" />
+                <h3 className="font-semibold text-green-700">Payment Status</h3>
+              </div>
+              {request.status === 'paid' ? (
+                <p className="text-sm text-green-700">
+                  Customer has paid to escrow. Please verify completion of service with the customer to release funds.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm text-green-700">
+                    Customer has confirmed service. Funds have been transferred to your payout account.
+                  </p>
+                  <Button
+                    onClick={handleConfirmReceipt}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Confirm Receipt & Close
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Location */}
           <div className="space-y-3">
@@ -266,9 +435,9 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
                 Vehicle Photo
               </h3>
               <div className="bg-muted/30 rounded-lg p-4">
-                <a 
-                  href={request.vehicle_image_url} 
-                  target="_blank" 
+                <a
+                  href={request.vehicle_image_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="block"
                 >
@@ -426,7 +595,7 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
           </Button>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 };
 
