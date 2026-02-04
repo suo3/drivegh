@@ -23,6 +23,50 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const TimelineDisplay = ({ status }: { status: string }) => {
+  const steps = [
+    { label: 'Request Placed', active: true },
+    { label: 'Assigned', active: !['pending', 'cancelled', 'denied'].includes(status) },
+    { label: 'In Progress', active: ['en_route', 'in_progress', 'awaiting_confirmation', 'completed'].includes(status) },
+    { label: 'Payment', active: ['awaiting_confirmation', 'completed'].includes(status) },
+    { label: 'Completed', active: status === 'completed' }
+  ];
+
+  return (
+    <div className="relative flex items-center justify-between w-full mb-6 mt-2">
+      {/* Connecting Line - Background */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-muted -z-10" />
+
+      {/* Connecting Line - Progress */}
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary -z-10 transition-all duration-500"
+        style={{
+          width: `${(steps.filter(s => s.active).length - 1) / (steps.length - 1) * 100}%`
+        }}
+      />
+
+      {steps.map((step, index) => (
+        <div key={index} className="flex flex-col items-center bg-background px-1">
+          <div
+            className={`
+              w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors duration-300
+              ${step.active
+                ? 'bg-primary border-primary text-primary-foreground'
+                : 'bg-muted border-muted-foreground/30 text-muted-foreground'
+              }
+            `}
+          >
+            {step.active ? <CheckCircle className="w-5 h-5" /> : <span className="text-xs font-bold">{index + 1}</span>}
+          </div>
+          <span className={`text-[10px] sm:text-xs mt-1 font-medium ${step.active ? 'text-primary' : 'text-muted-foreground'}`}>
+            {step.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 interface RequestDetailsModalProps {
   request: any;
   open: boolean;
@@ -254,6 +298,11 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
             </Badge>
           </DialogTitle>
         </DialogHeader>
+
+        {/* Timeline Visualizer */}
+        <div className="px-1 overflow-x-auto">
+          <TimelineDisplay status={request.status} />
+        </div>
 
         <div className="space-y-6 py-4">
           {/* Tracking Code */}

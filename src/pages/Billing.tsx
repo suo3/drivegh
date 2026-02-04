@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Download, Calendar, Loader2, AlertCircle, TrendingUp, Receipt, CheckCircle2, Clock } from 'lucide-react';
+import { CreditCard, Download, Calendar, Loader2, AlertCircle, TrendingUp, Receipt, CheckCircle2, Clock, Wallet } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -25,6 +25,7 @@ interface Transaction {
   service_requests: {
     service_type: string;
     status: string;
+    provider_id: string; // Added for check
   } | null;
 }
 
@@ -69,7 +70,8 @@ const Billing = () => {
             *,
             service_requests (
               service_type,
-              status
+              status,
+              provider_id
             )
           `)
           .in('service_request_id', requestIds)
@@ -90,9 +92,16 @@ const Billing = () => {
     fetchTransactions();
   }, [user]);
 
+  // Determine if user is acting as a provider for any of these
+  const providerTransactions = transactions.filter(t => t.service_requests?.provider_id === user?.id);
+  const isProviderView = providerTransactions.length > 0;
+
   const totalSpent = transactions
-    .filter(t => t.transaction_type === 'customer_to_business')
+    .filter(t => t.transaction_type === 'customer_to_business' && t.service_requests?.provider_id !== user?.id)
     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  const totalEarned = providerTransactions
+    .reduce((sum, t) => sum + Number(t.provider_amount || 0), 0);
 
   const servicesUsed = new Set(transactions.map(t => t.service_request_id)).size;
 
@@ -100,8 +109,8 @@ const Billing = () => {
     return (
       <div className="min-h-screen">
         <Navbar />
-        
-      {/* Compact Banner - Not logged in */}
+
+        {/* Compact Banner - Not logged in */}
         <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
           <div className="container mx-auto px-4 py-6">
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Billing & Payments</h1>
@@ -119,8 +128,8 @@ const Billing = () => {
               <p className="text-muted-foreground text-sm md:text-lg mb-6 md:mb-8 leading-relaxed">
                 Sign in to access your complete transaction history and payment information
               </p>
-              <Button 
-                onClick={() => navigate('/auth')} 
+              <Button
+                onClick={() => navigate('/auth')}
                 size="lg"
                 className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold px-6 md:px-8"
               >
@@ -138,7 +147,7 @@ const Billing = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Compact Banner - Logged in */}
       <section className="bg-gradient-to-r from-primary to-primary/90 border-b border-primary/20 pt-16">
         <div className="container mx-auto px-4 py-6">
@@ -150,7 +159,7 @@ const Billing = () => {
       <section className="py-12 md:py-24 bg-gradient-to-b from-background to-[hsl(var(--section-bg))] relative pb-20 lg:pb-24">
         <div className="hidden md:block absolute top-10 right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="hidden md:block absolute bottom-10 left-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl"></div>
-        
+
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto">
             {loading ? (
@@ -170,29 +179,45 @@ const Billing = () => {
               <>
                 {/* Stats Cards - Enhanced with gradients */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8 md:mb-12">
-                  <Card className="p-4 md:p-8 hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
-                    <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4">
-                      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg md:rounded-xl p-2 md:p-3">
-                        <CreditCard className="h-4 md:h-6 w-4 md:w-6 text-white" />
+                  {isProviderView ? (
+                    <Card className="p-4 md:p-8 hover-lift bg-gradient-to-br from-green-50 to-emerald-50/50 border-2 hover:border-green-200 animate-scale-in">
+                      <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg md:rounded-xl p-2 md:p-3">
+                          <Wallet className="h-4 md:h-6 w-4 md:w-6 text-white" />
+                        </div>
+                        <h3 className="font-bold text-xs md:text-lg">Total Earnings</h3>
                       </div>
-                      <h3 className="font-bold text-xs md:text-lg">Total Spent</h3>
-                    </div>
-                    <p className="text-xl md:text-4xl font-bold mb-1 md:mb-2">GHS {totalSpent.toFixed(2)}</p>
-                    <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
-                      <TrendingUp className="w-3 md:w-4 h-3 md:h-4" />
-                      All time
-                    </p>
-                  </Card>
+                      <p className="text-xl md:text-4xl font-bold mb-1 md:mb-2 text-green-700">GHS {totalEarned.toFixed(2)}</p>
+                      <p className="text-xs md:text-sm text-green-600/80 flex items-center gap-1">
+                        <TrendingUp className="w-3 md:w-4 h-3 md:h-4" />
+                        All time
+                      </p>
+                    </Card>
+                  ) : (
+                    <Card className="p-4 md:p-8 hover-lift bg-gradient-to-br from-red-50 to-rose-50/50 border-2 hover:border-red-200 animate-scale-in">
+                      <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4">
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-lg md:rounded-xl p-2 md:p-3">
+                          <CreditCard className="h-4 md:h-6 w-4 md:w-6 text-white" />
+                        </div>
+                        <h3 className="font-bold text-xs md:text-lg">Total Spent</h3>
+                      </div>
+                      <p className="text-xl md:text-4xl font-bold mb-1 md:mb-2">GHS {totalSpent.toFixed(2)}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
+                        <TrendingUp className="w-3 md:w-4 h-3 md:h-4" />
+                        All time
+                      </p>
+                    </Card>
+                  )}
 
                   <Card className="p-4 md:p-8 hover-lift bg-gradient-to-br from-blue-50 to-cyan-50/50 border-2 hover:border-blue-200 animate-scale-in" style={{ animationDelay: '0.1s' }}>
                     <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4">
                       <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg md:rounded-xl p-2 md:p-3">
                         <Calendar className="h-4 md:h-6 w-4 md:w-6 text-white" />
                       </div>
-                      <h3 className="font-bold text-xs md:text-lg">Services</h3>
+                      <h3 className="font-bold text-xs md:text-lg">{isProviderView ? 'Jobs Done' : 'Services'}</h3>
                     </div>
                     <p className="text-xl md:text-4xl font-bold mb-1 md:mb-2">{servicesUsed}</p>
-                    <p className="text-xs md:text-sm text-muted-foreground">Total used</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Total count</p>
                   </Card>
 
                   <Card className="p-4 md:p-8 hover-lift bg-gradient-to-br from-purple-50 to-pink-50/50 border-2 hover:border-purple-200 animate-scale-in col-span-2 md:col-span-1" style={{ animationDelay: '0.2s' }}>
@@ -203,7 +228,7 @@ const Billing = () => {
                       <h3 className="font-bold text-xs md:text-lg">Transactions</h3>
                     </div>
                     <p className="text-xl md:text-4xl font-bold mb-1 md:mb-2">{transactions.length}</p>
-                    <p className="text-xs md:text-sm text-muted-foreground">Total count</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Detailed logs</p>
                   </Card>
                 </div>
 
@@ -221,7 +246,7 @@ const Billing = () => {
                       </Button>
                     )}
                   </div>
-                  
+
                   {transactions.length === 0 ? (
                     <div className="text-center py-8 md:py-16 animate-scale-in">
                       <div className="bg-primary/10 rounded-full w-16 md:w-24 h-16 md:h-24 flex items-center justify-center mx-auto mb-4 md:mb-6">
@@ -231,8 +256,8 @@ const Billing = () => {
                       <p className="text-muted-foreground text-sm md:text-lg mb-4 md:mb-6 max-w-md mx-auto">
                         Your transaction history will appear here once you complete a service request.
                       </p>
-                      <Button 
-                        onClick={() => navigate('/')} 
+                      <Button
+                        onClick={() => navigate('/')}
                         size="lg"
                         className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg font-bold"
                       >
@@ -242,8 +267,8 @@ const Billing = () => {
                   ) : (
                     <div className="space-y-3 md:space-y-4">
                       {transactions.map((txn, index) => (
-                        <div 
-                          key={txn.id} 
+                        <div
+                          key={txn.id}
                           className="flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-6 border-2 rounded-xl hover:border-primary/30 hover:bg-primary/5 transition-all gap-3 md:gap-4 group animate-fade-in"
                           style={{ animationDelay: `${index * 0.05}s` }}
                         >
@@ -256,7 +281,7 @@ const Billing = () => {
                                 <p className="font-bold text-sm md:text-lg capitalize">
                                   {txn.service_requests?.service_type?.replace('_', ' ') || 'Service'}
                                 </p>
-                                <Badge 
+                                <Badge
                                   variant={txn.transaction_type === 'payment' ? 'default' : 'secondary'}
                                   className="capitalize text-xs"
                                 >
@@ -285,9 +310,20 @@ const Billing = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:space-y-2">
-                            <p className="font-bold text-lg md:text-2xl text-primary">GHS {Number(txn.amount).toFixed(2)}</p>
+                            {/* Show Provider Amount if user is provider, else show total Amount */}
+                            {user?.id === txn.service_requests?.provider_id ? (
+                              <div className="text-right">
+                                <p className="text-xs text-muted-foreground">You Earned</p>
+                                <p className="font-bold text-lg md:text-2xl text-green-600">
+                                  GHS {Number(txn.provider_amount || 0).toFixed(2)}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="font-bold text-lg md:text-2xl text-primary">GHS {Number(txn.amount).toFixed(2)}</p>
+                            )}
+
                             {txn.confirmed_at ? (
                               <Badge className="bg-green-100 text-green-800 hover:bg-green-100 gap-1 text-xs">
                                 <CheckCircle2 className="w-3 h-3" />
