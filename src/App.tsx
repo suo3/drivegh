@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import ScrollToTop from "@/components/ScrollToTop";
+import OneSignalInitializer from "@/components/OneSignalInitializer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -33,6 +34,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <OneSignalInitializer />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />

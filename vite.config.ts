@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from "path";
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -11,6 +12,7 @@ export default defineConfig(() => ({
   },
   plugins: [
     react(),
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon-512.png', 'icon-192.png'],
