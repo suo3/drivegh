@@ -321,24 +321,116 @@ export const AdminDashboard = () => {
 
                         {/* Overview View */}
                         {currentView === 'overview' && (
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
-                                <Card>
-                                    <CardHeader className="p-4"><CardTitle className="text-sm">Total Requests</CardTitle></CardHeader>
-                                    <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{allRequests.length}</p></CardContent>
+                            <>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
+                                    <Card>
+                                        <CardHeader className="p-4"><CardTitle className="text-sm">Total Requests</CardTitle></CardHeader>
+                                        <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{allRequests.length}</p></CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="p-4"><CardTitle className="text-sm">Pending</CardTitle></CardHeader>
+                                        <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{allRequests.filter(r => r.status === 'pending').length}</p></CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="p-4"><CardTitle className="text-sm">Providers</CardTitle></CardHeader>
+                                        <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{providers.length}</p></CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader className="p-4"><CardTitle className="text-sm">Customers</CardTitle></CardHeader>
+                                        <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{customers.length}</p></CardContent>
+                                    </Card>
+                                </div>
+
+                                <Card className="mt-6">
+                                    <CardHeader>
+                                        <CardTitle>All Service Requests</CardTitle>
+                                        <div className="flex items-center gap-2 mt-4">
+                                            <Input
+                                                placeholder="Search by service, customer, location, provider, or status..."
+                                                value={adminRequestFilter}
+                                                onChange={e => setAdminRequestFilter(e.target.value)}
+                                                className="max-w-md"
+                                            />
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            <div className="hidden md:grid grid-cols-[1fr,1fr,1.5fr,1fr,0.8fr,0.8fr,0.8fr,0.8fr,0.8fr,1.5fr] gap-4 p-4 font-semibold text-xs text-muted-foreground border-b">
+                                                <div>Service</div>
+                                                <div>Customer</div>
+                                                <div>Location</div>
+                                                <div>Provider</div>
+                                                <div>Status</div>
+                                                <div>Total</div>
+                                                <div>Prov. Share</div>
+                                                <div>Biz. Share</div>
+                                                <div>Date</div>
+                                                <div>Actions</div>
+                                            </div>
+                                            {allRequests.filter(r =>
+                                                !adminRequestFilter ||
+                                                JSON.stringify(r).toLowerCase().includes(adminRequestFilter.toLowerCase())
+                                            ).map(request => (
+                                                <div key={request.id} className="border p-4 rounded-lg flex flex-col md:grid md:grid-cols-[1fr,1fr,1.5fr,1fr,0.8fr,0.8fr,0.8fr,0.8fr,0.8fr,1.5fr] gap-4 items-center">
+                                                    <div className="font-bold md:font-normal">{request.service_type}</div>
+                                                    <div className="text-sm md:text-base">{request.profiles?.full_name}</div>
+                                                    <div className="text-xs text-muted-foreground md:text-sm truncate w-full" title={request.pickup_location}>{request.pickup_location}</div>
+                                                    <div className="text-sm">
+                                                        <div>{request.provider_profile?.full_name || 'Unassigned'}</div>
+                                                        <div className="text-xs text-muted-foreground">{request.provider_profile?.phone_number}</div>
+                                                    </div>
+                                                    <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                                                    <div className="font-mono text-xs">GHS {Number(request.transactions?.[0]?.amount || 0).toFixed(2)}</div>
+                                                    <div className="font-mono text-xs text-green-600">GHS {Number(request.transactions?.[0]?.provider_amount || 0).toFixed(2)}</div>
+                                                    <div className="font-mono text-xs text-blue-600">GHS {Number(request.transactions?.[0]?.platform_amount || 0).toFixed(2)}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {new Date(request.created_at).toLocaleDateString()}
+                                                        <br />
+                                                        {new Date(request.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                                                        <Button size="sm" variant="outline" onClick={() => setSelectedRequestForDetails(request)}>Details</Button>
+
+                                                        {/* Assign Dialog */}
+                                                        <Dialog>
+                                                            <DialogTrigger asChild><Button size="sm" className="bg-blue-900 hover:bg-blue-800">Reassign</Button></DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader><DialogTitle>Assign Provider</DialogTitle></DialogHeader>
+                                                                <Select onValueChange={val => handleAssignProvider(request.id, val)}>
+                                                                    <SelectTrigger><SelectValue placeholder="Select Provider" /></SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {providers.map(p => (
+                                                                            <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </DialogContent>
+                                                        </Dialog>
+
+                                                        {/* Status Change Dialog */}
+                                                        <Dialog>
+                                                            <DialogTrigger asChild><Button size="sm" variant="outline">Change Status</Button></DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader><DialogTitle>Update Status</DialogTitle></DialogHeader>
+                                                                <Select onValueChange={val => handleUpdateRequestStatus(request.id, val)}>
+                                                                    <SelectTrigger><SelectValue placeholder="Select Status" /></SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {['pending', 'assigned', 'completed', 'cancelled', 'paid'].map(s => (
+                                                                            <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </DialogContent>
+                                                        </Dialog>
+
+                                                        <Button size="sm" variant="destructive" onClick={() => handleDeleteRequest(request.id)}>Delete</Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
                                 </Card>
-                                <Card>
-                                    <CardHeader className="p-4"><CardTitle className="text-sm">Pending</CardTitle></CardHeader>
-                                    <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{allRequests.filter(r => r.status === 'pending').length}</p></CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="p-4"><CardTitle className="text-sm">Providers</CardTitle></CardHeader>
-                                    <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{providers.length}</p></CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="p-4"><CardTitle className="text-sm">Customers</CardTitle></CardHeader>
-                                    <CardContent className="p-4 pt-0"><p className="text-2xl font-bold">{customers.length}</p></CardContent>
-                                </Card>
-                            </div>
+                            </>
                         )}
 
                         {/* Requests View (Full Table implementation would go here) */}
