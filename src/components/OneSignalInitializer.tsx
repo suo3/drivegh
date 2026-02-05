@@ -19,7 +19,6 @@ const OneSignalInitializer = () => {
             try {
                 await OneSignal.init({
                     appId: appId,
-                    serviceWorkerPath: '/sw.js',
                 });
                 console.log('OneSignal initialized');
                 setInitialized(true);
