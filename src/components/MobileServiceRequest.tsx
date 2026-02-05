@@ -16,11 +16,14 @@ import { calculateDistance } from '@/lib/distance';
 import { ProviderSelectionMap } from '@/components/ProviderSelectionMap';
 import { useNearbyProviders } from '@/hooks/useNearbyProviders';
 import { ProviderCard } from '@/components/ProviderCard';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MobileServiceRequest = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   // Form State
   useEffect(() => {
@@ -693,62 +696,122 @@ const MobileServiceRequest = () => {
         </div>
       </div>
 
-      {/* Success Dialog */}
-      <Dialog
-        open={successDialogOpen}
-        onOpenChange={(open) => {
-          if (!open && createdRequestId) {
-            navigate(`/track-rescue?code=${createdRequestId}`);
-          }
-          setSuccessDialogOpen(open);
-        }}
-      >
-        <DialogContent className="max-w-sm mx-auto rounded-2xl">
-          <DialogHeader>
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
+      {/* Success Dialog/Drawer */}
+      {isMobile ? (
+        <Drawer
+          open={successDialogOpen}
+          onOpenChange={(open) => {
+            if (!open && createdRequestId) {
+              navigate(`/track-rescue?code=${createdRequestId}`);
+            }
+            setSuccessDialogOpen(open);
+          }}
+        >
+          <DrawerContent>
+            <DrawerHeader className="text-left">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <DrawerTitle className="text-center text-xl">Help is on the way!</DrawerTitle>
+              <DrawerDescription className="text-center">
+                Share this code with your driver:
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <div className="p-6 pt-0 space-y-6">
+              <div className="flex items-center justify-center gap-3 p-4 bg-muted rounded-xl border-dashed border-2">
+                <code className="text-2xl font-bold tracking-wider">{createdRequestId}</code>
+                <Button variant="ghost" size="icon" onClick={handleCopyCode}>
+                  <LucideIcons.Copy className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="grid gap-3">
+                <Button
+                  onClick={() => navigate(`/track-rescue?code=${createdRequestId}`)}
+                  className="w-full h-12 text-base"
+                >
+                  Track Driver
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSuccessDialogOpen(false);
+                    // Reset state
+                    setCurrentStep(1);
+                    setVehiclePhoto(null);
+                    setVehiclePhotoPreview(null);
+                    setSelectedProviderId(null);
+                    setServiceType('');
+                    setFuelType('');
+                    setFuelAmount('');
+                    setIsCustomFuel(false);
+                  }}
+                  className="w-full"
+                >
+                  New Request
+                </Button>
+              </div>
             </div>
-            <DialogTitle className="text-center text-xl">Help is on the way!</DialogTitle>
-            <DialogDescription className="text-center">
-              Share this code with your driver:
-            </DialogDescription>
-          </DialogHeader>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog
+          open={successDialogOpen}
+          onOpenChange={(open) => {
+            if (!open && createdRequestId) {
+              navigate(`/track-rescue?code=${createdRequestId}`);
+            }
+            setSuccessDialogOpen(open);
+          }}
+        >
+          <DialogContent className="max-w-sm mx-auto rounded-2xl">
+            <DialogHeader>
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <DialogTitle className="text-center text-xl">Help is on the way!</DialogTitle>
+              <DialogDescription className="text-center">
+                Share this code with your driver:
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="flex items-center justify-center gap-3 p-4 bg-muted rounded-xl border-dashed border-2">
-            <code className="text-2xl font-bold tracking-wider">{createdRequestId}</code>
-            <Button variant="ghost" size="icon" onClick={handleCopyCode}>
-              <LucideIcons.Copy className="w-4 h-4" />
-            </Button>
-          </div>
+            <div className="flex items-center justify-center gap-3 p-4 bg-muted rounded-xl border-dashed border-2">
+              <code className="text-2xl font-bold tracking-wider">{createdRequestId}</code>
+              <Button variant="ghost" size="icon" onClick={handleCopyCode}>
+                <LucideIcons.Copy className="w-4 h-4" />
+              </Button>
+            </div>
 
-          <div className="grid gap-3 pt-4">
-            <Button
-              onClick={() => navigate(`/track-rescue?code=${createdRequestId}`)}
-              className="w-full h-12 text-base"
-            >
-              Track Driver
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSuccessDialogOpen(false);
-                // Reset state
-                setCurrentStep(1);
-                setVehiclePhoto(null);
-                setVehiclePhotoPreview(null);
-                setSelectedProviderId(null);
-                setServiceType('');
-                setFuelType('');
-                setFuelAmount('');
-                setIsCustomFuel(false);
-              }}
-              className="w-full"
-            >
-              New Request
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            <div className="grid gap-3 pt-4">
+              <Button
+                onClick={() => navigate(`/track-rescue?code=${createdRequestId}`)}
+                className="w-full h-12 text-base"
+              >
+                Track Driver
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSuccessDialogOpen(false);
+                  // Reset state
+                  setCurrentStep(1);
+                  setVehiclePhoto(null);
+                  setVehiclePhotoPreview(null);
+                  setSelectedProviderId(null);
+                  setServiceType('');
+                  setFuelType('');
+                  setFuelAmount('');
+                  setIsCustomFuel(false);
+                }}
+                className="w-full"
+              >
+                New Request
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

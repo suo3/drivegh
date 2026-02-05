@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Star, CheckCircle, AlertCircle } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface ServiceConfirmationProps {
   request: any;
@@ -15,7 +18,7 @@ interface ServiceConfirmationProps {
   userType: 'customer' | 'provider';
 }
 
-const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userType }: ServiceConfirmationProps) => {
+const ServiceConfirmationContent = ({ request, onConfirmed, userType, onOpenChange }: ServiceConfirmationProps) => {
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,128 +116,158 @@ const ServiceConfirmation = ({ request, open, onOpenChange, onConfirmed, userTyp
     }
   };
 
-  if (!request) return null;
-
   const providerAmount = (Number(request.amount || request.quoted_amount || 0) * 0.85).toFixed(2);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            {userType === 'customer' ? 'Confirm Service Completion' : 'Confirm Payment Received'}
-          </DialogTitle>
-          <DialogDescription>
-            {userType === 'customer'
-              ? 'Please confirm that the service was completed to your satisfaction and rate your provider. This will release payment to your provider.'
-              : 'Confirm that you have received your payment to finalize this job.'}
-          </DialogDescription>
-        </DialogHeader>
+    <div className="space-y-6 py-4 px-1">
+      {/* Service Summary */}
+      <div className="bg-muted/30 rounded-lg p-4 text-sm">
+        <div className="flex justify-between mb-2">
+          <span className="text-muted-foreground">Service</span>
+          <span className="font-medium capitalize">{request.service_type?.replace('_', ' ')}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Total Amount</span>
+          <span className="font-bold text-primary">GHS {Number(request.amount || request.quoted_amount || 0).toFixed(2)}</span>
+        </div>
+      </div>
 
-        <div className="space-y-6 py-4">
-          {/* Service Summary */}
-          <div className="bg-muted/30 rounded-lg p-4 text-sm">
-            <div className="flex justify-between mb-2">
-              <span className="text-muted-foreground">Service</span>
-              <span className="font-medium capitalize">{request.service_type?.replace('_', ' ')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Amount</span>
-              <span className="font-bold text-primary">GHS {Number(request.amount || request.quoted_amount || 0).toFixed(2)}</span>
+      {userType === 'customer' && (
+        <>
+          {/* Payment Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>📤 Payment Release:</strong> Confirming will release the provider's payment (GHS {providerAmount}) to their registered account.
+            </p>
+          </div>
+
+          {/* Rating */}
+          <div className="space-y-2">
+            <Label>Rate your provider</Label>
+            <div className="flex gap-2 justify-center py-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                  className="p-1 transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={`h-8 w-8 transition-colors ${star <= (hoveredRating || rating)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-gray-300'
+                      }`}
+                  />
+                </button>
+              ))}
             </div>
           </div>
 
-          {userType === 'customer' && (
-            <>
-              {/* Payment Info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>📤 Payment Release:</strong> Confirming will release the provider's payment (GHS {providerAmount}) to their registered account.
-                </p>
-              </div>
+          {/* Review */}
+          <div className="space-y-2">
+            <Label htmlFor="review">Leave a review (optional)</Label>
+            <Textarea
+              id="review"
+              placeholder="Share your experience with this provider..."
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
 
-              {/* Rating */}
-              <div className="space-y-2">
-                <Label>Rate your provider</Label>
-                <div className="flex gap-2 justify-center py-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoveredRating(star)}
-                      onMouseLeave={() => setHoveredRating(0)}
-                      className="p-1 transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`h-8 w-8 transition-colors ${star <= (hoveredRating || rating)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
-                          }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Review */}
-              <div className="space-y-2">
-                <Label htmlFor="review">Leave a review (optional)</Label>
-                <Textarea
-                  id="review"
-                  placeholder="Share your experience with this provider..."
-                  value={review}
-                  onChange={(e) => setReview(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              {/* Transfer Error Alert */}
-              {transferError && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-800">{transferError}</p>
-                </div>
-              )}
-            </>
-          )}
-
-          {userType === 'provider' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800">
-                By confirming, you acknowledge that you have received your payment share of{' '}
-                <span className="font-bold">GHS {providerAmount}</span> (85% of total after platform fee).
-              </p>
-              <p className="text-xs text-green-600 mt-2">
-                This will finalize the job and mark it as completed.
-              </p>
+          {/* Transfer Error Alert */}
+          {transferError && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">{transferError}</p>
             </div>
           )}
-        </div>
+        </>
+      )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={userType === 'customer' ? handleCustomerConfirm : handleProviderConfirmPayment}
-            disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {userType === 'customer' ? 'Confirming & Releasing Payment...' : 'Confirming...'}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {userType === 'customer' ? 'Confirm & Release Payment' : 'Confirm Payment Received'}
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+      {userType === 'provider' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-sm text-green-800">
+            By confirming, you acknowledge that you have received your payment share of{' '}
+            <span className="font-bold">GHS {providerAmount}</span> (85% of total after platform fee).
+          </p>
+          <p className="text-xs text-green-600 mt-2">
+            This will finalize the job and mark it as completed.
+          </p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 pt-4">
+        <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button
+          onClick={userType === 'customer' ? handleCustomerConfirm : handleProviderConfirmPayment}
+          disabled={isSubmitting}
+          className="flex-1 bg-green-600 hover:bg-green-700"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {userType === 'customer' ? 'Confirming...' : 'Confirming...'}
+            </>
+          ) : (
+            <>
+              <CheckCircle className="h-4 w-4 mr-2" />
+              {userType === 'customer' ? 'Confirm Release' : 'Confirm Receipt'}
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const ServiceConfirmation = (props: ServiceConfirmationProps) => {
+  const isMobile = useIsMobile();
+
+  if (!props.request) return null;
+
+  const { userType } = props;
+
+  const title = (
+    <div className="flex items-center gap-2">
+      <CheckCircle className="h-5 w-5 text-green-500" />
+      {userType === 'customer' ? 'Confirm Service' : 'Payment Received?'}
+    </div>
+  );
+
+  const description = userType === 'customer'
+    ? 'Please confirm service completion and rate your provider to release payment.'
+    : 'Confirm that you have received your payment to finalize this job.';
+
+  if (isMobile) {
+    return (
+      <Drawer open={props.open} onOpenChange={props.onOpenChange}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle>{title}</DrawerTitle>
+            <DrawerDescription>{description}</DrawerDescription>
+          </DrawerHeader>
+          <div className="px-4 overflow-y-auto max-h-[80vh]">
+            <ServiceConfirmationContent {...props} />
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <ServiceConfirmationContent {...props} />
       </DialogContent>
     </Dialog>
   );

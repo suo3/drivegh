@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +23,8 @@ import {
   Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const TimelineDisplay = ({ status }: { status: string }) => {
   const steps = [
@@ -157,7 +160,7 @@ const ProviderInfoDisplay = ({ request }: { request: any }) => {
   );
 };
 
-const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModalProps) => {
+const RequestDetailsContent = ({ request, onOpenChange, isMobile }: { request: any, onOpenChange: (open: boolean) => void, isMobile: boolean }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
 
@@ -174,8 +177,6 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
       }
     });
   }, []);
-
-  if (!request) return null;
 
   const isProvider = userProfile?.role === 'service_provider';
   const isCustomer = userProfile?.role === 'customer' || !isProvider; // Default to customer view if not provider
@@ -286,363 +287,415 @@ const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModa
   const hasVehiclePhoto = !!request.vehicle_image_url;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <span className="capitalize text-xl">
-              {request.service_type?.replace('_', ' ')}
-            </span>
-            <Badge className={`${getStatusColor(request.status)} capitalize`}>
-              {request.status?.replace('_', ' ')}
-            </Badge>
-          </DialogTitle>
-        </DialogHeader>
+    <div className={cn("space-y-6", !isMobile && "py-4")}>
+      {/* Timeline Visualizer */}
+      <div className="px-1 overflow-x-auto">
+        <TimelineDisplay status={request.status} />
+      </div>
 
-        {/* Timeline Visualizer */}
-        <div className="px-1 overflow-x-auto">
-          <TimelineDisplay status={request.status} />
-        </div>
+      <div className="space-y-6">
+        {/* Tracking Code */}
+        {request.tracking_code && (
+          <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+            <Hash className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-xs text-muted-foreground">Tracking Code</p>
+              <p className="font-mono font-bold text-primary">{request.tracking_code}</p>
+            </div>
+          </div>
+        )}
 
-        <div className="space-y-6 py-4">
-          {/* Tracking Code */}
-          {request.tracking_code && (
-            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
-              <Hash className="h-5 w-5 text-primary" />
+        {/* Customer Information */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Customer Information
+          </h3>
+          <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <User className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Tracking Code</p>
-                <p className="font-mono font-bold text-primary">{request.tracking_code}</p>
+                <p className="text-xs text-muted-foreground">Name</p>
+                <p className="font-medium">{customerName}</p>
               </div>
             </div>
-          )}
+            {customerPhone && (
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone Number</p>
+                  <a
+                    href={`tel:${customerPhone}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {customerPhone}
+                  </a>
+                </div>
+              </div>
+            )}
+            {customerEmail && (
+              <div className="flex items-center gap-3">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <a
+                    href={`mailto:${customerEmail}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {customerEmail}
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
-          {/* Customer Information */}
+        {/* Action Buttons for Escrow Flow */}
+        {/* Customer: Confirm Service Completion */}
+        {isCustomer && request.status === 'paid' && (
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <ThumbsUp className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-primary">Confirm Service Completion</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Only click this after the provider has successfully completed the service. This will release the held funds to the provider.
+            </p>
+            <Button
+              onClick={handleConfirmService}
+              className="w-full"
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Confirm Service Completed
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Provider: Confirm Payment Received */}
+        {isProvider && (request.status === 'completed' || request.status === 'paid') && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <Wallet className="h-5 w-5 text-green-600" />
+              <h3 className="font-semibold text-green-700">Payment Status</h3>
+            </div>
+            {request.status === 'paid' ? (
+              <p className="text-sm text-green-700">
+                Customer has paid to escrow. Please verify completion of service with the customer to release funds.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-green-700">
+                  Customer has confirmed service. Funds have been transferred to your payout account.
+                </p>
+                <Button
+                  onClick={handleConfirmReceipt}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Confirm Receipt & Close
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Location */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Location
+          </h3>
+          <div className="bg-muted/30 rounded-lg p-4">
+            <p className="font-medium">{request.location}</p>
+            {request.customer_lat && request.customer_lng && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Coordinates: {request.customer_lat.toFixed(6)}, {request.customer_lng.toFixed(6)}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Vehicle Information */}
+        {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <Car className="h-4 w-4" />
+              Vehicle Information
+            </h3>
+            <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+              {(request.vehicle_make || request.vehicle_model) && (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {[request.vehicle_make, request.vehicle_model].filter(Boolean).join(' ')}
+                  </span>
+                  {request.vehicle_year && (
+                    <span className="text-muted-foreground">({request.vehicle_year})</span>
+                  )}
+                </div>
+              )}
+              {request.vehicle_plate && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Plate:</span>
+                  <span className="font-mono font-semibold bg-muted px-2 py-1 rounded">
+                    {request.vehicle_plate}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Vehicle Photo */}
+        {request.vehicle_image_url && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Vehicle Photo
+            </h3>
+            <div className="bg-muted/30 rounded-lg p-4">
+              <a
+                href={request.vehicle_image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <img
+                  src={request.vehicle_image_url}
+                  alt="Vehicle"
+                  className="w-full max-h-64 rounded-lg border shadow-sm object-cover hover:opacity-90 transition-opacity cursor-zoom-in"
+                />
+              </a>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Click to view full size
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Fuel Delivery Details */}
+        {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <Fuel className="h-4 w-4" />
+              Fuel Details
+            </h3>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-4">
+              <Fuel className="h-6 w-6 text-amber-600" />
+              <div className="flex flex-col sm:flex-row sm:gap-4">
+                {request.fuel_type && (
+                  <div>
+                    <p className="text-xs text-amber-700">Fuel Type</p>
+                    <p className="font-semibold capitalize text-amber-900">{request.fuel_type}</p>
+                  </div>
+                )}
+                {request.fuel_amount && (
+                  <div>
+                    <p className="text-xs text-amber-700">Amount</p>
+                    <p className="font-semibold text-amber-900">{request.fuel_amount} Liters</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        {request.description && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Description / Notes
+            </h3>
+            <div className="bg-muted/30 rounded-lg p-4">
+              <p className="text-sm whitespace-pre-wrap">{request.description}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Provider Information (if assigned) */}
+        {(request.provider_id || request.provider?.full_name || request.provider_profile?.full_name) && (
           <div className="space-y-3">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
               <User className="h-4 w-4" />
-              Customer Information
+              Assigned Provider
             </h3>
             <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Name</p>
-                  <p className="font-medium">{customerName}</p>
-                </div>
-              </div>
-              {customerPhone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Phone Number</p>
-                    <a
-                      href={`tel:${customerPhone}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {customerPhone}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {customerEmail && (
-                <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <a
-                      href={`mailto:${customerEmail}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {customerEmail}
-                    </a>
-                  </div>
-                </div>
-              )}
+              <ProviderInfoDisplay request={request} />
             </div>
           </div>
+        )}
 
-          {/* Action Buttons for Escrow Flow */}
-          {/* Customer: Confirm Service Completion */}
-          {isCustomer && request.status === 'paid' && (
+        {/* Quote/Payment Information */}
+        {request.quoted_amount && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Quote & Payment
+            </h3>
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <ThumbsUp className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold text-primary">Confirm Service Completion</h3>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Quoted Amount</span>
+                <span className="text-2xl font-bold text-primary">GHS {Number(request.quoted_amount).toFixed(2)}</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Only click this after the provider has successfully completed the service. This will release the held funds to the provider.
-              </p>
-              <Button
-                onClick={handleConfirmService}
-                className="w-full"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm Service Completed
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Provider: Confirm Payment Received */}
-          {isProvider && (request.status === 'completed' || request.status === 'paid') && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <Wallet className="h-5 w-5 text-green-600" />
-                <h3 className="font-semibold text-green-700">Payment Status</h3>
+              {request.quote_description && (
+                <p className="text-sm text-muted-foreground border-t pt-2">{request.quote_description}</p>
+              )}
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <DollarSign className="h-4 w-4" />
+                <span className="text-sm">Payment Status:</span>
+                <Badge className={request.payment_status === 'paid' ? 'bg-green-500/90 text-white' : 'bg-muted'}>
+                  {request.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                </Badge>
               </div>
-              {request.status === 'paid' ? (
-                <p className="text-sm text-green-700">
-                  Customer has paid to escrow. Please verify completion of service with the customer to release funds.
-                </p>
-              ) : (
-                <>
-                  <p className="text-sm text-green-700">
-                    Customer has confirmed service. Funds have been transferred to your payout account.
-                  </p>
-                  <Button
-                    onClick={handleConfirmReceipt}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Confirm Receipt & Close
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Location */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Location
-            </h3>
-            <div className="bg-muted/30 rounded-lg p-4">
-              <p className="font-medium">{request.location}</p>
-              {request.customer_lat && request.customer_lng && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Coordinates: {request.customer_lat.toFixed(6)}, {request.customer_lng.toFixed(6)}
-                </p>
-              )}
             </div>
           </div>
+        )}
 
-          {/* Vehicle Information */}
-          {(request.vehicle_make || request.vehicle_model || request.vehicle_year || request.vehicle_plate) && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <Car className="h-4 w-4" />
-                Vehicle Information
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-                {(request.vehicle_make || request.vehicle_model) && (
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {[request.vehicle_make, request.vehicle_model].filter(Boolean).join(' ')}
-                    </span>
-                    {request.vehicle_year && (
-                      <span className="text-muted-foreground">({request.vehicle_year})</span>
-                    )}
-                  </div>
-                )}
-                {request.vehicle_plate && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Plate:</span>
-                    <span className="font-mono font-semibold bg-muted px-2 py-1 rounded">
-                      {request.vehicle_plate}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Vehicle Photo */}
-          {request.vehicle_image_url && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Vehicle Photo
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <a
-                  href={request.vehicle_image_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <img
-                    src={request.vehicle_image_url}
-                    alt="Vehicle"
-                    className="w-full max-h-64 rounded-lg border shadow-sm object-cover hover:opacity-90 transition-opacity cursor-zoom-in"
-                  />
-                </a>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Click to view full size
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Fuel Delivery Details */}
-          {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <Fuel className="h-4 w-4" />
-                Fuel Details
-              </h3>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-4">
-                <Fuel className="h-6 w-6 text-amber-600" />
-                <div className="flex flex-col sm:flex-row sm:gap-4">
-                  {request.fuel_type && (
-                    <div>
-                      <p className="text-xs text-amber-700">Fuel Type</p>
-                      <p className="font-semibold capitalize text-amber-900">{request.fuel_type}</p>
-                    </div>
-                  )}
-                  {request.fuel_amount && (
-                    <div>
-                      <p className="text-xs text-amber-700">Amount</p>
-                      <p className="font-semibold text-amber-900">{request.fuel_amount} Liters</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Description */}
-          {request.description && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Description / Notes
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <p className="text-sm whitespace-pre-wrap">{request.description}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Provider Information (if assigned) */}
-          {(request.provider_id || request.provider?.full_name || request.provider_profile?.full_name) && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Assigned Provider
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <ProviderInfoDisplay request={request} />
-              </div>
-            </div>
-          )}
-
-          {/* Quote/Payment Information */}
-          {request.quoted_amount && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                Quote & Payment
-              </h3>
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Quoted Amount</span>
-                  <span className="text-2xl font-bold text-primary">GHS {Number(request.quoted_amount).toFixed(2)}</span>
-                </div>
-                {request.quote_description && (
-                  <p className="text-sm text-muted-foreground border-t pt-2">{request.quote_description}</p>
-                )}
-                <div className="flex items-center gap-2 pt-2 border-t">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="text-sm">Payment Status:</span>
-                  <Badge className={request.payment_status === 'paid' ? 'bg-green-500/90 text-white' : 'bg-muted'}>
-                    {request.payment_status === 'paid' ? 'Paid' : 'Pending'}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Service Amount (legacy fallback) */}
-          {request.amount && !request.quoted_amount && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Service Amount
-              </h3>
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                <p className="text-2xl font-bold text-primary">GHS {request.amount}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Timestamps */}
+        {/* Service Amount (legacy fallback) */}
+        {request.amount && !request.quoted_amount && (
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Timeline
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+              Service Amount
             </h3>
-            <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <p className="text-2xl font-bold text-primary">GHS {request.amount}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Timestamps */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Timeline
+          </h3>
+          <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Created:</span>
+              <span>{new Date(request.created_at).toLocaleString()}</span>
+            </div>
+            {request.assigned_at && (
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Created:</span>
-                <span>{new Date(request.created_at).toLocaleString()}</span>
+                <span className="text-muted-foreground">Assigned:</span>
+                <span>{new Date(request.assigned_at).toLocaleString()}</span>
               </div>
-              {request.assigned_at && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Assigned:</span>
-                  <span>{new Date(request.assigned_at).toLocaleString()}</span>
-                </div>
-              )}
-              {request.quoted_at && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Quote Submitted:</span>
-                  <span>{new Date(request.quoted_at).toLocaleString()}</span>
-                </div>
-              )}
-              {request.paid_at && (
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-muted-foreground">Paid:</span>
-                  <span>{new Date(request.paid_at).toLocaleString()}</span>
-                </div>
-              )}
-              {request.completed_at && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Completed:</span>
-                  <span>{new Date(request.completed_at).toLocaleString()}</span>
-                </div>
-              )}
-            </div>
+            )}
+            {request.quoted_at && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Quote Submitted:</span>
+                <span>{new Date(request.quoted_at).toLocaleString()}</span>
+              </div>
+            )}
+            {request.paid_at && (
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-muted-foreground">Paid:</span>
+                <span>{new Date(request.paid_at).toLocaleString()}</span>
+              </div>
+            )}
+            {request.completed_at && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Completed:</span>
+                <span>{new Date(request.completed_at).toLocaleString()}</span>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </div>
+      <div className="flex justify-end pt-4 border-t">
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const RequestDetailsModal = ({ request, open, onOpenChange }: RequestDetailsModalProps) => {
+  const isMobile = useIsMobile();
+
+  if (!request) return null;
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-warning/90 text-warning-foreground',
+      assigned: 'bg-blue-500/90 text-white',
+      quoted: 'bg-indigo-500/90 text-white',
+      awaiting_payment: 'bg-orange-500/90 text-white',
+      paid: 'bg-teal-500/90 text-white',
+      accepted: 'bg-blue-600/90 text-white',
+      en_route: 'bg-purple-500/90 text-white',
+      in_progress: 'bg-purple-600/90 text-white',
+      awaiting_confirmation: 'bg-amber-500/90 text-white',
+      completed: 'bg-success/90 text-success-foreground',
+      cancelled: 'bg-muted text-muted-foreground',
+      denied: 'bg-destructive/90 text-destructive-foreground',
+    };
+    return colors[status] || 'bg-muted text-muted-foreground';
+  };
+
+  const HeaderContent = () => (
+    <div className="flex items-center gap-3">
+      <span className="capitalize text-xl">
+        {request.service_type?.replace('_', ' ')}
+      </span>
+      <Badge className={`${getStatusColor(request.status)} capitalize`}>
+        {request.status?.replace('_', ' ')}
+      </Badge>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader className="text-left border-b pb-4">
+            <DrawerTitle>
+              <HeaderContent />
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 overflow-y-auto">
+            <RequestDetailsContent request={request} onOpenChange={onOpenChange} isMobile={true} />
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            <HeaderContent />
+          </DialogTitle>
+        </DialogHeader>
+        <RequestDetailsContent request={request} onOpenChange={onOpenChange} isMobile={false} />
       </DialogContent>
     </Dialog >
   );
