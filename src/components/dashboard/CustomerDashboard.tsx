@@ -149,7 +149,7 @@ export const CustomerDashboard = () => {
                     </header>
 
                     {/* Mobile Header Greeting (Compact) */}
-                    <div className="lg:hidden sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
+                    <div className="lg:hidden mt-16 sticky top-0 z-10 bg-gradient-to-r from-primary to-secondary px-4 py-3 shadow-md">
                         <h1 className="text-lg font-bold text-primary-foreground truncate">
                             Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
                         </h1>
