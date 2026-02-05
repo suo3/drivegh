@@ -41,6 +41,7 @@ export default defineConfig(() => ({
         ]
       },
       workbox: {
+        importScripts: ['https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
