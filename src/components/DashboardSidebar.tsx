@@ -1,4 +1,4 @@
-import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal, MapPin, Layout, Star } from 'lucide-react';
+import { ClipboardList, CreditCard, User, Users, UserCheck, DollarSign, LayoutDashboard, Settings, MessageSquare, MoreHorizontal, MapPin, Layout, Star, Home } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -30,12 +30,14 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   const customerItems = [
+    { title: 'Home', view: 'home', icon: Home },
     { title: 'Service Requests', view: 'requests', icon: ClipboardList },
     { title: 'Payment History', view: 'payments', icon: CreditCard },
     { title: 'Profile', view: 'profile', icon: User },
   ];
 
   const providerItems = [
+    { title: 'Home', view: 'home', icon: Home },
     { title: 'Assigned Jobs', view: 'assigned', icon: ClipboardList },
     { title: 'Completed Jobs', view: 'completed', icon: ClipboardList },
     { title: 'Profile', view: 'profile', icon: User },
@@ -58,7 +60,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
   ];
 
   const items = role === 'customer' ? customerItems : role === 'provider' ? providerItems : adminItems;
-  
+
   const getRoleTitle = () => {
     if (role === 'customer') return 'Customer Portal';
     if (role === 'provider') return 'Provider Portal';
@@ -77,11 +79,11 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
         <div className="flex items-center justify-around px-2 py-2.5">
           {primaryItems.map((item) => {
             const isActive = currentView === item.view;
-            
+
             return (
               <button
                 key={item.view}
-                onClick={() => navigate(`/dashboard/${item.view}`)}
+                onClick={() => item.view === 'home' ? navigate('/') : navigate(`/dashboard/${item.view}`)}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl transition-all duration-300 min-w-[68px] relative group active:scale-95 touch-manipulation",
                   isActive
@@ -93,7 +95,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
                 {isActive && (
                   <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
                 )}
-                
+
                 <item.icon className={cn(
                   "h-5 w-5 transition-all duration-300 text-white",
                   isActive && "scale-110 drop-shadow-lg",
@@ -105,7 +107,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
                 )}>
                   {item.title.split(' ')[0]}
                 </span>
-                
+
                 {/* Hover glow effect */}
                 {!isActive && (
                   <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
@@ -113,7 +115,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
               </button>
             );
           })}
-          
+
           {/* More menu for admin */}
           {moreItems.length > 0 && (
             <Sheet open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
@@ -142,7 +144,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
                 <div className="grid grid-cols-2 gap-3 mt-6 pb-6">
                   {moreItems.map((item) => {
                     const isActive = currentView === item.view;
-                    
+
                     return (
                       <button
                         key={item.view}
@@ -170,7 +172,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
             </Sheet>
           )}
         </div>
-        
+
         {/* Bottom accent line */}
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </nav>
@@ -192,7 +194,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
           )}
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent className="px-2 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 text-xs font-medium text-sidebar-foreground/60">
@@ -203,7 +205,7 @@ export function DashboardSidebar({ role, currentView }: DashboardSidebarProps) {
               {items.map((item) => (
                 <SidebarMenuItem key={item.view}>
                   <SidebarMenuButton
-                    onClick={() => navigate(`/dashboard/${item.view}`)}
+                    onClick={() => item.view === 'home' ? navigate('/') : navigate(`/dashboard/${item.view}`)}
                     isActive={currentView === item.view}
                     tooltip={item.title}
                     className="group relative my-0.5 rounded-lg transition-all duration-200 hover:bg-sidebar-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-sm data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-1 data-[active=true]:before:rounded-r-full data-[active=true]:before:bg-primary-foreground"

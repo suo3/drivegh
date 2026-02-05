@@ -54,12 +54,12 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10  backdrop-blur-xl  shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed z-1001 bottom-0 left-0 right-0 z-50 bg-primary border-t border-white/10  backdrop-blur-xl  shadow-[0_-4px_30px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around px-2 py-2.5">
         {items.map((item) => {
           // Services button is never "active" - it's an action button that scrolls
           const isActive = item.title !== 'Services' && currentPath === item.path;
-          
+
           return (
             <button
               key={item.title}
@@ -75,7 +75,7 @@ export function MobileBottomNav() {
               {isActive && (
                 <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-accent via-accent to-transparent rounded-full animate-fade-in" />
               )}
-              
+
               <item.icon className={cn(
                 "h-5 w-5 transition-all duration-300",
                 isActive ? "scale-110 drop-shadow-lg text-accent-foreground" : "text-white group-hover:scale-110"
@@ -86,7 +86,7 @@ export function MobileBottomNav() {
               )}>
                 {item.title}
               </span>
-              
+
               {/* Hover glow effect */}
               {!isActive && (
                 <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
@@ -95,7 +95,7 @@ export function MobileBottomNav() {
           );
         })}
       </div>
-      
+
       {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </nav>
