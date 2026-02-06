@@ -1,0 +1,13 @@
+# Service Worker files must be served with correct MIME type
+/OneSignalSDKWorker.js
+  Content-Type: application/javascript
+  Service-Worker-Allowed: /
+
+/OneSignalSDK.sw.js
+  Content-Type: application/javascript
+  Service-Worker-Allowed: /
+
+# PWA Service Worker
+/sw.js
+  Content-Type: application/javascript
+  Service-Worker-Allowed: /
