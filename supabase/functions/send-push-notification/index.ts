@@ -101,6 +101,8 @@ serve(async (req) => {
                 target_channel: "push",
                 headings: { en: title },
                 contents: { en: message },
+                // Top level url for deep linking (works even if app is closed)
+                url: `https://drivegh.com/track/${record.tracking_code}`,
                 // Add data so the app can navigate to the request
                 data: {
                     requestId: record.id,
