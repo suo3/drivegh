@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
-import NotificationPermissionRequest from '@/components/NotificationPermissionRequest';
 
 export const CustomerDashboard = () => {
     const { user } = useAuth();
@@ -135,7 +134,6 @@ export const CustomerDashboard = () => {
 
                 <div className="flex-1 flex flex-col min-w-0">
                     <Navbar />
-                    <NotificationPermissionRequest />
 
                     {/* Desktop Header */}
                     <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">

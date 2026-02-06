@@ -41,7 +41,8 @@ const NotificationPermissionRequest = () => {
                     // Show if permission is 'default' (not yet asked) or 'denied' (need to guide to settings)
                     // We mainly want to prompt them if they haven't made a choice yet.
                     // Note: OneSignal types might mock permission as boolean or string. We check loosely.
-                    if (String(permission) !== 'granted') {
+                    // If it is true, it is granted.
+                    if (permission !== true && String(permission) !== 'granted') {
                         setIsOpen(true);
                         setShouldRender(true);
                     }

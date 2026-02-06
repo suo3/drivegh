@@ -19,7 +19,6 @@ import RequestDetailsModal from '@/components/RequestDetailsModal';
 import QuoteModal from '@/components/QuoteModal';
 import ServiceConfirmation from '@/components/ServiceConfirmation';
 import { JobActions } from './JobActions';
-import NotificationPermissionRequest from '@/components/NotificationPermissionRequest';
 
 export const ProviderDashboard = () => {
     const { user } = useAuth();
@@ -181,7 +180,6 @@ export const ProviderDashboard = () => {
 
                 <div className="flex-1 flex flex-col min-w-0">
                     <Navbar />
-                    <NotificationPermissionRequest />
 
                     <header className="sticky top-16 z-10 border-b bg-gradient-to-r from-primary/10 via-background to-accent/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 shadow-sm lg:block hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-6 lg:py-5">
