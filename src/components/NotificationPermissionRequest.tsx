@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,10 +57,34 @@ const NotificationPermissionRequest = () => {
     const handleEnableNotifications = async () => {
         try {
             console.log("Requesting permission...");
-            await OneSignal.Notifications.requestPermission();
-            setIsOpen(false);
+
+            // Check current permission first
+            const currentPermission = OneSignal.Notifications.permission;
+
+            if (String(currentPermission) === 'denied' || String(currentPermission) === 'blocked') {
+                toast.error("Notifications are blocked", {
+                    description: "Please enable notifications in your browser settings to receive updates."
+                });
+                return;
+            }
+
+            const accepted = await OneSignal.Notifications.requestPermission();
+
+            if (accepted) {
+                toast.success("Notifications Enabled!", {
+                    description: "You'll now receive updates about your service request."
+                });
+                setIsOpen(false);
+            } else {
+                console.log("Permission request denied or dismissed");
+                // If they just dismissed it, we might want to keep the drawer open or close it.
+                // If denied, the next click will hit the 'blocked' check above.
+            }
         } catch (error) {
             console.error("Error requesting permission:", error);
+            toast.error("Something went wrong", {
+                description: "We couldn't enable notifications. Please try again."
+            });
         }
     };
 

@@ -64,7 +64,7 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-[60] animate-fade-in">
+    <div className="fixed mb-10 bottom-[50%] left-4 right-4 z-[60] animate-fade-in">
       <div className="bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-2xl shadow-2xl p-4 border border-white/10">
         <button
           onClick={handleDismiss}
@@ -78,13 +78,13 @@ export function InstallPrompt() {
           <div className="bg-white/20 rounded-full p-2.5 shrink-0">
             <Download className="h-5 w-5" />
           </div>
-          
+
           <div className="flex-1">
             <h3 className="font-bold text-sm mb-1">Install DRIVE Ghana</h3>
             <p className="text-xs text-primary-foreground/90 mb-3">
               Get quick access and work offline. Install our app for the best experience.
             </p>
-            
+
             <div className="flex gap-2">
               <Button
                 onClick={handleInstall}
