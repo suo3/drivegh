@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import OneSignal from 'react-onesignal';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const OneSignalInitializer = () => {
     const { user } = useAuth();
     const [initialized, setInitialized] = useState(false);
+    const [initFailed, setInitFailed] = useState(false);
 
     useEffect(() => {
         // Initialize OneSignal
@@ -17,13 +19,31 @@ const OneSignalInitializer = () => {
 
         const runInit = async () => {
             try {
+                // Check if OneSignal script is blocked
+                if (typeof window.OneSignalDeferred === 'undefined') {
+                    console.warn('OneSignal SDK may be blocked by browser extension or CSP');
+                    setInitFailed(true);
+                    return;
+                }
+
                 await OneSignal.init({
                     appId: appId,
+                    allowLocalhostAsSecureOrigin: true,
                 });
-                console.log('OneSignal initialized');
+                console.log('OneSignal initialized successfully');
                 setInitialized(true);
             } catch (error) {
                 console.error('Error initializing OneSignal:', error);
+                setInitFailed(true);
+
+                // Show user-friendly message
+                if (error instanceof Error && error.message.includes('script failed to load')) {
+                    console.warn('OneSignal blocked - likely by ad blocker or browser extension');
+                    toast.info('Push notifications unavailable', {
+                        description: 'Please disable your ad blocker to enable notifications.',
+                        duration: 5000,
+                    });
+                }
             }
         };
 
@@ -32,23 +52,25 @@ const OneSignalInitializer = () => {
 
     // Update User ID when user logs in - only after initialization
     useEffect(() => {
-        if (!initialized) return;
+        if (!initialized || initFailed) return;
 
         if (user) {
             try {
                 // Associate the OneSignal user with the Supabase Auth ID
                 OneSignal.login(user.id);
+                console.log('OneSignal user logged in:', user.id);
             } catch (error) {
                 console.error('Error logging in to OneSignal:', error);
             }
         } else {
             try {
                 OneSignal.logout();
+                console.log('OneSignal user logged out');
             } catch (error) {
                 console.error('Error logging out of OneSignal:', error);
             }
         }
-    }, [user, initialized]);
+    }, [user, initialized, initFailed]);
 
     return null;
 };

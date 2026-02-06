@@ -57,6 +57,14 @@ const NotificationPermissionRequest = () => {
 
     const handleEnableNotifications = async () => {
         try {
+            // Check if OneSignal is available
+            if (!OneSignal || !OneSignal.Notifications) {
+                toast.error("Notifications unavailable", {
+                    description: "Please disable your ad blocker and refresh the page to enable notifications."
+                });
+                return;
+            }
+
             console.log("Requesting permission...");
 
             // Check current permission first
@@ -83,9 +91,17 @@ const NotificationPermissionRequest = () => {
             }
         } catch (error) {
             console.error("Error requesting permission:", error);
-            toast.error("Something went wrong", {
-                description: "We couldn't enable notifications. Please try again."
-            });
+
+            // Check if it's a script loading error
+            if (error instanceof Error && error.message.includes('script failed to load')) {
+                toast.error("Ad blocker detected", {
+                    description: "Please disable your ad blocker to enable notifications."
+                });
+            } else {
+                toast.error("Something went wrong", {
+                    description: "We couldn't enable notifications. Please try again."
+                });
+            }
         }
     };
 
