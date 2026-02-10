@@ -28,7 +28,7 @@ const Navbar = () => {
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
-    
+
     if (data) setServices(data);
   };
 
@@ -42,18 +42,18 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-primary backdrop-blur-sm border-b border-white/10 pt-[env(safe-area-inset-top)]">
+    <nav className="fixed top-0 left-0 right-0 z-[1005] bg-primary backdrop-blur-sm border-b border-white/10 pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 cursor-pointer">
           <img src="/icon-192.png" alt="DRIVE Ghana" className="h-10 w-10 rounded-full" />
           <span className="text-white font-bold text-lg">DRIVE <span className="text-accent2">Ghana</span></span>
         </Link>
-        
+
         <div className="hidden md:flex items-center gap-6 text-sm text-white">
           <Link to="/" className="hover:text-accent transition-colors">HOME</Link>
           <Link to="/about" className="hover:text-accent transition-colors">ABOUT US</Link>
           <Link to="/partnership" className="hover:text-accent transition-colors">PARTNERSHIP</Link>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:text-accent transition-colors outline-none">
               SERVICES
@@ -74,7 +74,7 @@ const Navbar = () => {
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <Link to="/billing" className="hover:text-accent transition-colors">BILLING</Link>
           <Link to="/track-rescue" className="hover:text-accent transition-colors">TRACK RESCUE</Link>
         </div>
@@ -84,8 +84,8 @@ const Navbar = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
                   disabled={loading}
                 >
@@ -99,10 +99,10 @@ const Navbar = () => {
                   Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={async () => { 
-                    await signOut(); 
-                    navigate('/'); 
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await signOut();
+                    navigate('/');
                   }}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -125,8 +125,8 @@ const Navbar = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="icon"
                   className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
                   disabled={loading}
@@ -140,10 +140,10 @@ const Navbar = () => {
                   Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={async () => { 
-                    await signOut(); 
-                    navigate('/'); 
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await signOut();
+                    navigate('/');
                   }}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -152,17 +152,17 @@ const Navbar = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
-              onClick={() => navigate('/auth')} 
-              variant="outline" 
+            <Button
+              onClick={() => navigate('/auth')}
+              variant="outline"
               size="icon"
               className="!bg-transparent border-white text-white hover:bg-white hover:text-primary"
             >
               <User className="h-4 w-4" />
             </Button>
           )}
-          <Button 
-            onClick={() => navigate('/partnership')} 
+          <Button
+            onClick={() => navigate('/partnership')}
             size="sm"
             className="bg-accent text-accent-foreground hover:bg-accent/90"
           >

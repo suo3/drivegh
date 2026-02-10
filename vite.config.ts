@@ -48,7 +48,6 @@ export default defineConfig(() => ({
       },
       devOptions: {
         enabled: true,
-        type: 'module',
       },
     })
   ].filter(Boolean),
