@@ -29,6 +29,9 @@ const OneSignalInitializer = () => {
                 await OneSignal.init({
                     appId: appId,
                     allowLocalhostAsSecureOrigin: true,
+                    // Use the merged service worker
+                    serviceWorkerPath: 'sw.js',
+                    serviceWorkerParam: { scope: '/' },
                 });
                 console.log('OneSignal initialized successfully');
                 setInitialized(true);
