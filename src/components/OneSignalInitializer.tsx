@@ -32,6 +32,24 @@ const OneSignalInitializer = () => {
                     // Use the merged service worker
                     serviceWorkerPath: 'sw.js',
                     serviceWorkerParam: { scope: '/' },
+                    promptOptions: {
+                        slidedown: {
+                            prompts: [
+                                {
+                                    type: 'push',
+                                    autoPrompt: true,
+                                    text: {
+                                        actionMessage: "Don't miss your quote! Get instant alerts when providers respond to your request.",
+                                        acceptButton: "Allow",
+                                        cancelButton: "No Thanks",
+                                    },
+                                    delay: {
+                                        timeDelay: 3
+                                    }
+                                }
+                            ]
+                        }
+                    }
                 });
                 console.log('OneSignal initialized successfully');
                 setInitialized(true);

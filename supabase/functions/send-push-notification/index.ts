@@ -32,59 +32,79 @@ serve(async (req) => {
             });
         }
 
-        const { record } = payload;
+        const { record, old_record } = payload;
         const status = record.status;
+        const oldStatus = old_record?.status;
 
         // Determine who to notify and what to say
-        let userId = record.customer_id; // Default to customer
+        let recipientId: string | null = null;
         let title = "";
         let message = "";
 
-        switch (status) {
-            case "assigned":
-                title = "Provider Assigned! 👨‍🔧";
-                message = "A provider has been assigned to your request.";
-                break;
-            case "quoted":
-                title = "Quote Received 💰";
-                message = "Your provider has submitted a quote. Check it now.";
-                break;
-            case "accepted":
-                title = "Request Accepted! ✅";
-                message = "The provider has accepted your service request.";
-                break;
-            case "en_route":
-                title = "Provider En Route 🚗";
-                message = "Your provider is on the way to your location.";
-                break;
-            case "in_progress":
-                title = "Service Started 🔧";
-                message = "The provider has arrived and started working.";
-                break;
-            case "completed":
-                title = "Service Completed ✨";
-                message = "Your service has been completed successfully.";
-                break;
-            case "cancelled":
-                title = "Request Cancelled ❌";
-                message = "Your service request was cancelled.";
-                // Note: If customer cancelled, they know. If provider cancelled, they need to know.
-                // For simplicity, we notify anyway or check who triggered it (not part of simple record).
-                break;
-            default:
-                console.log("Status not relevant for notification:", status);
-                return new Response(JSON.stringify({ message: "Status ignored" }), {
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                });
+        // Provider-facing notifications (when they get assigned or customer accepts)
+        if (status === "assigned" && oldStatus === "pending" && record.provider_id) {
+            // Provider gets assigned to a new request
+            recipientId = record.provider_id;
+            title = "New Job Assigned! 🚗";
+            message = "You've been assigned to a new service request. Check it now.";
+        } else if (status === "accepted" && oldStatus === "quoted" && record.provider_id) {
+            // Customer accepted provider's quote
+            recipientId = record.provider_id;
+            title = "Quote Accepted! ✅";
+            message = "The customer has accepted your quote. Time to get started!";
+        } else if (status === "cancelled" && record.provider_id && oldStatus !== "pending") {
+            // Request was cancelled after provider was involved - notify provider
+            recipientId = record.provider_id;
+            title = "Request Cancelled ❌";
+            message = "A service request you were working on has been cancelled.";
+        } else {
+            // Customer-facing notifications (existing logic)
+            recipientId = record.customer_id;
+
+            switch (status) {
+                case "assigned":
+                    title = "Provider Assigned! 👨‍🔧";
+                    message = "A provider has been assigned to your request.";
+                    break;
+                case "quoted":
+                    title = "Quote Received 💰";
+                    message = "Your provider has submitted a quote. Check it now.";
+                    break;
+                case "accepted":
+                    title = "Request Accepted! ✅";
+                    message = "The provider has accepted your service request.";
+                    break;
+                case "en_route":
+                    title = "Provider En Route 🚗";
+                    message = "Your provider is on the way to your location.";
+                    break;
+                case "in_progress":
+                    title = "Service Started 🔧";
+                    message = "The provider has arrived and started working.";
+                    break;
+                case "completed":
+                    title = "Service Completed ✨";
+                    message = "Your service has been completed successfully.";
+                    break;
+                case "cancelled":
+                    title = "Request Cancelled ❌";
+                    message = "Your service request was cancelled.";
+                    break;
+                default:
+                    console.log("Status not relevant for notification:", status);
+                    return new Response(JSON.stringify({ message: "Status ignored" }), {
+                        headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    });
+            }
         }
 
-        if (!userId || !title) {
-            return new Response(JSON.stringify({ message: "No user or content" }), {
+        if (!recipientId || !title) {
+            return new Response(JSON.stringify({ message: "No recipient or content" }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
             });
         }
 
-        console.log(`Sending notification to user ${userId}: ${title}`);
+        console.log(`Sending notification to user ${recipientId}: ${title}`);
 
         // Send to OneSignal
         const response = await fetch("https://onesignal.com/api/v1/notifications", {
@@ -96,7 +116,7 @@ serve(async (req) => {
             body: JSON.stringify({
                 app_id: ONESIGNAL_APP_ID,
                 include_aliases: {
-                    external_id: [userId]
+                    external_id: [recipientId]
                 },
                 target_channel: "push",
                 headings: { en: title },
