@@ -19,6 +19,7 @@ import RequestDetailsModal from '@/components/RequestDetailsModal';
 import QuoteModal from '@/components/QuoteModal';
 import ServiceConfirmation from '@/components/ServiceConfirmation';
 import { JobActions } from './JobActions';
+import { useProviderLocation } from '@/hooks/useProviderLocation';
 
 export const ProviderDashboard = () => {
     const { user } = useAuth();
@@ -121,6 +122,16 @@ export const ProviderDashboard = () => {
         }
     }, [user]);
 
+    // Enable location tracking for active requests
+    const activeRequest = requests.find(r =>
+        r.status === 'en_route' || r.status === 'in_progress'
+    );
+
+    useProviderLocation({
+        requestId: activeRequest?.id || null,
+        isActive: !!activeRequest
+    });
+
     const handleToggleAvailability = async (available: boolean) => {
         setIsAvailable(available);
         const { error } = await supabase
@@ -192,24 +203,46 @@ export const ProviderDashboard = () => {
                                     <p className="text-sm text-muted-foreground">Manage your service assignments</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0 glass-dark px-4 py-2 rounded-xl">
-                                <Label className="text-sm font-semibold">Available</Label>
-                                <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} />
+                            <div className="flex items-center gap-3 shrink-0">
+                                {activeRequest && (
+                                    <div className="glass-dark px-3 py-2 rounded-xl flex items-center gap-2 border border-green-500/20">
+                                        <div className="relative">
+                                            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            <div className="absolute inset-0 h-2 w-2 bg-green-500 rounded-full animate-ping"></div>
+                                        </div>
+                                        <span className="text-xs font-medium text-green-600">📍 Location Sharing</span>
+                                    </div>
+                                )}
+                                <div className="glass-dark px-4 py-2 rounded-xl flex items-center gap-2">
+                                    <Label className="text-sm font-semibold">Available</Label>
+                                    <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} />
+                                </div>
                             </div>
                         </div>
                     </header>
 
                     {/* Mobile Header Greeting & Availability */}
-                    <div className="lg:hidden sticky top-16 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-3 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                            <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
-                                Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}!
-                            </h1>
+                    <div className="lg:hidden sticky top-16 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-3">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                                <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
+                                    Hi{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}!
+                                </h1>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs font-semibold text-muted-foreground">Available</span>
+                                <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} className="scale-75 origin-right" />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-semibold text-muted-foreground">Available</span>
-                            <Switch checked={isAvailable} onCheckedChange={handleToggleAvailability} className="scale-75 origin-right" />
-                        </div>
+                        {activeRequest && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="relative">
+                                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                    <div className="absolute inset-0 h-1.5 w-1.5 bg-green-500 rounded-full animate-ping"></div>
+                                </div>
+                                <span className="text-xs font-medium text-green-700">📍 Sharing location with customer</span>
+                            </div>
+                        )}
                     </div>
 
 

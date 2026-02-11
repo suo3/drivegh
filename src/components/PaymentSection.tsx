@@ -14,30 +14,51 @@ interface PaymentSectionProps {
 
 const PaymentSection = ({ request, customerEmail, onPaymentComplete }: PaymentSectionProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
 
-  const handleApproveQuote = async () => {
-    setIsApproving(true);
+  const handleApproveAndPay = async () => {
+    if (!customerEmail) {
+      toast.error('Email is required for payment');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const { error } = await supabase
+      // 1. Approve the quote first
+      const { error: approveError } = await supabase
         .from('service_requests')
         .update({
           quote_approved_at: new Date().toISOString(),
-          status: 'awaiting_payment',
         })
         .eq('id', request.id);
 
+      if (approveError) throw approveError;
+
+      // 2. Immediately initialize payment
+      const { data, error } = await supabase.functions.invoke('paystack-initialize', {
+        body: {
+          serviceRequestId: request.id,
+          email: customerEmail,
+          callbackUrl: `${window.location.origin}/track/${request.tracking_code}`,
+        },
+      });
+
       if (error) throw error;
-      toast.success('Quote approved! You can now proceed to payment.');
-      onPaymentComplete?.();
+
+      if (data?.authorization_url) {
+        // Redirect to Paystack checkout
+        window.location.href = data.authorization_url;
+      } else {
+        throw new Error('No payment URL received');
+      }
     } catch (error) {
-      console.error('Error approving quote:', error);
-      toast.error('Failed to approve quote');
+      console.error('Error processing payment:', error);
+      toast.error('Failed to process payment. Please try again.');
     } finally {
-      setIsApproving(false);
+      setIsLoading(false);
     }
   };
 
+  // Keep handlePayNow for awaiting_payment status (backward compatibility)
   const handlePayNow = async () => {
     if (!customerEmail) {
       toast.error('Email is required for payment');
@@ -140,27 +161,29 @@ const PaymentSection = ({ request, customerEmail, onPaymentComplete }: PaymentSe
         {isQuoted && (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Review the quote above. Once approved, you'll be prompted to make payment.
+              Review the quote above. Clicking "Approve & Pay Now" will take you directly to secure payment.
             </p>
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                onClick={handleApproveQuote}
-                disabled={isApproving}
-              >
-                {isApproving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Approving...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Approve Quote
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleApproveAndPay}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Approve & Pay Now - GHS {Number(request.quoted_amount).toFixed(2)}
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Secure payment powered by Paystack
+            </p>
           </div>
         )}
 
