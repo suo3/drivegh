@@ -8,7 +8,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import ScrollToTop from "@/components/ScrollToTop";
-import NotificationPermissionRequest from "@/components/NotificationPermissionRequest";
 import OneSignalInitializer from "@/components/OneSignalInitializer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -36,7 +35,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <OneSignalInitializer />
-          <NotificationPermissionRequest />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
