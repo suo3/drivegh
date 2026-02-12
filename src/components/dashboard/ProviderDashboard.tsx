@@ -314,6 +314,7 @@ export const ProviderDashboard = () => {
                                                     <TableHead>Customer Name</TableHead>
                                                     <TableHead>Customer Phone</TableHead>
                                                     <TableHead>Location</TableHead>
+                                                    <TableHead>Amount</TableHead>
                                                     <TableHead>Status</TableHead>
                                                     <TableHead>Actions</TableHead>
                                                 </TableRow>
@@ -327,6 +328,13 @@ export const ProviderDashboard = () => {
                                                             <TableCell>{request.profiles?.full_name || 'Guest'}</TableCell>
                                                             <TableCell>{request.phone_number || request.profiles?.phone_number || 'N/A'}</TableCell>
                                                             <TableCell>{request.location}</TableCell>
+                                                            <TableCell>
+                                                                {request.transactions && request.transactions[0]?.provider_amount
+                                                                    ? `GHS ${Number(request.transactions[0].provider_amount).toFixed(2)}`
+                                                                    : request.quoted_amount
+                                                                        ? `GHS ${(Number(request.quoted_amount) * 0.85).toFixed(2)}`
+                                                                        : '-'}
+                                                            </TableCell>
                                                             <TableCell>
                                                                 <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                                             </TableCell>
@@ -361,6 +369,13 @@ export const ProviderDashboard = () => {
                                                             <div>
                                                                 <h3 className="font-semibold">{request.service_type}</h3>
                                                                 <p className="text-sm text-muted-foreground">{request.location}</p>
+                                                                <p className="text-sm font-medium text-green-600 mt-1">
+                                                                    {request.transactions && request.transactions[0]?.provider_amount
+                                                                        ? `GHS ${Number(request.transactions[0].provider_amount).toFixed(2)}`
+                                                                        : request.quoted_amount
+                                                                            ? `GHS ${(Number(request.quoted_amount) * 0.85).toFixed(2)}`
+                                                                            : ''}
+                                                                </p>
                                                             </div>
                                                             <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                                                         </div>

@@ -16,11 +16,13 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-    Loader2, ClipboardList, UserCheck, Search, Filter,
-    User, DollarSign, Clock, Check, CreditCard, MapPin, CheckCircle
+    MapPin, Calendar, Clock, ArrowRight, Star, DollarSign, Search, Filter, MoreHorizontal,
+    Check, CreditCard, CheckCircle, Loader2, ClipboardList, UserCheck
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { ProfileForm } from '@/components/ProfileForm';
+import ServiceConfirmation from '@/components/ServiceConfirmation';
+import QuoteReview from '@/components/QuoteReview';
 
 export const CustomerDashboard = () => {
     const { user } = useAuth();
@@ -39,6 +41,8 @@ export const CustomerDashboard = () => {
     const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
     const [ratingDialogOpen, setRatingDialogOpen] = useState<string | null>(null);
+    const [confirmationRequest, setConfirmationRequest] = useState<any | null>(null);
+    const [quoteReviewRequest, setQuoteReviewRequest] = useState<any | null>(null);
 
     // Helper functions (duplicated for self-containment)
     const getStatusColor = (status: string) => {
@@ -309,13 +313,13 @@ export const CustomerDashboard = () => {
                                                                 {/* Action Buttons */}
                                                                 {/* Quoted - Show approve button */}
                                                                 {request.status === 'quoted' && (
-                                                                    <Button size="sm" onClick={() => navigate(`/track/${request.tracking_code}`)}>
+                                                                    <Button size="sm" onClick={() => setQuoteReviewRequest(request)}>
                                                                         <Check className="h-4 w-4 mr-1" /> Review Quote
                                                                     </Button>
                                                                 )}
                                                                 {/* Awaiting payment */}
                                                                 {request.status === 'awaiting_payment' && (
-                                                                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => navigate(`/track/${request.tracking_code}`)}>
+                                                                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setQuoteReviewRequest(request)}>
                                                                         <CreditCard className="h-4 w-4 mr-1" /> Pay Now
                                                                     </Button>
                                                                 )}
@@ -325,11 +329,18 @@ export const CustomerDashboard = () => {
                                                                         <MapPin className="h-4 w-4 mr-1" /> Track
                                                                     </Button>
                                                                 )}
-                                                                {/* Confirm */}
                                                                 {request.status === 'awaiting_confirmation' && (
-                                                                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => navigate(`/track/${request.tracking_code}`)}>
-                                                                        <CheckCircle className="h-4 w-4 mr-1" /> Confirm
-                                                                    </Button>
+                                                                    <>
+                                                                        {!request.customer_confirmed_at ? (
+                                                                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setConfirmationRequest(request)}>
+                                                                                <CheckCircle className="h-4 w-4 mr-1" /> Confirm & Release Payment
+                                                                            </Button>
+                                                                        ) : (
+                                                                            <Badge variant="outline" className="border-amber-500 text-amber-600 bg-amber-50">
+                                                                                <Clock className="h-3 w-3 mr-1" /> Processing Payment...
+                                                                            </Badge>
+                                                                        )}
+                                                                    </>
                                                                 )}
                                                                 {/* Rate - simplified for now, assuming Dialog logic is complex to copy fully inline */}
                                                                 {request.status === 'completed' && (
@@ -362,13 +373,13 @@ export const CustomerDashboard = () => {
                                                     <div className="flex flex-wrap gap-2 pt-2 border-t">
                                                         {/* Duplicated buttons for mobile */}
                                                         {request.status === 'quoted' && (
-                                                            <Button size="sm" className="flex-1" onClick={() => navigate(`/track/${request.tracking_code}`)}>
+                                                            <Button size="sm" className="flex-1" onClick={() => setQuoteReviewRequest(request)}>
                                                                 <Check className="h-4 w-4 mr-1" /> Review Quote
                                                             </Button>
                                                         )}
                                                         {/* ... etc ... */}
                                                         {request.status === 'awaiting_payment' && (
-                                                            <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => navigate(`/track/${request.tracking_code}`)}>
+                                                            <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => setQuoteReviewRequest(request)}>
                                                                 <CreditCard className="h-4 w-4 mr-1" /> Pay Now
                                                             </Button>
                                                         )}
@@ -378,9 +389,15 @@ export const CustomerDashboard = () => {
                                                             </Button>
                                                         )}
                                                         {request.status === 'awaiting_confirmation' && (
-                                                            <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => navigate(`/track/${request.tracking_code}`)}>
-                                                                <CheckCircle className="h-4 w-4 mr-1" /> Confirm
-                                                            </Button>
+                                                            !request.customer_confirmed_at ? (
+                                                                <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => setConfirmationRequest(request)}>
+                                                                    <CheckCircle className="h-4 w-4 mr-1" /> Confirm & Release Payment
+                                                                </Button>
+                                                            ) : (
+                                                                <Button size="sm" variant="outline" disabled className="flex-1 border-amber-200 text-amber-700 bg-amber-50">
+                                                                    <Clock className="h-4 w-4 mr-1" /> Processing...
+                                                                </Button>
+                                                            )
                                                         )}
                                                         {request.status === 'completed' && (
                                                             <Button variant="outline" size="sm" className="flex-1" onClick={() => setRatingDialogOpen(request.id)}>Rate</Button>
@@ -555,6 +572,32 @@ export const CustomerDashboard = () => {
                             </DialogContent>
                         </Dialog>
                     )}
+
+                    {/* Service Confirmation Modal */}
+                    <ServiceConfirmation
+                        request={confirmationRequest}
+                        open={!!confirmationRequest}
+                        onOpenChange={(open) => !open && setConfirmationRequest(null)}
+                        onConfirmed={() => {
+                            fetchCustomerData();
+                            setConfirmationRequest(null);
+                        }}
+                        userType="customer"
+                    />
+
+                    {/* Quote Review Modal */}
+                    <QuoteReview
+                        request={quoteReviewRequest}
+                        open={!!quoteReviewRequest}
+                        onOpenChange={(open) => !open && setQuoteReviewRequest(null)}
+                        customerEmail={profile?.email || user?.email}
+                        onPaymentComplete={() => {
+                            fetchCustomerData();
+                            setQuoteReviewRequest(null);
+                        }}
+                    />
+
+
 
                 </div>
             </div>

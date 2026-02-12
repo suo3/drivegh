@@ -13,6 +13,7 @@ import { LiveTrackingMap } from '@/components/LiveTrackingMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import RequestDetailsModal from '@/components/RequestDetailsModal';
 import ServiceConfirmation from '@/components/ServiceConfirmation';
+import QuoteReview from '@/components/QuoteReview';
 
 const CustomerDashboard = () => {
   const { user, signOut } = useAuth();
@@ -24,6 +25,7 @@ const CustomerDashboard = () => {
   const [selectedRequestForTracking, setSelectedRequestForTracking] = useState<any | null>(null);
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<any | null>(null);
   const [confirmationRequest, setConfirmationRequest] = useState<any | null>(null);
+  const [quoteReviewRequest, setQuoteReviewRequest] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -33,7 +35,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const channel = supabase
       .channel('customer_service_requests')
       .on(
@@ -57,9 +59,9 @@ const CustomerDashboard = () => {
 
   // Auto-open tracking for active requests
   useEffect(() => {
-    const activeRequest = requests.find(r => 
-      (r.status === 'en_route' || r.status === 'in_progress') && 
-      r.provider_lat && 
+    const activeRequest = requests.find(r =>
+      (r.status === 'en_route' || r.status === 'in_progress') &&
+      r.provider_lat &&
       r.provider_lng
     );
     if (activeRequest && !selectedRequestForTracking) {
@@ -135,7 +137,7 @@ const CustomerDashboard = () => {
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
         <div className="absolute top-20 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-glow/20 rounded-full blur-3xl" />
-        
+
         <div className="container mx-auto px-4 relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -150,9 +152,9 @@ const CustomerDashboard = () => {
                 Manage your service requests and track your rescue team in real-time
               </p>
             </div>
-            <Button 
-              onClick={handleSignOut} 
-              variant="outline" 
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
               size="lg"
               className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-primary transition-all duration-300 shadow-lg hover:shadow-xl"
             >
@@ -254,28 +256,28 @@ const CustomerDashboard = () => {
                                 <h3 className="font-bold text-xl capitalize bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                                   {request.service_type.replace('_', ' ')}
                                 </h3>
-                                 <Badge className={`${getStatusColor(request.status)} shadow-sm`}>
-                                   {getStatusLabel(request.status)}
-                                 </Badge>
-                                 {(request.status === 'en_route' || request.status === 'in_progress') && 
+                                <Badge className={`${getStatusColor(request.status)} shadow-sm`}>
+                                  {getStatusLabel(request.status)}
+                                </Badge>
+                                {(request.status === 'en_route' || request.status === 'in_progress') &&
                                   request.customer_lat && request.customer_lng && (
-                                   <Button
-                                     variant="outline"
-                                     size="sm"
-                                     onClick={() => setSelectedRequestForTracking(request)}
-                                     className="ml-2"
-                                   >
-                                     <MapPin className="h-4 w-4 mr-1" />
-                                     Track Live
-                                   </Button>
-                                 )}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setSelectedRequestForTracking(request)}
+                                      className="ml-2"
+                                    >
+                                      <MapPin className="h-4 w-4 mr-1" />
+                                      Track Live
+                                    </Button>
+                                  )}
                               </div>
                               <div className="space-y-2 text-sm">
                                 <div className="flex items-start gap-2 text-muted-foreground">
                                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                   <span>{request.location}</span>
                                 </div>
-                                 {request.description && (
+                                {request.description && (
                                   <p className="text-muted-foreground">{request.description}</p>
                                 )}
                                 {request.service_type === 'fuel_delivery' && (request.fuel_type || request.fuel_amount) && (
@@ -323,14 +325,21 @@ const CustomerDashboard = () => {
                                 <div className="flex items-center gap-2">
                                   <CreditCard className="h-4 w-4 text-primary" />
                                   <span className="text-sm">
-                                    {request.status === 'quoted' 
-                                      ? 'Review and approve quote to proceed' 
+                                    {request.status === 'quoted'
+                                      ? 'Review and approve quote to proceed'
                                       : 'Complete payment to start service'}
                                   </span>
                                 </div>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => navigate(`/track/${request.tracking_code}`)}
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    if (request.status === 'quoted') {
+                                      setQuoteReviewRequest(request);
+                                    } else {
+                                      // For 'awaiting_payment' also use the drawer as it handles both
+                                      setQuoteReviewRequest(request);
+                                    }
+                                  }}
                                 >
                                   {request.status === 'quoted' ? 'Review Quote' : 'Pay Now'}
                                 </Button>
@@ -339,24 +348,36 @@ const CustomerDashboard = () => {
                           )}
 
                           {/* Customer confirmation prompt */}
-                          {request.status === 'awaiting_confirmation' && !request.customer_confirmed_at && (
-                            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                              <div className="flex items-center justify-between">
+                          {/* Customer confirmation prompt or status */}
+                          {request.status === 'awaiting_confirmation' && (
+                            !request.customer_confirmed_at ? (
+                              <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-amber-600" />
+                                    <span className="text-sm text-amber-800">
+                                      Service marked complete - please confirm
+                                    </span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => setConfirmationRequest(request)}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    Confirm & Release Payment
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
                                 <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-4 w-4 text-amber-600" />
-                                  <span className="text-sm text-amber-800">
-                                    Service marked complete - please confirm
+                                  <Clock className="h-4 w-4 text-blue-600" />
+                                  <span className="text-sm text-blue-800">
+                                    Payment authorized - waiting for provider confirmation
                                   </span>
                                 </div>
-                                <Button 
-                                  size="sm"
-                                  onClick={() => setConfirmationRequest(request)}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  Confirm & Release Payment
-                                </Button>
                               </div>
-                            </div>
+                            )
                           )}
 
                           <div className="flex justify-between items-center pt-4 border-t">
@@ -364,8 +385,8 @@ const CustomerDashboard = () => {
                               Requested: {new Date(request.created_at).toLocaleString()}
                             </p>
                             <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => setSelectedRequestForDetails(request)}
                               >
@@ -421,7 +442,7 @@ const CustomerDashboard = () => {
                               </p>
                             )}
                           </div>
-                          <Badge 
+                          <Badge
                             variant={transaction.confirmed_at ? 'default' : 'secondary'}
                             className="shadow-sm"
                           >
@@ -492,6 +513,17 @@ const CustomerDashboard = () => {
           setConfirmationRequest(null);
         }}
         userType="customer"
+      />
+
+      <QuoteReview
+        request={quoteReviewRequest}
+        open={!!quoteReviewRequest}
+        onOpenChange={(open) => !open && setQuoteReviewRequest(null)}
+        customerEmail={profile?.email || user?.email}
+        onPaymentComplete={() => {
+          fetchData();
+          setQuoteReviewRequest(null);
+        }}
       />
 
       <Footer />

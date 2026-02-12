@@ -217,7 +217,7 @@ const ServiceConfirmationContent = ({ request, onConfirmed, userType, onOpenChan
           ) : (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
-              {userType === 'customer' ? 'Confirm Release' : 'Confirm Receipt'}
+              {userType === 'customer' ? 'Confirm & Release Payment' : 'Confirm Receipt'}
             </>
           )}
         </Button>
