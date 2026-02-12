@@ -12,14 +12,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useEffect, useState } from 'react';
-import { useTracking } from '@/contexts/TrackingContext';
-import { LiveTrackingProgressBar } from '@/components/LiveTrackingProgressBar';
+
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, userRole, loading, signOut } = useAuth();
   const [services, setServices] = useState<any[]>([]);
-  const { activeRequest } = useTracking();
+  // const { activeRequest } = useTracking(); // Removed as per request
 
   useEffect(() => {
     fetchServices();
@@ -177,11 +176,7 @@ const Navbar = () => {
       </nav>
 
       {/* Progress Bar - Shows when there's an active request */}
-      {activeRequest && activeRequest.provider_lat && activeRequest.provider_lng && (
-        <div className="fixed top-[64px] left-0 right-0 z-[1004]">
-          <LiveTrackingProgressBar request={activeRequest} />
-        </div>
-      )}
+
     </>
   );
 };
