@@ -259,7 +259,7 @@ export const ProviderDashboard = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-sm md:text-2xl font-bold text-green-700 truncate">GHS {earnings.toFixed(2)}</h3>
-                                        <p className="text-[10px] md:text-xs text-green-600/80 mt-1 truncate">Payout ready</p>
+                                        <p className="text-[10px] md:text-xs text-green-600/80 mt-1 truncate">Total Earned</p>
                                     </div>
                                 </CardContent>
                             </Card>

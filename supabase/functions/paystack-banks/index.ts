@@ -18,10 +18,21 @@ serve(async (req) => {
       throw new Error("PAYSTACK_SECRET_KEY is not configured");
     }
 
-    // Get query params for filtering
+    // Get params from URL or Body
     const url = new URL(req.url);
-    const country = url.searchParams.get("country") || "ghana";
-    const useMobileMoney = url.searchParams.get("mobile_money") === "true";
+    let country = url.searchParams.get("country") || "ghana";
+    let useMobileMoney = url.searchParams.get("mobile_money") === "true";
+
+    // Try to parse body for params if not in URL (for invoke calls)
+    try {
+      if (req.method === "POST") {
+        const body = await req.json();
+        if (body.country) country = body.country;
+        if (typeof body.mobile_money !== 'undefined') useMobileMoney = body.mobile_money;
+      }
+    } catch (e) {
+      // Ignore body parsing error (might be empty)
+    }
 
     console.log("Fetching banks for:", country, "Mobile Money:", useMobileMoney);
 
