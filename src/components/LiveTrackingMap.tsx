@@ -126,8 +126,8 @@ interface LiveTrackingMapProps {
   showETA?: boolean;
 }
 
-function MapUpdater({ customerLat, customerLng, providerLat, providerLng }: { 
-  customerLat: number; 
+function MapUpdater({ customerLat, customerLng, providerLat, providerLng }: {
+  customerLat: number;
   customerLng: number;
   providerLat?: number | null;
   providerLng?: number | null;
@@ -189,9 +189,9 @@ export function LiveTrackingMap({
     if (providerLat && providerLng) {
       const lastPos = lastPositionRef.current;
       // Only add point if position changed significantly (> 0.0001 degrees ~ 11m)
-      if (!lastPos || 
-          Math.abs(lastPos.lat - providerLat) > 0.0001 || 
-          Math.abs(lastPos.lng - providerLng) > 0.0001) {
+      if (!lastPos ||
+        Math.abs(lastPos.lat - providerLat) > 0.0001 ||
+        Math.abs(lastPos.lng - providerLng) > 0.0001) {
         lastPositionRef.current = { lat: providerLat, lng: providerLng };
         setPositionHistory(prev => {
           const newHistory = [...prev, [providerLat, providerLng] as [number, number]];
@@ -254,12 +254,13 @@ export function LiveTrackingMap({
           zoom={13}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={false}
+          attributionControl={false}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
+
           <Marker position={[customerLat, customerLng]} icon={customerIcon}>
             <Popup>
               <div className="text-center">
@@ -291,7 +292,7 @@ export function LiveTrackingMap({
                   />
                 );
               })}
-              
+
               {/* Animated dotted route line between provider and customer */}
               <Polyline
                 positions={[
@@ -319,8 +320,8 @@ export function LiveTrackingMap({
             </>
           )}
 
-          <MapUpdater 
-            customerLat={customerLat} 
+          <MapUpdater
+            customerLat={customerLat}
             customerLng={customerLng}
             providerLat={providerLat}
             providerLng={providerLng}
