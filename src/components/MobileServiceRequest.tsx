@@ -618,7 +618,7 @@ const MobileServiceRequest = () => {
   };
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full overflow-hidden bg-gray-100 flex flex-col md:block">
+    <div className={`relative w-full overflow-hidden bg-gray-100 flex flex-col md:block transition-all duration-300 ${isMobile && isCollapsed ? 'h-[55vh]' : 'h-[calc(100vh-64px)]'}`}>
       {/* Full Screen Map Background */}
       <div className="absolute inset-0 z-0">
         <ProviderSelectionMap
@@ -627,6 +627,7 @@ const MobileServiceRequest = () => {
           providers={currentStep >= 4 ? providers : []}
           selectedProviderId={selectedProviderId}
           onProviderSelect={setSelectedProviderId}
+          isCollapsed={isMobile && isCollapsed}
           className="w-full h-full rounded-none border-0"
         />
         {/* Gradient Overlay */}

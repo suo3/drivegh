@@ -21,6 +21,7 @@ interface ProviderSelectionMapProps {
   selectedProviderId: string | null;
   onProviderSelect: (providerId: string) => void;
   isSearching?: boolean;
+  isCollapsed?: boolean;
 }
 
 // Customer location icon (pulsing red dot)
@@ -81,24 +82,31 @@ const createProviderIcon = (isSelected: boolean, isAvailable: boolean, distanceK
   });
 };
 
-function MapBoundsUpdater({ customerLat, customerLng, providers }: {
+function MapBoundsUpdater({ customerLat, customerLng, providers, isCollapsed }: {
   customerLat: number;
   customerLng: number;
   providers: Provider[];
+  isCollapsed?: boolean;
 }) {
   const map = useMap();
 
   useEffect(() => {
-    if (providers.length > 0) {
+    // Invalidate size to handle container resizing
+    map.invalidateSize();
+
+    if (isCollapsed && customerLat && customerLng) {
+      // Zoom in close to user when collapsed
+      map.flyTo([customerLat, customerLng], 17, { duration: 1.5 });
+    } else if (providers.length > 0) {
       const points: [number, number][] = [
         [customerLat, customerLng],
         ...providers.map(p => [p.current_lat, p.current_lng] as [number, number])
       ];
-      map.fitBounds(points, { padding: [50, 50], maxZoom: 14 });
+      map.fitBounds(points, { padding: [50, 50], maxZoom: 16 });
     } else {
-      map.setView([customerLat, customerLng], 13);
+      map.setView([customerLat, customerLng], 16);
     }
-  }, [map, customerLat, customerLng, providers]);
+  }, [map, customerLat, customerLng, providers, isCollapsed]);
 
   return null;
 }
@@ -110,6 +118,7 @@ export function ProviderSelectionMap({
   selectedProviderId,
   onProviderSelect,
   isSearching = false,
+  isCollapsed = false,
   className = "",
 }: ProviderSelectionMapProps & { className?: string }) {
   return (
@@ -129,7 +138,7 @@ export function ProviderSelectionMap({
 
       <MapContainer
         center={[customerLat, customerLng]}
-        zoom={13}
+        zoom={16}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
         zoomControl={false}
@@ -140,18 +149,20 @@ export function ProviderSelectionMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Search radius circle */}
-        <Circle
-          center={[customerLat, customerLng]}
-          radius={5000}
-          pathOptions={{
-            color: 'hsl(var(--primary))',
-            fillColor: 'hsl(var(--primary))',
-            fillOpacity: 0.05,
-            weight: 1,
-            dashArray: '5, 5',
-          }}
-        />
+        {/* Search radius circle - hidden when collapsed to focus on immediate area */}
+        {!isCollapsed && (
+          <Circle
+            center={[customerLat, customerLng]}
+            radius={5000}
+            pathOptions={{
+              color: 'hsl(var(--primary))',
+              fillColor: 'hsl(var(--primary))',
+              fillOpacity: 0.05,
+              weight: 1,
+              dashArray: '5, 5',
+            }}
+          />
+        )}
 
         {/* Customer marker */}
         <Marker position={[customerLat, customerLng]} icon={customerIcon}>
@@ -196,20 +207,23 @@ export function ProviderSelectionMap({
           customerLat={customerLat}
           customerLng={customerLng}
           providers={providers}
+          isCollapsed={isCollapsed}
         />
       </MapContainer>
 
-      {/* Legend */}
-      <div className="absolute bottom-2 left-2 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xs flex items-center gap-3 border shadow-sm">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-          <span>You</span>
+      {/* Legend - Hide when collapsed to give cleaner view */}
+      {!isCollapsed && (
+        <div className="absolute bottom-2 left-2 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xs flex items-center gap-3 border shadow-sm">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <span>You</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+            <span>Providers</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-          <span>Providers</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
